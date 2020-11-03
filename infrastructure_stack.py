@@ -69,11 +69,15 @@ class InfrastructureStack(core.Stack):
             layers=[indy_sdk_postgres_layer],
         )
 
-        apigw.LambdaRestApi(
+        root_api = apigw.LambdaRestApi(
             self,
             "Endpoint",
             handler=generate_session_lambda,
+            proxy=False
         )
+
+        session_resource = root_api.root.add_resource('session')
+        session_resource.add_method('GET')
 
     def create_dependencies_layer(
         self, project_name, function_name: str
