@@ -17,26 +17,26 @@ class InfrastructureStack(core.Stack):
         # Databases
         vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
 
-        postgres_db = rds.DatabaseInstance(
-            self,
-            "RDS",
-            database_name="db1",
-            engine=rds.DatabaseInstanceEngine.postgres(
-                version=rds.PostgresEngineVersion.VER_12_4
+        postgres_db = (
+            rds.DatabaseInstance(
+                self,
+                "RDS",
+                database_name="db1",
+                engine=rds.DatabaseInstanceEngine.postgres(
+                    version=rds.PostgresEngineVersion.VER_12_4
+                ),
+                vpc=vpc,
+                port=5432,
+                instance_type=ec2.InstanceType.of(
+                    ec2.InstanceClass.BURSTABLE3,
+                    ec2.InstanceSize.MICRO,
+                ),
+                removal_policy=core.RemovalPolicy.DESTROY,
+                deletion_protection=False,
+                credentials=rds.Credentials.from_username("loginService"),
+                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             ),
-            vpc=vpc,
-            port=5432,
-            instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE3,
-                ec2.InstanceSize.MICRO,
-            ),
-            removal_policy=core.RemovalPolicy.DESTROY,
-            deletion_protection=False,
-            credentials=rds.Credentials.from_username("loginService"),
-            vpc_subnets=ec2.SubnetSelection(
-                subnet_type=ec2.SubnetType.PUBLIC
-            )
-        ),
+        )
         postgres_db.connections.allowFromAnyIpv4(ec2.Port.tcp(5432))
 
         session_table = dynamodb.Table(
@@ -89,7 +89,12 @@ class InfrastructureStack(core.Stack):
             "GenerateJWT",
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset("../microservices/Login/generate_jwt"),
-            handler="app.lambda_handler",  
+            handler="app.lambda_handler",
+            environment={
+                "SESSION_TABLE_NAME": session_table.table_name,
+                "JWT_SECRET": "secret",
+                "DYNAMODB_ENDPOINT_OVERRIDE": "",
+            },
             layers=[
                 self.create_dependencies_layer("test", "GenerateJWT", "generate_jwt")
             ],
@@ -100,6 +105,19 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/validate_nonce"),
             handler="app.lambda_handler",
+            environment={
+                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+                "LOGIN_SERVICE_PASSWORD": "secret",
+                "DB_PORT": "5432",
+                "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
+                "DB_NAME": "wallets",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "QOrcnW^FI5DHdWMqDP=4hvgsmYQv,G",
+                "NONCE_TABLE_NAME": nonce_table.table_name,
+                "SESSION_TABLE_NAME": session_table.table_name,
+                "DYNAMODB_ENDPOINT_OVERRIDE": "",
+            },
             layers=[
                 indy_sdk_postgres_layer,
                 self.create_dependencies_layer(
@@ -113,6 +131,20 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/login_service"),
             handler="app.lambda_handler",
+            environment={
+                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+                "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
+                "LOGIN_SERVICE_PASSWORD": "secret",
+                "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/Login/tmp",
+                "DB_PORT": "5432",
+                "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
+                "DB_NAME": "wallets",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "QOrcnW^FI5DHdWMqDP=4hvgsmYQv,G",
+                "NONCE_TABLE_NAME": nonce_table.table_name,
+                "DYNAMODB_ENDPOINT_OVERRIDE": "",
+            },
             layers=[
                 indy_sdk_postgres_layer,
                 self.create_dependencies_layer("test", "LoginService", "login_service"),
