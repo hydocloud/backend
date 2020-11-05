@@ -40,7 +40,7 @@ class InfrastructureStack(core.Stack):
                 "JWT_SECRET": "secret",
                 "DYNAMODB_ENDPOINT_OVERRIDE": ""
             },
-            layers=[self.create_dependencies_layer("test", "GenerateSession")]
+            layers=[self.create_dependencies_layer("test", "GenerateSession", "generate_session")]
         )
 
         session_table.grant_write_data(generate_session_lambda)
@@ -51,6 +51,7 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset("../microservices/Login/generate_jwt"),
             handler="app.lambda_handler",
+            layers=[self.create_dependencies_layer("test", "GenerateJWT", "generate_jwt")]
         )
         validate_nonce_lambda = _lambda.Function(
             self,
@@ -58,7 +59,7 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/validate_nonce"),
             handler="app.lambda_handler",
-            layers=[indy_sdk_postgres_layer],
+            layers=[indy_sdk_postgres_layer, self.create_dependencies_layer("test", "ValidateNonce", "validate_nonce")],
         )
         login_service_lambda = _lambda.Function(
             self,
@@ -66,7 +67,7 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/login_service"),
             handler="app.lambda_handler",
-            layers=[indy_sdk_postgres_layer],
+            layers=[indy_sdk_postgres_layer, self.create_dependencies_layer("test", "LoginService", "login_service")],
         )
 
         root_api = apigw.LambdaRestApi(
@@ -80,9 +81,9 @@ class InfrastructureStack(core.Stack):
         session_resource.add_method('GET')
 
     def create_dependencies_layer(
-        self, project_name, function_name: str
+        self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
-        requirements_file = "../microservices/Login/generate_session/requirements.txt"
+        requirements_file = "../microservices/Login/{}/requirements.txt".format(folder_name)
         output_dir = ".lambda_dependencies/" + function_name
 
         # Install requirements for layer in the output_dir
