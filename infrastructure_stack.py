@@ -17,27 +17,26 @@ class InfrastructureStack(core.Stack):
         # Databases
         vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
 
-        postgres_db = (
-            rds.DatabaseInstance(
-                self,
-                "RDS",
-                database_name="db1",
-                engine=rds.DatabaseInstanceEngine.postgres(
-                    version=rds.PostgresEngineVersion.VER_12_4
-                ),
-                vpc=vpc,
-                port=5432,
-                instance_type=ec2.InstanceType.of(
-                    ec2.InstanceClass.BURSTABLE3,
-                    ec2.InstanceSize.MICRO,
-                ),
-                removal_policy=core.RemovalPolicy.DESTROY,
-                deletion_protection=False,
-                credentials=rds.Credentials.from_username("loginService"),
-                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+        postgres_db = rds.DatabaseInstance(
+            self,
+            "RDS",
+            database_name="db1",
+            engine=rds.DatabaseInstanceEngine.postgres(
+                version=rds.PostgresEngineVersion.VER_12_4
             ),
+            vpc=vpc,
+            port=5432,
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.BURSTABLE3,
+                ec2.InstanceSize.MICRO,
+            ),
+            removal_policy=core.RemovalPolicy.DESTROY,
+            deletion_protection=False,
+            credentials=rds.Credentials.from_username("loginService"),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
         )
-        postgres_db.connections.allowFromAnyIpv4(ec2.Port.tcp(5432))
+
+        postgres_db.connections.allow_from_any_ipv4(ec2.Port.tcp(5432))
 
         session_table = dynamodb.Table(
             self,
