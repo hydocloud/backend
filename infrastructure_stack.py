@@ -15,6 +15,30 @@ class InfrastructureStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         # Databases
+        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
+
+        postgres_db = rds.DatabaseInstance(
+            self,
+            "RDS",
+            database_name="db1",
+            engine=rds.DatabaseInstanceEngine.postgres(
+                version=rds.PostgresEngineVersion.VER_12_4
+            ),
+            vpc=vpc,
+            port=5432,
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.BURSTABLE3,
+                ec2.InstanceSize.MICRO,
+            ),
+            removal_policy=core.RemovalPolicy.DESTROY,
+            deletion_protection=False,
+            credentials=rds.Credentials.from_username("loginService"),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PUBLIC
+            )
+        ),
+        postgres_db.connections.allowFromAnyIpv4(ec2.Port.tcp(5432))
+
         session_table = dynamodb.Table(
             self,
             "session",
@@ -65,7 +89,7 @@ class InfrastructureStack(core.Stack):
             "GenerateJWT",
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset("../microservices/Login/generate_jwt"),
-            handler="app.lambda_handler",
+            handler="app.lambda_handler",  
             layers=[
                 self.create_dependencies_layer("test", "GenerateJWT", "generate_jwt")
             ],
