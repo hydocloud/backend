@@ -3,6 +3,8 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_apigateway as apigw,
     aws_dynamodb as dynamodb,
+    aws_rds as rds,
+    aws_ec2 as ec2,
 )
 import os
 import subprocess
@@ -12,6 +14,7 @@ class InfrastructureStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        # Databases
         session_table = dynamodb.Table(
             self,
             "session",
@@ -19,7 +22,18 @@ class InfrastructureStack(core.Stack):
                 name="id", type=dynamodb.AttributeType.STRING
             ),
         )
+        nonce_table = dynamodb.Table(
+            self,
+            "nonces",
+            partition_key=dynamodb.Attribute(
+                name="service_id", type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="message", type=dynamodb.AttributeType.STRING
+            ),
+        )
 
+        # Lambda layer
         indy_sdk_postgres_layer = _lambda.LayerVersion(
             self,
             "indy-sdk-postgres",
@@ -46,9 +60,6 @@ class InfrastructureStack(core.Stack):
                 )
             ],
         )
-
-        session_table.grant_write_data(generate_session_lambda)
-
         generate_jwt_lambda = _lambda.Function(
             self,
             "GenerateJWT",
@@ -84,12 +95,26 @@ class InfrastructureStack(core.Stack):
             ],
         )
 
-        root_api = apigw.LambdaRestApi(
-            self, "Endpoint", proxy=False, handler=generate_session_lambda
-        )
+        # Lambda - DynamoDB permissions
+        session_table.grant_write_data(generate_session_lambda)
+        session_table.grant_read_write_data(generate_jwt_lambda)
+        nonce_table.grant_read_data(validate_nonce_lambda)
+        nonce_table.grant_write_data(login_service_lambda)
 
-        session_resource = root_api.root.add_resource("session")
-        session_resource.add_method("GET")
+        #  Api gateway
+        api = apigw.RestApi(self, "login-api", rest_api_name="Login Service")
+        generate_session_integration = apigw.LambdaIntegration(generate_session_lambda)
+        generate_session_resource = api.root.add_resource("session")
+        generate_session_resource.add_method("GET", generate_session_integration)
+        generate_jwt_integration = apigw.LambdaIntegration(generate_jwt_lambda)
+        generate_jwt_resource = generate_session_resource.add_resource("{id}")
+        generate_jwt_resource.add_method("GET", generate_jwt_integration)
+        login_service_integration = apigw.LambdaIntegration(login_service_lambda)
+        login_service_resource = api.root.add_resource("login")
+        login_service_resource.add_method("POST", login_service_integration)
+        validate_nonce_integration = apigw.LambdaIntegration(validate_nonce_lambda)
+        validate_nonce_resource = login_service_resource.add_resource("validate")
+        validate_nonce_resource.add_method("POST", validate_nonce_integration)
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
