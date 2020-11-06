@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_rds as rds,
     aws_ec2 as ec2,
 )
+from aws_cdk.core import Duration
 import os
 import subprocess
 
@@ -104,6 +105,8 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/validate_nonce"),
             handler="app.lambda_handler",
+            timeout=Duration.seconds(350),
+            memory_size=512,
             environment={
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "LOGIN_SERVICE_PASSWORD": "secret",
@@ -112,7 +115,7 @@ class InfrastructureStack(core.Stack):
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "QOrcnW^FI5DHdWMqDP=4hvgsmYQv,G",
+                "DB_PASSWORD": "ciaociao",
                 "NONCE_TABLE_NAME": nonce_table.table_name,
                 "SESSION_TABLE_NAME": session_table.table_name,
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
@@ -130,6 +133,8 @@ class InfrastructureStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset("../microservices/Login/login_service"),
             handler="app.lambda_handler",
+            timeout=Duration.seconds(350),
+            memory_size=512,
             environment={
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
@@ -140,7 +145,7 @@ class InfrastructureStack(core.Stack):
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "QOrcnW^FI5DHdWMqDP=4hvgsmYQv,G",
+                "DB_PASSWORD": "ciaociao",
                 "NONCE_TABLE_NAME": nonce_table.table_name,
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
             },
