@@ -45,6 +45,7 @@ class InfrastructureStack(core.Stack):
             partition_key=dynamodb.Attribute(
                 name="id", type=dynamodb.AttributeType.STRING
             ),
+            time_to_live_attribute="expiration_time"
         )
         nonce_table = dynamodb.Table(
             self,
