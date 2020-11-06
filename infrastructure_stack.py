@@ -159,7 +159,8 @@ class InfrastructureStack(core.Stack):
         # Lambda - DynamoDB permissions
         session_table.grant_write_data(generate_session_lambda)
         session_table.grant_read_write_data(generate_jwt_lambda)
-        nonce_table.grant_read_write_data(validate_nonce_lambda)
+        session_table.grant_write_data(validate_nonce_lambda)
+        nonce_table.grant_read_data(validate_nonce_lambda)
         nonce_table.grant_write_data(login_service_lambda)
 
         #  Api gateway
