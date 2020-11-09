@@ -80,6 +80,7 @@ class InfrastructureStack(core.Stack):
                 "JWT_SECRET": "secret",
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
             },
+            tracing=_lambda.Tracing.ACTIVE,
             layers=[
                 self.create_dependencies_layer(
                     "test", "GenerateSession", "generate_session"
@@ -97,6 +98,7 @@ class InfrastructureStack(core.Stack):
                 "JWT_SECRET": "secret",
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
             },
+            tracing=_lambda.Tracing.ACTIVE,
             layers=[
                 self.create_dependencies_layer("test", "GenerateJWT", "generate_jwt")
             ],
@@ -122,6 +124,7 @@ class InfrastructureStack(core.Stack):
                 "SESSION_TABLE_NAME": session_table.table_name,
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
             },
+            tracing=_lambda.Tracing.ACTIVE,
             layers=[
                 indy_sdk_postgres_layer,
                 self.create_dependencies_layer(
@@ -151,9 +154,38 @@ class InfrastructureStack(core.Stack):
                 "NONCE_TABLE_NAME": nonce_table.table_name,
                 "DYNAMODB_ENDPOINT_OVERRIDE": "",
             },
+            tracing=_lambda.Tracing.ACTIVE,
             layers=[
                 indy_sdk_postgres_layer,
                 self.create_dependencies_layer("test", "LoginService", "login_service"),
+            ],
+        )
+        onboarding_lambda = _lambda.Function(
+            self,
+            "Onboarding",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset("../microservices/login/onboarding"),
+            handler="app.lambda_handler",
+            timeout=Duration.seconds(350),
+            memory_size=512,
+            environment={
+                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+                "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
+                "LOGIN_SERVICE_PASSWORD": "secret",
+                "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/login/tmp",
+                "DB_PORT": "5432",
+                "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
+                "DB_NAME": "wallets",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "ciaociao",
+                "NONCE_TABLE_NAME": nonce_table.table_name,
+                "DYNAMODB_ENDPOINT_OVERRIDE": "",
+            },
+            tracing=_lambda.Tracing.ACTIVE,
+            layers=[
+                indy_sdk_postgres_layer,
+                self.create_dependencies_layer("test", "Onboarding", "onboarding"),
             ],
         )
 
