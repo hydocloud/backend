@@ -63,7 +63,7 @@ class InfrastructureStack(core.Stack):
         indy_sdk_postgres_layer = _lambda.LayerVersion(
             self,
             "indy-sdk-postgres",
-            code=_lambda.Code.asset("../microservices/Login/indysdk-postgres.zip"),
+            code=_lambda.Code.asset("../microservices/login/indysdk-postgres.zip"),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
         )
 
@@ -72,7 +72,7 @@ class InfrastructureStack(core.Stack):
             self,
             "GenerateSession",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.asset("../microservices/Login/generate_session"),
+            code=_lambda.Code.asset("../microservices/login/generate_session"),
             handler="app.lambda_handler",
             environment={
                 "SESSION_TABLE_NAME": session_table.table_name,
@@ -90,7 +90,7 @@ class InfrastructureStack(core.Stack):
             self,
             "GenerateJWT",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.asset("../microservices/Login/generate_jwt"),
+            code=_lambda.Code.asset("../microservices/login/generate_jwt"),
             handler="app.lambda_handler",
             environment={
                 "SESSION_TABLE_NAME": session_table.table_name,
@@ -105,7 +105,7 @@ class InfrastructureStack(core.Stack):
             self,
             "ValidateNonce",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/Login/validate_nonce"),
+            code=_lambda.Code.asset("../microservices/login/validate_nonce"),
             handler="app.lambda_handler",
             timeout=Duration.seconds(350),
             memory_size=512,
@@ -133,7 +133,7 @@ class InfrastructureStack(core.Stack):
             self,
             "LoginService",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/Login/login_service"),
+            code=_lambda.Code.asset("../microservices/login/login_service"),
             handler="app.lambda_handler",
             timeout=Duration.seconds(350),
             memory_size=512,
@@ -141,7 +141,7 @@ class InfrastructureStack(core.Stack):
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
                 "LOGIN_SERVICE_PASSWORD": "secret",
-                "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/Login/tmp",
+                "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/login/tmp",
                 "DB_PORT": "5432",
                 "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
                 "DB_NAME": "wallets",
@@ -182,7 +182,7 @@ class InfrastructureStack(core.Stack):
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
-        requirements_file = "../microservices/Login/{}/requirements.txt".format(
+        requirements_file = "../microservices/login/{}/requirements.txt".format(
             folder_name
         )
         output_dir = ".lambda_dependencies/" + function_name
