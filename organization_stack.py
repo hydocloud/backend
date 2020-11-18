@@ -13,7 +13,7 @@ from shutil import copyfile, copytree, rmtree
 
 
 class OrganizationeStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, api, postgres_db, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, api, rds: rds, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # The code that defines your stack goes here
@@ -25,8 +25,8 @@ class OrganizationeStack(core.Stack):
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
-                "DB_PORT": "5432",
-                "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
                 "DB_NAME": "organization",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
