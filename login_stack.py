@@ -11,33 +11,12 @@ import os
 import subprocess
 
 
-class InfrastructureStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+class LoginStack(core.Stack):
+    def __init__(self, scope: core.Construct, id: str, rds: rds, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Databases
         vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
-
-        self.postgres_db = rds.DatabaseInstance(
-            self,
-            "RDS",
-            database_name="db1",
-            engine=rds.DatabaseInstanceEngine.postgres(
-                version=rds.PostgresEngineVersion.VER_12_4
-            ),
-            vpc=vpc,
-            port=5432,
-            instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE3,
-                ec2.InstanceSize.MICRO,
-            ),
-            removal_policy=core.RemovalPolicy.DESTROY,
-            deletion_protection=False,
-            credentials=rds.Credentials.from_username("loginService"),
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-        )
-
-        self.postgres_db.connections.allow_from_any_ipv4(ec2.Port.tcp(5432))
 
         session_table = dynamodb.Table(
             self,
@@ -114,8 +93,8 @@ class InfrastructureStack(core.Stack):
             environment={
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": self.postgres_db.db_instance_endpoint_port,
-                "DB_HOST": self.postgres_db.db_instance_endpoint_address,
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
@@ -145,8 +124,8 @@ class InfrastructureStack(core.Stack):
                 "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
                 "LOGIN_SERVICE_PASSWORD": "secret",
                 "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/login/tmp",
-                "DB_PORT": self.postgres_db.db_instance_endpoint_port,
-                "DB_HOST": self.postgres_db.db_instance_endpoint_address,
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
@@ -232,4 +211,4 @@ class InfrastructureStack(core.Stack):
     def api_gateway(self):
         return self.api
     def rds(self):
-        return self.postgres_db
+        return rds
