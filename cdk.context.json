@@ -29,5 +29,9 @@
         ]
       }
     ]
+  },
+  "hosted-zone:account=457469494885:domainName=hydo.cloud:region=eu-west-1": {
+    "Id": "/hostedzone/Z27WA2F3HUBL3P",
+    "Name": "hydo.cloud."
   }
 }
