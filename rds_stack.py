@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_rds as rds,
     aws_ec2 as ec2,
 )
+from utils.prefix import env_specific
 
 class RdsStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
@@ -14,6 +15,7 @@ class RdsStack(core.Stack):
         self.postgres_db = rds.DatabaseInstance(
             self,
             "RDS",
+            instance_identifier=env_specific('login'),
             database_name="db1",
             engine=rds.DatabaseInstanceEngine.postgres(
                 version=rds.PostgresEngineVersion.VER_12_4

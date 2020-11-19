@@ -9,6 +9,7 @@ from aws_cdk import (
 from aws_cdk.core import Duration
 import os
 import subprocess
+from utils.prefix import env_specific
 
 
 class LoginStack(core.Stack):
@@ -20,7 +21,7 @@ class LoginStack(core.Stack):
 
         session_table = dynamodb.Table(
             self,
-            "session",
+            env_specific("sessions"),
             partition_key=dynamodb.Attribute(
                 name="id", type=dynamodb.AttributeType.STRING
             ),
@@ -28,7 +29,7 @@ class LoginStack(core.Stack):
         )
         nonce_table = dynamodb.Table(
             self,
-            "nonces",
+            env_specific("nonces"),
             partition_key=dynamodb.Attribute(
                 name="service_id", type=dynamodb.AttributeType.STRING
             ),
@@ -41,7 +42,7 @@ class LoginStack(core.Stack):
         # Lambda layer
         indy_sdk_postgres_layer = _lambda.LayerVersion(
             self,
-            "indy-sdk-postgres",
+            env_specific("indy-sdk-postgres"),
             code=_lambda.Code.asset("../microservices/login/indysdk-postgres.zip"),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
         )
@@ -176,7 +177,7 @@ class LoginStack(core.Stack):
         nonce_table.grant_write_data(login_service_lambda)
 
         #  Api gateway
-        self.api = apigw.RestApi(self, "login-api", rest_api_name="Login Service")
+        self.api = apigw.RestApi(self, "login-api", rest_api_name=env_specific("login-service"))
         generate_session_integration = apigw.LambdaIntegration(generate_session_lambda)
         generate_session_resource = self.api.root.add_resource("session")
         generate_session_resource.add_method("GET", generate_session_integration)
