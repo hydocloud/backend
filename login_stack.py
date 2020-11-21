@@ -4,16 +4,18 @@ from aws_cdk import (
     aws_apigateway as apigw,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
+    aws_route53 as route53,
+    aws_certificatemanager as certificate_manager,
     aws_ec2 as ec2,
 )
 from aws_cdk.core import Duration
 import os
 import subprocess
-from utils.prefix import env_specific
+from utils.prefix import env_specific, domain_specific
 
 
 class LoginStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, rds: rds, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, rds: rds, route53: route53, certificate_manager: certificate_manager, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Databases
@@ -177,7 +179,12 @@ class LoginStack(core.Stack):
         nonce_table.grant_write_data(login_service_lambda)
 
         #  Api gateway
-        self.api = apigw.RestApi(self, "login-api", rest_api_name=env_specific("login-service"))
+        
+        self.api = apigw.RestApi(
+            self, 
+            "login-api", 
+            rest_api_name=env_specific("login-service")
+        )
         generate_session_integration = apigw.LambdaIntegration(generate_session_lambda)
         generate_session_resource = self.api.root.add_resource("session")
         generate_session_resource.add_method("GET", generate_session_integration)
@@ -190,6 +197,17 @@ class LoginStack(core.Stack):
         validate_nonce_integration = apigw.LambdaIntegration(validate_nonce_lambda)
         validate_nonce_resource = login_service_resource.add_resource("validate")
         validate_nonce_resource.add_method("POST", validate_nonce_integration)
+        
+        # Add certificate and cname
+        certificate = certificate_manager.issue_certificate(env_specific('login-api'), domain_specific('api', 'login'))
+        self.api.add_domain_name(
+            domain_specific('api', 'login'),
+            domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
+            certificate=certificate,
+            endpoint_type=apigw.EndpointType.REGIONAL,
+            security_policy=apigw.SecurityPolicy.TLS_1_2
+        )
+        route53.add_api_gateway_record('api.dev.login', self.api)
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "../microservices/login/{}/requirements.txt".format(
