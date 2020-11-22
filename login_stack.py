@@ -2,6 +2,8 @@ from aws_cdk import (
     core,
     aws_lambda as _lambda,
     aws_apigateway as apigw,
+    aws_apigatewayv2 as apigw2,
+    aws_apigatewayv2_integrations as apigw2_integrations,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_route53 as route53,
@@ -9,6 +11,7 @@ from aws_cdk import (
     aws_ec2 as ec2,
 )
 from aws_cdk.core import Duration
+from aws_cdk.aws_apigatewayv2 import HttpMethod
 import os
 import subprocess
 from utils.prefix import env_specific, domain_specific
@@ -180,34 +183,75 @@ class LoginStack(core.Stack):
 
         #  Api gateway
         
+        # self.dn = apigw2.DomainName(
+        #     self,
+        #     'http-api-domain-name',
+        #     domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
+        #     certificate=certificate
+        # )
+        
         self.api = apigw.RestApi(
             self, 
             "login-api", 
             rest_api_name=env_specific("login-service")
         )
-        generate_session_integration = apigw.LambdaIntegration(generate_session_lambda)
-        generate_session_resource = self.api.root.add_resource("session")
-        generate_session_resource.add_method("GET", generate_session_integration)
-        generate_jwt_integration = apigw.LambdaIntegration(generate_jwt_lambda)
-        generate_jwt_resource = generate_session_resource.add_resource("{id}")
-        generate_jwt_resource.add_method("GET", generate_jwt_integration)
-        login_service_integration = apigw.LambdaIntegration(login_service_lambda)
-        login_service_resource = self.api.root.add_resource("login")
-        login_service_resource.add_method("POST", login_service_integration)
-        validate_nonce_integration = apigw.LambdaIntegration(validate_nonce_lambda)
-        validate_nonce_resource = login_service_resource.add_resource("validate")
-        validate_nonce_resource.add_method("POST", validate_nonce_integration)
+
+
+        self.http_api = apigw2.HttpApi(
+            self,
+            'login-api-2',
+            api_name=env_specific('api-login')       
+        )
+
+        self.http_api.add_routes(
+            path='/session',
+            methods=[HttpMethod.GET],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=generate_session_lambda
+            )
+        )
+
+        self.http_api.add_routes(
+            path='/session/{id}',
+            methods=[HttpMethod.GET],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=generate_jwt_lambda
+            )
+        )
+
+        self.http_api.add_routes(
+            path='/login',
+            methods=[HttpMethod.POST],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=login_service_lambda
+            )
+        )
+
+        self.http_api.add_routes(
+            path='/login/validate',
+            methods=[HttpMethod.POST],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=validate_nonce_lambda
+            )
+        )
         
         # Add certificate and cname
         certificate = certificate_manager.issue_certificate(env_specific('login-api'), domain_specific('api', 'login'))
-        self.api.add_domain_name(
-            domain_specific('api', 'login'),
-            domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
-            certificate=certificate,
-            endpoint_type=apigw.EndpointType.REGIONAL,
-            security_policy=apigw.SecurityPolicy.TLS_1_2
+        certificate_arn_output = core.CfnOutput(
+            self, 
+            'CertificateArnOutput',
+            value='arn:aws:acm:eu-west-1:457469494885:certificate/632fbfa9-8374-4594-896e-78fbc9b6cb8b',
+            export_name='dev-certificate:ExportsOutputRefdevloginapiEEFAEFDD26318BD3'
         )
-        route53.add_api_gateway_record('api.dev.login', self.api)
+        # self.api.add_domain_name(
+        #     domain_specific('api', 'login'),
+        #     domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
+        #     certificate=certificate_arn_output,
+        #     endpoint_type=apigw.EndpointType.REGIONAL,
+        #     security_policy=apigw.SecurityPolicy.TLS_1_2
+        # )
+        certificate_arn_output.override_logical_id('ExportsOutputRefdevloginapiEEFAEFDD26318BD3')
+        # route53.add_api_gateway_record('api.dev.login', self.api)
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "../microservices/login/{}/requirements.txt".format(
@@ -228,6 +272,6 @@ class LoginStack(core.Stack):
         )
          
     def api_gateway(self):
-        return self.api
+        return self.http_api
     def rds(self):
         return rds

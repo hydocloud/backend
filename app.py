@@ -15,6 +15,6 @@ dns_stack = DnsStack(app, '{}-dns'.format(environment),env=Environment(account='
 certificate_stack = CertificateStack(app, '{}-certificate'.format(environment), dns_stack, env=Environment(account='457469494885', region='eu-west-1'))
 database = RdsStack(app, '{}-rds'.format(environment), env=Environment(account='457469494885', region='eu-west-1'))
 login_stack = LoginStack(app, '{}-login'.format(environment), database.get_rds_instance(), dns_stack, certificate_stack, env=Environment(account='457469494885', region='eu-west-1'))
-OrganizationeStack(app, '{}-organization'.format(environment), login_stack.api_gateway(), database.get_rds_instance(), env=Environment(account='457469494885', region='eu-west-1'))
+# OrganizationeStack(app, '{}-organization'.format(environment), login_stack.api_gateway(), database.get_rds_instance(), env=Environment(account='457469494885', region='eu-west-1'))
 
 app.synth()
