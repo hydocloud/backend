@@ -2,7 +2,8 @@ from aws_cdk import (
     core,
     aws_route53 as route53,
     aws_route53_targets as targets,
-    aws_apigateway as apigw
+    aws_apigateway as apigw,
+    aws_apigatewayv2 as apigw2,
 )
 
 class DnsStack(core.Stack):
@@ -21,6 +22,15 @@ class DnsStack(core.Stack):
             name,
             zone=self.hydo_cloud_zone,
             target=route53.RecordTarget.from_alias(targets.ApiGateway(api)),
+            record_name=name
+        )
+
+    def add_api_gateway_v2_record(self, name: str, api):
+        route53.ARecord(
+            self,
+            name,
+            zone=self.hydo_cloud_zone,
+            target=route53.RecordTarget.from_alias(targets.ApiGatewayv2Domain(api)),
             record_name=name
         )
 
