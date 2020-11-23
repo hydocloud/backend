@@ -1,19 +1,23 @@
 from aws_cdk import (
     core,
     aws_lambda as _lambda,
-    aws_apigateway as apigw,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
-    aws_ec2 as ec2,
+    aws_apigatewayv2 as apigw2,
+    aws_apigatewayv2_integrations as apigw2_integrations,
+    aws_route53 as route53,
+    aws_certificatemanager as certificate_manager
 )
 from aws_cdk.core import Duration
+from aws_cdk.aws_apigatewayv2 import HttpMethod
+from utils.prefix import domain_specific, env_specific
 import os
 import subprocess
 from shutil import copyfile, copytree, rmtree
 
 
 class OrganizationeStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, api, rds: rds, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, rds: rds, route53: route53, certificate_manager: certificate_manager, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # The code that defines your stack goes here
@@ -42,9 +46,37 @@ class OrganizationeStack(core.Stack):
             ],
         ) 
 
-        create_organization_integration = apigw.LambdaIntegration(create_organization_lambda)
-        create_organization_resource = api.root.add_resource("organization")
-        create_organization_resource.add_method("POST", create_organization_integration)
+        #  Api gateway
+        
+        certificate = certificate_manager.issue_certificate(env_specific('api'), domain_specific('api'))
+
+        self.dn = apigw2.DomainName(
+            self,
+            'http-api-domain-name',
+            domain_name='{}.{}'.format(domain_specific('api'), route53.get_domain_name()),
+            certificate=certificate
+        )
+
+        self.http_api = apigw2.HttpApi(
+            self,
+            'hydo-api',
+            api_name=env_specific('api-hydo')       
+        )
+
+        apigw2.HttpApiMapping(
+            self,
+            'ApiMapping',
+            api=self.http_api,
+            domain_name=self.dn
+        )
+
+        self.http_api.add_routes(
+            path='/organization',
+            methods=[HttpMethod.POST],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=create_organization_lambda
+            )
+        )
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "../microservices/organization/{}/requirements.txt".format(
