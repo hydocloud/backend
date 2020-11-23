@@ -183,19 +183,14 @@ class LoginStack(core.Stack):
 
         #  Api gateway
         
-        # self.dn = apigw2.DomainName(
-        #     self,
-        #     'http-api-domain-name',
-        #     domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
-        #     certificate=certificate
-        # )
-        
-        self.api = apigw.RestApi(
-            self, 
-            "login-api", 
-            rest_api_name=env_specific("login-service")
-        )
+        certificate = certificate_manager.issue_certificate(env_specific('login-api'), domain_specific('api', 'login'))
 
+        self.dn = apigw2.DomainName(
+            self,
+            'http-api-domain-name',
+            domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
+            certificate=certificate
+        )
 
         self.http_api = apigw2.HttpApi(
             self,
@@ -235,23 +230,7 @@ class LoginStack(core.Stack):
             )
         )
         
-        # Add certificate and cname
-        certificate = certificate_manager.issue_certificate(env_specific('login-api'), domain_specific('api', 'login'))
-        certificate_arn_output = core.CfnOutput(
-            self, 
-            'CertificateArnOutput',
-            value='arn:aws:acm:eu-west-1:457469494885:certificate/632fbfa9-8374-4594-896e-78fbc9b6cb8b',
-            export_name='dev-certificate:ExportsOutputRefdevloginapiEEFAEFDD26318BD3'
-        )
-        # self.api.add_domain_name(
-        #     domain_specific('api', 'login'),
-        #     domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
-        #     certificate=certificate_arn_output,
-        #     endpoint_type=apigw.EndpointType.REGIONAL,
-        #     security_policy=apigw.SecurityPolicy.TLS_1_2
-        # )
-        certificate_arn_output.override_logical_id('ExportsOutputRefdevloginapiEEFAEFDD26318BD3')
-        # route53.add_api_gateway_record('api.dev.login', self.api)
+        route53.add_api_gateway_v2_record('api.dev.login', self.dn)
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "../microservices/login/{}/requirements.txt".format(
