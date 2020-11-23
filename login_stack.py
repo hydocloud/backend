@@ -198,6 +198,13 @@ class LoginStack(core.Stack):
             api_name=env_specific('api-login')       
         )
 
+        apigw2.HttpApiMapping(
+            self,
+            'ApiMapping',
+            api=self.http_api,
+            domain_name=self.dn
+        )
+
         self.http_api.add_routes(
             path='/session',
             methods=[HttpMethod.GET],
