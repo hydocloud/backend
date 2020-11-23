@@ -9,7 +9,9 @@ def env_specific(logical_name):
 
     return '{}-{}'.format(deploy_env(), suffix)
 
-def domain_specific(prefix, logical_name):
+def domain_specific(prefix, logical_name=None):
+    if logical_name == None:
+        return '{}.{}'.format(prefix, deploy_env())
     if deploy_env() != 'prod':
         return '{}.{}.{}'.format(prefix, deploy_env(),logical_name)
     else:
