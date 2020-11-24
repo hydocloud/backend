@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 @tracer.capture_lambda_handler(capture_response=False)
-def handler(event, context):
+def lambda_handler(event, context):
 
     print(event)
 
