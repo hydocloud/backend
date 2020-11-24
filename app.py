@@ -3,11 +3,11 @@
 from aws_cdk import core
 from aws_cdk.core import Environment
 
-from login_stack import LoginStack
-from organization_stack import OrganizationeStack
-from rds_stack import RdsStack
-from dns_stack import DnsStack
-from certificate_stack import CertificateStack
+from stacks.login_stack import LoginStack
+from stacks.organization_stack import OrganizationeStack
+from stacks.rds_stack import RdsStack
+from stacks.dns_stack import DnsStack
+from stacks.certificate_stack import CertificateStack
 
 app = core.App()
 environment = 'dev'
