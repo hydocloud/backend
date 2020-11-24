@@ -1,0 +1,15 @@
+Project Hydo {
+  database_type: 'PostgreSQL'
+  note: '''
+  # Hydo Database
+  '''
+}
+// Creating tables
+ Table organizations {
+  id int [pk, increment]
+  name varchar
+  license_id int
+  owner_id varchar
+  created_at timestamp [default: `now()`, not null]
+  updated_at timestamp [default: `now()`, not null]
+}

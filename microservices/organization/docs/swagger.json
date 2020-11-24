@@ -1,0 +1,288 @@
+openapi: 3.0.0
+info:
+  description: Organization microservice api
+  version: 1.0.0-oas3
+  title: Organization API
+  contact:
+    email: rtrivellato@hydo.cloud
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: users
+    description: For all users
+  - name: mobile
+    description: Reserved for mobile app
+paths:
+  /organizations:
+    post:
+      tags:
+        - users
+      summary: Create organzation
+      operationId: createOrganization
+      description: |
+        Create user organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        description: organization parameters
+      responses:
+        '201':
+          description: organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Bad request'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Internal server error'
+    get:
+      tags:
+        - users
+      summary: List organzations
+      operationId: getOrganizations
+      description: |
+        List user organizations or all organizations form admin
+      responses:
+        '201':
+          description: organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Bad request'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Internal server error'
+  /organizations/{organizationId}:
+    get:
+      tags:
+        - users
+      summary: List organzations
+      operationId: getOrganization
+      description: |
+        Organization information
+      parameters:
+        - name: organizationId
+          in: path
+          description: Organization Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: organization's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Bad request'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Internal server error'
+    put:
+      tags:
+        - users
+      summary: Edit organzation
+      operationId: editOrganization
+      description: |
+        Edit organization data
+      parameters:
+        - name: organizationId
+          in: path
+          description: Organization Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditOrganization'
+        description: organization parameters
+      responses:
+        '201':
+          description: organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Bad request'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Internal server error'
+    delete:
+      tags:
+        - users
+      summary: Delete organzation
+      operationId: deleteOrganization
+      description: |
+        Delete rganization
+      parameters:
+        - name: organizationId
+          in: path
+          description: Organization Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleOK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Bad request'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: 'Internal server error'
+components:
+  schemas:
+    Organization:
+      title: Organization in Hydo
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id
+        name:
+          type: string
+          description: name
+        licenseId:
+          type: integer
+          description: License id 
+        userId:
+          type: string
+          format: uuid
+          description: user id
+      required:
+        - name
+        - licenseId
+        - user
+    EditOrganization:
+      title: Edit organization in Hydo
+      type: object
+      properties:
+        name:
+          type: string
+          description: name
+        licenseId:
+          type: integer
+          description: License id 
+      required:
+        - name
+        - licenseId
+    OK:
+      title: Ok response
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Operation status
+        data:
+          type: array
+          description: name
+          items:
+            $ref: '#/components/schemas/Organization'
+      required:
+        - name
+        - licenseId
+        - userId
+    SimpleOK:
+      title: Ok response
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Operation status
+        message:
+          type: string
+          description: error message
+    Error:
+      title: Error response
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Operation status
+        message:
+          type: string
+          description: error message
+servers:
+  - url: 'http://virtserver.swaggerhub.com/Hyd9/Organization/1.0.0'
