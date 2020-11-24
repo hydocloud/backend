@@ -6,7 +6,7 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="infrastructure",
+    name="backend",
     version="0.0.1",
 
     description="An empty CDK Python app",
@@ -15,11 +15,11 @@ setuptools.setup(
 
     author="author",
 
-    package_dir={"": "infrastructure"},
-    packages=setuptools.find_packages(where="infrastructure"),
+    package_dir={"": "stacks"},
+    packages=setuptools.find_packages(where="stacks"),
 
     install_requires=[
-        "aws-cdk.core==1.71.0",
+        "aws-cdk.core==1.74.0",
     ],
 
     python_requires=">=3.6",
