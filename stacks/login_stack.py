@@ -12,7 +12,7 @@ from aws_cdk import (
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
-import os
+import os, pathlib
 import subprocess
 from utils.prefix import env_specific, domain_specific
 
@@ -20,6 +20,8 @@ from utils.prefix import env_specific, domain_specific
 class LoginStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, rds: rds, route53: route53, certificate_manager: certificate_manager, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        self.current_path = str(pathlib.Path().absolute()) + '/microservices/login'
 
         # Databases
         vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
@@ -48,7 +50,7 @@ class LoginStack(core.Stack):
         indy_sdk_postgres_layer = _lambda.LayerVersion(
             self,
             env_specific("indy-sdk-postgres"),
-            code=_lambda.Code.asset("../microservices/login/indysdk-postgres.zip"),
+            code=_lambda.Code.asset("{}/indysdk-postgres.zip".format(self.current_path)),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
         )
 
@@ -57,7 +59,7 @@ class LoginStack(core.Stack):
             self,
             "GenerateSession",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/login/generate_session"),
+            code=_lambda.Code.asset("{}/generate_session".format(self.current_path)),
             handler="app.lambda_handler",
             environment={
                 "SESSION_TABLE_NAME": session_table.table_name,
@@ -76,7 +78,7 @@ class LoginStack(core.Stack):
             self,
             "GenerateJWT",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/login/generate_jwt"),
+            code=_lambda.Code.asset("{}/generate_jwt".format(self.current_path)),
             handler="app.lambda_handler",
             environment={
                 "SESSION_TABLE_NAME": session_table.table_name,
@@ -92,7 +94,7 @@ class LoginStack(core.Stack):
             self,
             "ValidateNonce",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/login/validate_nonce"),
+            code=_lambda.Code.asset("{}/validate_nonce".format(self.current_path)),
             handler="app.lambda_handler",
             timeout=Duration.seconds(350),
             memory_size=512,
@@ -121,7 +123,7 @@ class LoginStack(core.Stack):
             self,
             "LoginService",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/login/login_service"),
+            code=_lambda.Code.asset("{}/login_service".format(self.current_path)),
             handler="app.lambda_handler",
             timeout=Duration.seconds(350),
             memory_size=512,
@@ -149,7 +151,7 @@ class LoginStack(core.Stack):
             self,
             "Onboarding",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("../microservices/login/onboarding"),
+            code=_lambda.Code.asset("{}/onboarding".format(self.current_path)),
             handler="app.lambda_handler",
             timeout=Duration.seconds(350),
             memory_size=512,
@@ -157,7 +159,7 @@ class LoginStack(core.Stack):
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
                 "LOGIN_SERVICE_PASSWORD": "secret",
-                "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/login/tmp",
+                "WALLET_PATH": "/Users/riccardo/hydo/platform/tmp",
                 "DB_PORT": "5432",
                 "DB_HOST": "irtzilmhogi0v.cnlv3anezp7g.eu-west-1.rds.amazonaws.com",
                 "DB_NAME": "wallets",
@@ -240,7 +242,8 @@ class LoginStack(core.Stack):
         route53.add_api_gateway_v2_record('api.dev.login', self.dn)
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
-        requirements_file = "../microservices/login/{}/requirements.txt".format(
+        requirements_file = "{}/{}/requirements.txt".format(
+            self.current_path,
             folder_name
         )
         output_dir = ".lambda_dependencies/" + function_name
