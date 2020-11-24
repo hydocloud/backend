@@ -112,6 +112,8 @@ class OrganizationeStack(core.Stack):
             )
         )        
 
+        route53.add_api_gateway_v2_record(domain_specific('api'), self.dn)
+
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "{}/{}/requirements.txt".format(
             self.current_path,
