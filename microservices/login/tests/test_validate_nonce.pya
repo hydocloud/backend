@@ -1,0 +1,66 @@
+import json
+import uuid
+import pytest
+import boto3
+from moto import mock_dynamodb2
+from contextlib import contextmanager
+from  validate_nonce import compare_messages as validate_nonce
+
+
+def test_validate_data_true(monkeypatch):
+
+    user_id = uuid.uuid4()
+    decrypted_user_mesage = {
+        "uuid": user_id,
+        "message": "asdsa"
+    }
+    decrypted_service_mesage = {
+        "uuid": user_id,
+        "message": "asdsa"
+    }
+
+    res = validate_nonce.validate_data(decrypted_user_mesage, decrypted_service_mesage)
+    assert res == True
+
+def test_validate_data_different_uuid(monkeypatch):
+
+    decrypted_user_mesage = {
+        "uuid": uuid.uuid4(),
+        "message": "asdsa"
+    }
+    decrypted_service_mesage = {
+        "uuid": uuid.uuid4(),
+        "message": "asdsa"
+    }
+
+    res = validate_nonce.validate_data(decrypted_user_mesage, decrypted_service_mesage)
+    assert res == False
+
+def test_validate_data_different_message(monkeypatch):
+
+    user_id = uuid.uuid4()
+    decrypted_user_mesage = {
+        "uuid": user_id,
+        "message": "a"
+    }
+    decrypted_service_mesage = {
+        "uuid": user_id,
+        "message": "asdsa"
+    }
+
+    res = validate_nonce.validate_data(decrypted_user_mesage, decrypted_service_mesage)
+    assert res == False
+
+def test_validate_data_different_message_and_different_uuid(monkeypatch):
+
+    decrypted_user_mesage = {
+        "uuid": uuid.uuid4(),
+        "message": "a"
+    }
+    decrypted_service_mesage = {
+        "uuid": uuid.uuid4(),
+        "message": "asdsa"
+    }
+
+    res = validate_nonce.validate_data(decrypted_user_mesage, decrypted_service_mesage)
+    assert res == False

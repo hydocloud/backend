@@ -1,0 +1,40 @@
+{
+    "GenerateSessionFunction": {
+        "LOGIN_ID":"0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+        "JWT_SECRET":"secret",
+        "SESSION_TABLE_NAME": "sessions",
+        "DYNAMODB_ENDPOINT_OVERRIDE": "http://MacBook-Pro-di-Riccardo.local:8000"
+    },
+    "GenerateJWTFunction": {
+        "JWT_SECRET":"secret",
+        "SESSION_TABLE_NAME": "sessions",
+        "DYNAMODB_ENDPOINT_OVERRIDE": "http://MacBook-Pro-di-Riccardo.local:8000"
+    },
+    "LoginServiceFunction": {
+        "LOGIN_ID":"0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+        "ONBOARDING_PATH": "http://MacBook-Pro-di-Riccardo.local:60050/onboarding",
+        "LOGIN_SERVICE_PASSWORD":"secret",
+        "WALLET_PATH": "/Users/riccardo/hydo/platform/microservices/Login/tmp",
+        "DB_PORT":5432,
+        "DB_HOST":"MacBook-Pro-di-Riccardo.local",
+        "DB_NAME":"wallets",
+        "DB_ENGINE":"postgresql",
+        "DB_USER":"postgres",
+        "DB_PASSWORD":"ciaociao",
+        "NONCE_TABLE_NAME": "nonces",
+        "DYNAMODB_ENDPOINT_OVERRIDE": "http://MacBook-Pro-di-Riccardo.local:8000"
+    },
+    "ValidateNonceFunction": {
+        "LOGIN_ID":"0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
+        "LOGIN_SERVICE_PASSWORD":"secret",
+        "DB_PORT":5432,
+        "DB_HOST":"MacBook-Pro-di-Riccardo.local",
+        "DB_NAME":"wallets",
+        "DB_ENGINE":"postgresql",
+        "DB_USER":"postgres",
+        "DB_PASSWORD":"ciaociao",
+        "NONCE_TABLE_NAME": "nonces",
+        "SESSION_TABLE_NAME": "sessions",
+        "DYNAMODB_ENDPOINT_OVERRIDE": "http://MacBook-Pro-di-Riccardo.local:8000"
+    }
+}
