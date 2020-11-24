@@ -25,6 +25,20 @@ Resources:
           DB_ENGINE: ""
           DB_USER: ""
           DB_PASSWORD: ""
+  EditOrganizationFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: edit_organization/
+      Handler: app.handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
       
       Events:
         CreateOrganization:
@@ -32,3 +46,8 @@ Resources:
           Properties:
             Path: /organizations
             Method: post
+        EditOrganization:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /organizations/{id}
+            Method: PUT
