@@ -33,10 +33,10 @@ class OrganizationeStack(core.Stack):
             environment={
                 "DB_PORT": rds.db_instance_endpoint_port,
                 "DB_HOST": rds.db_instance_endpoint_address,
-                "DB_NAME": "organization",
+                "DB_NAME": "organizations",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
+                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
             },
             layers=[
                 self.create_dependencies_layer(
@@ -47,6 +47,31 @@ class OrganizationeStack(core.Stack):
                 )
             ],
         ) 
+
+        edit_organization_lambda = _lambda.Function(
+            self,
+            "EditOrganization",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset("{}/edit_organization".format(self.current_path)),
+            handler="app.lambda_handler",
+            tracing=_lambda.Tracing.ACTIVE,
+            environment={
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
+                "DB_NAME": "organizations",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+            },
+            layers=[
+                self.create_dependencies_layer(
+                    "EditOrganizationLibraries", "EditOrganization", "edit_organization"
+                ),
+                self.create_model_layer(
+                    "EditOrganizationModels", "EditOrganization", "edit_organization"
+                )
+            ],
+        )         
 
         #  Api gateway
         
@@ -79,6 +104,13 @@ class OrganizationeStack(core.Stack):
                 handler=create_organization_lambda
             )
         )
+        self.http_api.add_routes(
+            path='/organization/{id}',
+            methods=[HttpMethod.PUT],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=edit_organization_lambda
+            )
+        )        
 
     def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
         requirements_file = "{}/{}/requirements.txt".format(
