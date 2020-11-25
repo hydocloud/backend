@@ -98,14 +98,14 @@ class OrganizationeStack(core.Stack):
         )
 
         self.http_api.add_routes(
-            path='/organization',
+            path='/organizations',
             methods=[HttpMethod.POST],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=create_organization_lambda
             )
         )
         self.http_api.add_routes(
-            path='/organization/{id}',
+            path='/organizations/{id}',
             methods=[HttpMethod.PUT],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=edit_organization_lambda
@@ -139,6 +139,7 @@ class OrganizationeStack(core.Stack):
         os.makedirs(output_dir + "/python", exist_ok=True)
         copyfile('{}/database.py'.format(self.current_path), f'{output_dir}/python/database.py')
         copytree('{}/models'.format(self.current_path), f'{output_dir}/python/models/', dirs_exist_ok=True)
+        #copytree('{}/microservices/psycopg2'.format(str(pathlib.Path().absolute())), f'{output_dir}/psycopg2/', dirs_exist_ok=True)
         
         return _lambda.LayerVersion(
             self,
