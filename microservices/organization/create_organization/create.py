@@ -4,11 +4,15 @@ from sqlalchemy.exc import SQLAlchemyError
 import logging
 from database import init_db
 import datetime
+from aws_lambda_powertools import Tracer
+
+tracer = Tracer(service="create_organization")
 
 logger = logging.getLogger(__name__)
 
 conn = None
 
+@tracer.capture_method
 def create_organization(owner_id, payload):
     global conn
 
@@ -54,9 +58,3 @@ def create_organization(owner_id, payload):
             ), 
             statusCode=500
         )
-        
-def main(payload):
-    # get user group id from lambda
-    owner_id = 'e12c1545-1362-4162-9c3b-ebe2e20f2e57'
-    # validate license id
-    return create_organization(owner_id, payload)
