@@ -17,4 +17,7 @@ def lambda_handler(event, context):
     OrganizationBase.parse_obj(payload)
     response = create_organization(payload)
 
-    return json.loads(response.json())
+    return {
+        "statusCode": response.statusCode,
+        "body": response.body.data.json()
+    }
