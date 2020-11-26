@@ -38,7 +38,21 @@ Resources:
           DB_NAME: ""
           DB_ENGINE: ""
           DB_USER: ""
-          DB_PASSWORD: ""          
+          DB_PASSWORD: ""        
+  DeleteOrganizationFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: delete_organization/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""                
       
       Events:
         CreateOrganization:
@@ -51,3 +65,9 @@ Resources:
           Properties:
             Path: /organizations/{id}
             Method: PUT
+        DeleteOrganization:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /organizations/{id}
+            Method: DELETE
+
