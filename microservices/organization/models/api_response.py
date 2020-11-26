@@ -13,6 +13,10 @@ class LambdaSuccessResponse(BaseModel):
     statusCode: int
     body: Data
 
+class LambdaSuccessResponseWithoutData(BaseModel):
+    statusCode: int
+    body: Message
+
 class LambdaErrorResponse(BaseModel):
     statusCode: int
     body: Message
