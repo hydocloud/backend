@@ -71,7 +71,32 @@ class OrganizationeStack(core.Stack):
                     "EditOrganizationModels", "EditOrganization", "edit_organization"
                 )
             ],
-        )         
+        )   
+
+        delete_organization_lambda = _lambda.Function(
+            self,
+            "DeleteOrganization",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset("{}/delete_organization".format(self.current_path)),
+            handler="app.lambda_handler",
+            tracing=_lambda.Tracing.ACTIVE,
+            environment={
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
+                "DB_NAME": "organizations",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+            },
+            layers=[
+                self.create_dependencies_layer(
+                    "DeleteOrganizationLibraries", "DeleteOrganization", "delete_organization"
+                ),
+                self.create_model_layer(
+                    "DeleteOrganizationModels", "DeleteOrganization", "delete_organization"
+                )
+            ],
+        )                 
 
         #  Api gateway
         
@@ -110,7 +135,14 @@ class OrganizationeStack(core.Stack):
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=edit_organization_lambda
             )
-        )        
+        )   
+        self.http_api.add_routes(
+            path='/organizations/{id}',
+            methods=[HttpMethod.DELETE],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=delete_organization_lambda
+            )
+        )   
 
         route53.add_api_gateway_v2_record(domain_specific('api'), self.dn)
 
