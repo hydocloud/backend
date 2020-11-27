@@ -81,10 +81,10 @@ def get_organizations(owner_id, page_number: int = 1):
                 )
             )
         )
-        if page.has_next: # and page.next_page_number <= page.paginator.total_pages:
-            logger.info("Actual {}, next {}, is {}".format(page_number, page.next_page_number, page.has_next))
+        
+        if page.has_next():
             response.body.data.nextPage = page.next_page_number
-        if page.has_previous: #and page.previous_page_number != 0:
+        if page.has_previous():
             response.body.data.previousPage = page.previous_page_number
         
         return response
