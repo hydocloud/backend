@@ -1,9 +1,6 @@
-import database
-import os
 import logging
 import json
 from get import get_organization, get_organizations
-from models.organizations import OrganizationBase
 from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="get_organization")

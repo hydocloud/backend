@@ -1,7 +1,6 @@
 from models.organizations import Organization, OrganizationsList, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
-    LambdaSuccessResponseWithoutData,
     LambdaSuccessResponse,
     Message,
     Data,
@@ -9,7 +8,6 @@ from models.api_response import (
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from database import init_db
-import datetime
 from aws_lambda_powertools import Tracer
 from sqlalchemy_paginator import Paginator, exceptions
 
