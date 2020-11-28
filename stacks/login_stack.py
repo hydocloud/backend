@@ -18,10 +18,18 @@ from utils.prefix import env_specific, domain_specific
 
 
 class LoginStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, rds: rds, route53: route53, certificate_manager: certificate_manager, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        rds: rds,
+        route53: route53,
+        certificate_manager: certificate_manager,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.current_path = str(pathlib.Path().absolute()) + '/microservices/login'
+        self.current_path = str(pathlib.Path().absolute()) + "/microservices/login"
 
         # Databases
         vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
@@ -32,7 +40,7 @@ class LoginStack(core.Stack):
             partition_key=dynamodb.Attribute(
                 name="id", type=dynamodb.AttributeType.STRING
             ),
-            time_to_live_attribute="expiration_time"
+            time_to_live_attribute="expiration_time",
         )
         nonce_table = dynamodb.Table(
             self,
@@ -43,14 +51,16 @@ class LoginStack(core.Stack):
             sort_key=dynamodb.Attribute(
                 name="message", type=dynamodb.AttributeType.STRING
             ),
-            time_to_live_attribute="expiration_time"
+            time_to_live_attribute="expiration_time",
         )
 
         # Lambda layer
         indy_sdk_postgres_layer = _lambda.LayerVersion(
             self,
             env_specific("indy-sdk-postgres"),
-            code=_lambda.Code.asset("{}/indysdk-postgres.zip".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/indysdk-postgres.zip".format(self.current_path)
+            ),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
         )
 
@@ -182,67 +192,67 @@ class LoginStack(core.Stack):
         nonce_table.grant_write_data(login_service_lambda)
 
         #  Api gateway
-        
-        certificate = certificate_manager.issue_certificate(env_specific('login-api'), domain_specific('api', 'login'))
+
+        certificate = certificate_manager.issue_certificate(
+            env_specific("login-api"), domain_specific("api", "login")
+        )
 
         self.dn = apigw2.DomainName(
             self,
-            'http-api-domain-name',
-            domain_name='{}.{}'.format(domain_specific('api', 'login'), route53.get_domain_name()),
-            certificate=certificate
+            "http-api-domain-name",
+            domain_name="{}.{}".format(
+                domain_specific("api", "login"), route53.get_domain_name()
+            ),
+            certificate=certificate,
         )
 
         self.http_api = apigw2.HttpApi(
-            self,
-            'login-api-2',
-            api_name=env_specific('api-login')       
+            self, "login-api-2", api_name=env_specific("api-login")
         )
 
         apigw2.HttpApiMapping(
-            self,
-            'ApiMapping',
-            api=self.http_api,
-            domain_name=self.dn
+            self, "ApiMapping", api=self.http_api, domain_name=self.dn
         )
 
         self.http_api.add_routes(
-            path='/session',
+            path="/session",
             methods=[HttpMethod.GET],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=generate_session_lambda
-            )
+            ),
         )
 
         self.http_api.add_routes(
-            path='/session/{id}',
+            path="/session/{id}",
             methods=[HttpMethod.GET],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=generate_jwt_lambda
-            )
+            ),
         )
 
         self.http_api.add_routes(
-            path='/login',
+            path="/login",
             methods=[HttpMethod.POST],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=login_service_lambda
-            )
+            ),
         )
 
         self.http_api.add_routes(
-            path='/login/validate',
+            path="/login/validate",
             methods=[HttpMethod.POST],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=validate_nonce_lambda
-            )
+            ),
         )
-        
-        route53.add_api_gateway_v2_record('api.dev.login', self.dn)
 
-    def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
+        route53.add_api_gateway_v2_record("api.dev.login", self.dn)
+
+    def create_dependencies_layer(
+        self, project_name, function_name, folder_name: str
+    ) -> _lambda.LayerVersion:
         requirements_file = "{}/{}/requirements.txt".format(
-            self.current_path,
-            folder_name
+            self.current_path, folder_name
         )
         output_dir = ".lambda_dependencies/" + function_name
 
@@ -257,8 +267,9 @@ class LoginStack(core.Stack):
             project_name + "-" + function_name + "-dependencies",
             code=_lambda.Code.from_asset(output_dir),
         )
-         
+
     def api_gateway(self):
         return self.http_api
+
     def rds(self):
         return rds

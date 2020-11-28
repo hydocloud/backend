@@ -6,14 +6,13 @@ from aws_cdk import (
     aws_apigatewayv2 as apigw2,
 )
 
+
 class DnsStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-        self.domain_name = 'hydo.cloud'
+        self.domain_name = "hydo.cloud"
         self.hydo_cloud_zone = route53.HostedZone.from_lookup(
-            self,
-            'Hydo',
-            domain_name=self.domain_name
+            self, "Hydo", domain_name=self.domain_name
         )
 
     def add_api_gateway_record(self, name: str, api: apigw):
@@ -22,7 +21,7 @@ class DnsStack(core.Stack):
             name,
             zone=self.hydo_cloud_zone,
             target=route53.RecordTarget.from_alias(targets.ApiGateway(api)),
-            record_name=name
+            record_name=name,
         )
 
     def add_api_gateway_v2_record(self, name: str, api):
@@ -31,7 +30,7 @@ class DnsStack(core.Stack):
             name,
             zone=self.hydo_cloud_zone,
             target=route53.RecordTarget.from_alias(targets.ApiGatewayv2Domain(api)),
-            record_name=name
+            record_name=name,
         )
 
     def get_domain_name(self) -> str:

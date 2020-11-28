@@ -6,7 +6,7 @@ from aws_cdk import (
     aws_apigatewayv2 as apigw2,
     aws_apigatewayv2_integrations as apigw2_integrations,
     aws_route53 as route53,
-    aws_certificatemanager as certificate_manager
+    aws_certificatemanager as certificate_manager,
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
@@ -17,10 +17,20 @@ from shutil import copyfile, copytree, rmtree
 
 
 class OrganizationeStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, rds: rds, route53: route53, certificate_manager: certificate_manager, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: core.Construct,
+        id: str,
+        rds: rds,
+        route53: route53,
+        certificate_manager: certificate_manager,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.current_path = str(pathlib.Path().absolute()) + '/microservices/organization'
+        self.current_path = (
+            str(pathlib.Path().absolute()) + "/microservices/organization"
+        )
 
         # The code that defines your stack goes here
         create_organization_lambda = _lambda.Function(
@@ -44,9 +54,9 @@ class OrganizationeStack(core.Stack):
                 ),
                 self.create_model_layer(
                     "test2", "CreateOrganization", "create_organization"
-                )
+                ),
             ],
-        ) 
+        )
 
         edit_organization_lambda = _lambda.Function(
             self,
@@ -69,9 +79,9 @@ class OrganizationeStack(core.Stack):
                 ),
                 self.create_model_layer(
                     "EditOrganizationModels", "EditOrganization", "edit_organization"
-                )
+                ),
             ],
-        )   
+        )
 
         delete_organization_lambda = _lambda.Function(
             self,
@@ -90,11 +100,15 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "DeleteOrganizationLibraries", "DeleteOrganization", "delete_organization"
+                    "DeleteOrganizationLibraries",
+                    "DeleteOrganization",
+                    "delete_organization",
                 ),
                 self.create_model_layer(
-                    "DeleteOrganizationModels", "DeleteOrganization", "delete_organization"
-                )
+                    "DeleteOrganizationModels",
+                    "DeleteOrganization",
+                    "delete_organization",
+                ),
             ],
         )
 
@@ -119,78 +133,78 @@ class OrganizationeStack(core.Stack):
                 ),
                 self.create_model_layer(
                     "GetOrganizationsModels", "GetOrganizations", "get_organizations"
-                )
+                ),
             ],
-        )                 
+        )
 
         #  Api gateway
-        
-        certificate = certificate_manager.issue_certificate(env_specific('api'), domain_specific('api'))
+
+        certificate = certificate_manager.issue_certificate(
+            env_specific("api"), domain_specific("api")
+        )
 
         self.dn = apigw2.DomainName(
             self,
-            'http-api-domain-name',
-            domain_name='{}.{}'.format(domain_specific('api'), route53.get_domain_name()),
-            certificate=certificate
+            "http-api-domain-name",
+            domain_name="{}.{}".format(
+                domain_specific("api"), route53.get_domain_name()
+            ),
+            certificate=certificate,
         )
 
         self.http_api = apigw2.HttpApi(
-            self,
-            'hydo-api',
-            api_name=env_specific('api-hydo')       
+            self, "hydo-api", api_name=env_specific("api-hydo")
         )
 
         apigw2.HttpApiMapping(
-            self,
-            'ApiMapping',
-            api=self.http_api,
-            domain_name=self.dn
+            self, "ApiMapping", api=self.http_api, domain_name=self.dn
         )
 
         self.http_api.add_routes(
-            path='/organizations',
+            path="/organizations",
             methods=[HttpMethod.POST],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=create_organization_lambda
-            )
+            ),
         )
         self.http_api.add_routes(
-            path='/organizations/{id}',
+            path="/organizations/{id}",
             methods=[HttpMethod.PUT],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=edit_organization_lambda
-            )
-        )   
+            ),
+        )
         self.http_api.add_routes(
-            path='/organizations/{id}',
+            path="/organizations/{id}",
             methods=[HttpMethod.DELETE],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=delete_organization_lambda
-            )
+            ),
         )
 
         self.http_api.add_routes(
-            path='/organizations',
+            path="/organizations",
             methods=[HttpMethod.GET],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=get_organizations_lambda
-            )
-        )  
+            ),
+        )
 
         self.http_api.add_routes(
-            path='/organizations/{id}',
+            path="/organizations/{id}",
             methods=[HttpMethod.GET],
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=get_organizations_lambda
-            )
-        )      
+            ),
+        )
 
-        route53.add_api_gateway_v2_record(domain_specific('api'), self.dn)
+        route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
 
-    def create_dependencies_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
+    def create_dependencies_layer(
+        self, project_name, function_name, folder_name: str
+    ) -> _lambda.LayerVersion:
         requirements_file = "{}/{}/requirements.txt".format(
-            self.current_path,
-            folder_name
+            self.current_path, folder_name
         )
         output_dir = ".lambda_dependencies/" + function_name
 
@@ -206,14 +220,27 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.from_asset(output_dir),
         )
 
-    def create_model_layer(self, project_name, function_name, folder_name: str) -> _lambda.LayerVersion:
+    def create_model_layer(
+        self, project_name, function_name, folder_name: str
+    ) -> _lambda.LayerVersion:
         base_path = self.current_path
         output_dir = ".lambda_dependencies/" + function_name + "/commodities"
         os.makedirs(output_dir + "/python", exist_ok=True)
-        copyfile('{}/database.py'.format(self.current_path), f'{output_dir}/python/database.py')
-        copytree('{}/models'.format(self.current_path), f'{output_dir}/python/models/', dirs_exist_ok=True)
-        copytree('{}/microservices/psycopg2'.format(str(pathlib.Path().absolute())), f'{output_dir}/python/psycopg2/', dirs_exist_ok=True)
-        
+        copyfile(
+            "{}/database.py".format(self.current_path),
+            f"{output_dir}/python/database.py",
+        )
+        copytree(
+            "{}/models".format(self.current_path),
+            f"{output_dir}/python/models/",
+            dirs_exist_ok=True,
+        )
+        copytree(
+            "{}/microservices/psycopg2".format(str(pathlib.Path().absolute())),
+            f"{output_dir}/python/psycopg2/",
+            dirs_exist_ok=True,
+        )
+
         return _lambda.LayerVersion(
             self,
             project_name + "-" + function_name + "-dependencies",
