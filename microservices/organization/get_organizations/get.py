@@ -1,7 +1,7 @@
-'''
+"""
 Module get organization to have list of organizations filter by owner_id
 You can select on single organization or multiple organization
-'''
+"""
 
 import logging
 from models.organizations import Organization, OrganizationsList, ResponseModel
@@ -25,7 +25,7 @@ CONNECTION = None
 
 @tracer.capture_method
 def get_organization(owner_id, organization_id):
-    ''' Get data about one organization'''
+    """ Get data about one organization"""
     global CONNECTION
 
     if CONNECTION is None:
@@ -66,8 +66,8 @@ def get_organization(owner_id, organization_id):
 
 
 @tracer.capture_method
-def get_organizations(owner_id, page_number: int = 1):
-    ''' Return all organizations that belong to user'''
+def get_organizations(owner_id, page_number: int = 1, page_size: int = 5):
+    """ Return all organizations that belong to user"""
     global CONNECTION
 
     if CONNECTION is None:
@@ -75,7 +75,7 @@ def get_organizations(owner_id, page_number: int = 1):
 
     try:
         res = CONNECTION.query(Organization).filter_by(owner_id=owner_id)
-        paginator = Paginator(res, 5)
+        paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
         orgs = []
 
