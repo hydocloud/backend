@@ -41,10 +41,10 @@ class ResponseModel(BaseModel):
     
 class OrganizationsList(BaseModel):
     organizations: List[ResponseModel]
-    total: Optional[int] = None
-    nextPage: Optional[int] = None
-    previousPage: Optional[int] = None
-    totalPages: Optional[int] = None
+    total: Optional[int]
+    nextPage: Optional[int]
+    previousPage: Optional[int]
+    totalPages: Optional[int]
 
 class OrganizationsUpdate(BaseModel):
     name: Optional[str] = None
