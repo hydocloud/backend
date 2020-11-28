@@ -20,20 +20,20 @@ tracer = Tracer(service="get_organization")
 
 logger = logging.getLogger(__name__)
 
-connection = None
+CONNECTION = None
 
 
 @tracer.capture_method
 def get_organization(owner_id, organization_id):
     ''' Get data about one organization'''
-    global connection
+    global CONNECTION
 
-    if connection is None:
-        connection = init_db()
+    if CONNECTION is None:
+        CONNECTION = init_db()
 
     try:
         org = (
-            connection.query(Organization)
+            CONNECTION.query(Organization)
             .filter_by(owner_id=owner_id, id=organization_id)
             .first()
         )
@@ -68,13 +68,13 @@ def get_organization(owner_id, organization_id):
 @tracer.capture_method
 def get_organizations(owner_id, page_number: int = 1):
     ''' Return all organizations that belong to user'''
-    global connection
+    global CONNECTION
 
-    if connection is None:
-        connection = init_db()
+    if CONNECTION is None:
+        CONNECTION = init_db()
 
     try:
-        res = connection.query(Organization).filter_by(owner_id=owner_id)
+        res = CONNECTION.query(Organization).filter_by(owner_id=owner_id)
         paginator = Paginator(res, 5)
         page = paginator.page(page_number)
         orgs = []
