@@ -14,3 +14,4 @@ cdk.out
 .lambda_dependencies
 .aws-sam
 .vscode/settings.json
+.vscode/.ropeproject/config.py
