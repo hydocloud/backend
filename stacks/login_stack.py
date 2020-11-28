@@ -1,38 +1,43 @@
+''' Stack to deploy login service '''
+import os
+import pathlib
+import subprocess
 from aws_cdk import (
     core,
     aws_lambda as _lambda,
-    aws_apigateway as apigw,
     aws_apigatewayv2 as apigw2,
     aws_apigatewayv2_integrations as apigw2_integrations,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
-    aws_ec2 as ec2,
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
-import os, pathlib
-import subprocess
+
 from utils.prefix import env_specific, domain_specific
 
 
 class LoginStack(core.Stack):
+    '''
+    Class that deploy all services for login:
+    Lambdas,
+    Http api,
+    Certificate
+    Database
+    '''
     def __init__(
         self,
         scope: core.Construct,
         id: str,
-        rds: rds,
-        route53: route53,
-        certificate_manager: certificate_manager,
+        rds_stack: rds  ,
+        dns_stack: route53,
+        certificate_stack: certificate_manager,
         **kwargs,
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
         self.current_path = str(pathlib.Path().absolute()) + "/microservices/login"
-
-        # Databases
-        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
 
         session_table = dynamodb.Table(
             self,
@@ -111,8 +116,8 @@ class LoginStack(core.Stack):
             environment={
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
+                "DB_PORT": rds_stack.db_instance_endpoint_port,
+                "DB_HOST": rds_stack.db_instance_endpoint_address,
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
@@ -141,8 +146,8 @@ class LoginStack(core.Stack):
                 "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
                 "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
                 "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
+                "DB_PORT": rds_stack.db_instance_endpoint_port,
+                "DB_HOST": rds_stack.db_instance_endpoint_address,
                 "DB_NAME": "wallets",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
@@ -156,7 +161,8 @@ class LoginStack(core.Stack):
                 self.create_dependencies_layer("test", "LoginService", "login_service"),
             ],
         )
-        onboarding_lambda = _lambda.Function(
+
+        _lambda.Function(
             self,
             "Onboarding",
             runtime=_lambda.Runtime.PYTHON_3_8,
@@ -193,15 +199,15 @@ class LoginStack(core.Stack):
 
         #  Api gateway
 
-        certificate = certificate_manager.issue_certificate(
+        certificate = certificate_stack.issue_certificate(
             env_specific("login-api"), domain_specific("api", "login")
         )
 
-        self.dn = apigw2.DomainName(
+        self.api_domain_name = apigw2.DomainName(
             self,
             "http-api-domain-name",
             domain_name="{}.{}".format(
-                domain_specific("api", "login"), route53.get_domain_name()
+                domain_specific("api", "login"), dns_stack.get_domain_name()
             ),
             certificate=certificate,
         )
@@ -211,7 +217,7 @@ class LoginStack(core.Stack):
         )
 
         apigw2.HttpApiMapping(
-            self, "ApiMapping", api=self.http_api, domain_name=self.dn
+            self, "ApiMapping", api=self.http_api, domain_name=self.api_domain_name
         )
 
         self.http_api.add_routes(
@@ -246,11 +252,12 @@ class LoginStack(core.Stack):
             ),
         )
 
-        route53.add_api_gateway_v2_record("api.dev.login", self.dn)
+        dns_stack.add_api_gateway_v2_record("api.dev.login", self.api_domain_name)
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
+        ''' Install dependencies on lambda and return layer '''
         requirements_file = "{}/{}/requirements.txt".format(
             self.current_path, folder_name
         )
@@ -267,9 +274,3 @@ class LoginStack(core.Stack):
             project_name + "-" + function_name + "-dependencies",
             code=_lambda.Code.from_asset(output_dir),
         )
-
-    def api_gateway(self):
-        return self.http_api
-
-    def rds(self):
-        return rds
