@@ -1,7 +1,8 @@
+''' Entry point lambda'''
+
 import logging
-import json
-from get import get_organization, get_organizations
 from aws_lambda_powertools import Tracer
+from get import get_organization, get_organizations
 
 tracer = Tracer(service="get_organization")
 
@@ -13,7 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 @tracer.capture_lambda_handler(capture_response=False)
-def lambda_handler(event, context):
+def lambda_handler(event):
+    '''
+    Based on both path parameters or query parameters chose if
+    user require info about one organization or multiple
+    '''
 
     owner_id = "e12c1545-1362-4162-9c3b-ebe2e20f2e57"
 

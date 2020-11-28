@@ -1,3 +1,9 @@
+'''
+Module get organization to have list of organizations filter by owner_id
+You can select on single organization or multiple organization
+'''
+
+import logging
 from models.organizations import Organization, OrganizationsList, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
@@ -6,7 +12,6 @@ from models.api_response import (
     Data,
 )
 from sqlalchemy.exc import SQLAlchemyError
-import logging
 from database import init_db
 from aws_lambda_powertools import Tracer
 from sqlalchemy_paginator import Paginator, exceptions
@@ -15,24 +20,25 @@ tracer = Tracer(service="get_organization")
 
 logger = logging.getLogger(__name__)
 
-conn = None
+connection = None
 
 
 @tracer.capture_method
 def get_organization(owner_id, organization_id):
-    global conn
+    ''' Get data about one organization'''
+    global connection
 
-    if conn == None:
-        conn = init_db()
+    if connection is None:
+        connection = init_db()
 
     try:
         org = (
-            conn.query(Organization)
+            connection.query(Organization)
             .filter_by(owner_id=owner_id, id=organization_id)
             .first()
         )
         logger.info(org)
-        if org == None:
+        if org is None:
             return LambdaErrorResponse(
                 statusCode=404, body=(Message(message="Not found"))
             )
@@ -52,8 +58,8 @@ def get_organization(owner_id, organization_id):
                 )
             ),
         )
-    except SQLAlchemyError as e:
-        logger.error(e)
+    except SQLAlchemyError as err:
+        logger.error(err)
         return LambdaErrorResponse(
             body=(Message(message="Internal Server Error")), statusCode=500
         )
@@ -61,13 +67,14 @@ def get_organization(owner_id, organization_id):
 
 @tracer.capture_method
 def get_organizations(owner_id, page_number: int = 1):
-    global conn
+    ''' Return all organizations that belong to user'''
+    global connection
 
-    if conn == None:
-        conn = init_db()
+    if connection is None:
+        connection = init_db()
 
     try:
-        res = conn.query(Organization).filter_by(owner_id=owner_id)
+        res = connection.query(Organization).filter_by(owner_id=owner_id)
         paginator = Paginator(res, 5)
         page = paginator.page(page_number)
         orgs = []
@@ -100,18 +107,19 @@ def get_organizations(owner_id, page_number: int = 1):
 
         return response
 
-    except (SQLAlchemyError, exceptions.PageNotAnInteger) as e:
-        logger.error(e)
+    except (SQLAlchemyError, exceptions.PageNotAnInteger) as err:
+        logger.error(err)
         return LambdaErrorResponse(
             body=(Message(message="Internal Server Error")), statusCode=500
         )
-    except exceptions.InvalidPage as e:
-        logger.error(e)
-        return LambdaErrorResponse(
-            body=(Message(message="Bad Request")), statusCode=400
-        )
 
-    except exceptions.EmptyPage as e:
+    except exceptions.EmptyPage as err:
         return LambdaSuccessResponse(
             statusCode=201, body=Data(data=OrganizationsList(organizations=[]))
+        )
+
+    except exceptions.InvalidPage as err:
+        logger.error(err)
+        return LambdaErrorResponse(
+            body=(Message(message="Bad Request")), statusCode=400
         )
