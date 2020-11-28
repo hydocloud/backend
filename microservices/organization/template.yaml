@@ -84,9 +84,16 @@ Resources:
         #   Properties:
         #     Path: /organizations/{id}
         #     Method: DELETE
+        # GetOrganization:
+        #   Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        #   Properties:
+        #     Path: /organizations/{id}
+        #     Method: GET   
         GetOrganizations:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /organizations/{id}
-            Method: GET            
+            Path: /organizations
+            Method: GET
+            RequestParameters:     
+              - method.request.querystring
 
