@@ -96,6 +96,31 @@ class OrganizationeStack(core.Stack):
                     "DeleteOrganizationModels", "DeleteOrganization", "delete_organization"
                 )
             ],
+        )
+
+        get_organizations_lambda = _lambda.Function(
+            self,
+            "GetOrganizations",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset("{}/get_organizations".format(self.current_path)),
+            handler="app.lambda_handler",
+            tracing=_lambda.Tracing.ACTIVE,
+            environment={
+                "DB_PORT": rds.db_instance_endpoint_port,
+                "DB_HOST": rds.db_instance_endpoint_address,
+                "DB_NAME": "organizations",
+                "DB_ENGINE": "postgresql",
+                "DB_USER": "loginService",
+                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+            },
+            layers=[
+                self.create_dependencies_layer(
+                    "GetOrganizationsLibraries", "GetOrganizations", "get_organizations"
+                ),
+                self.create_model_layer(
+                    "GetOrganizationsModels", "GetOrganizations", "get_organizations"
+                )
+            ],
         )                 
 
         #  Api gateway
@@ -142,7 +167,23 @@ class OrganizationeStack(core.Stack):
             integration=apigw2_integrations.LambdaProxyIntegration(
                 handler=delete_organization_lambda
             )
-        )   
+        )
+
+        self.http_api.add_routes(
+            path='/organizations',
+            methods=[HttpMethod.GET],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=get_organizations_lambda
+            )
+        )  
+
+        self.http_api.add_routes(
+            path='/organizations/{id}',
+            methods=[HttpMethod.GET],
+            integration=apigw2_integrations.LambdaProxyIntegration(
+                handler=get_organizations_lambda
+            )
+        )      
 
         route53.add_api_gateway_v2_record(domain_specific('api'), self.dn)
 
