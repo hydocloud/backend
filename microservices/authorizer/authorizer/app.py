@@ -8,12 +8,15 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
-def remove_prefix(text, prefix):
+
+def remove_prefix(text: str, prefix: str) -> str:
+    """Remove prefix from string"""
     if text.startswith(prefix):
-        return text[len(prefix):]
+        return text[len(prefix) :]
     return text  # or whatever
 
-def validate_token(token):
+
+def validate_token(token: str) -> str:
     """Decrypt token and return user_uuid"""
     secret = os.environ["JWT_SECRET"]
     try:
