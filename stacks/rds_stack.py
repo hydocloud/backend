@@ -21,6 +21,7 @@ class RdsStack(core.Stack):
             engine=rds.DatabaseInstanceEngine.postgres(
                 version=rds.PostgresEngineVersion.VER_12_4
             ),
+            allocated_storage=5,
             vpc=vpc,
             port=5432,
             instance_type=ec2.InstanceType.of(
