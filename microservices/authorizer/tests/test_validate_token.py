@@ -3,7 +3,7 @@ import pytest
 import jwt
 import datetime
 import sys, os, uuid
-from app import validate_token
+from authorizer.app import validate_token
 
 user_uuid = uuid.uuid4().__str__()
 

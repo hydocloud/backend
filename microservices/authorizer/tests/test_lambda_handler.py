@@ -3,7 +3,7 @@ import pytest
 import jwt
 import datetime
 import sys, os, uuid
-from app import lambda_handler
+from authorizer.app import lambda_handler
 
 user_uuid = uuid.uuid4().__str__()
 
