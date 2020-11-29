@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as apigw2_integrations,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
+    aws_iam as iam
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
@@ -28,16 +29,16 @@ class OrganizationeStack(core.Stack):
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.current_path = (
-            str(pathlib.Path().absolute()) + "/microservices"
-        )
+        self.current_path = str(pathlib.Path().absolute()) + "/microservices"
 
         # The code that defines your stack goes here
         create_organization_lambda = _lambda.Function(
             self,
             "CreateOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/organization/create_organization".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/organization/create_organization".format(self.current_path)
+            ),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -52,9 +53,7 @@ class OrganizationeStack(core.Stack):
                 self.create_dependencies_layer(
                     "test", "CreateOrganization", "/organization/create_organization"
                 ),
-                self.create_model_layer(
-                    "test2", "CreateOrganization", "/organization"
-                ),
+                self.create_model_layer("test2", "CreateOrganization", "/organization"),
             ],
         )
 
@@ -62,7 +61,9 @@ class OrganizationeStack(core.Stack):
             self,
             "EditOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/organization/edit_organization".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/organization/edit_organization".format(self.current_path)
+            ),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -75,7 +76,9 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "EditOrganizationLibraries", "EditOrganization", "/organization/edit_organization"
+                    "EditOrganizationLibraries",
+                    "EditOrganization",
+                    "/organization/edit_organization",
                 ),
                 self.create_model_layer(
                     "EditOrganizationModels", "EditOrganization", "/organization"
@@ -87,7 +90,9 @@ class OrganizationeStack(core.Stack):
             self,
             "DeleteOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/organization/delete_organization".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/organization/delete_organization".format(self.current_path)
+            ),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -116,7 +121,9 @@ class OrganizationeStack(core.Stack):
             self,
             "GetOrganizations",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/organization/get_organizations".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/organization/get_organizations".format(self.current_path)
+            ),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -129,7 +136,9 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "GetOrganizationsLibraries", "GetOrganizations", "/organization/get_organizations"
+                    "GetOrganizationsLibraries",
+                    "GetOrganizations",
+                    "/organization/get_organizations",
                 ),
                 self.create_model_layer(
                     "GetOrganizationsModels", "GetOrganizations", "/organization"
@@ -137,16 +146,16 @@ class OrganizationeStack(core.Stack):
             ],
         )
 
-        _lambda.Function(
+        authorizer_lambda = _lambda.Function(
             self,
             "Authorizer",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/authorizer/authorizer".format(self.current_path)),
+            code=_lambda.Code.asset(
+                "{}/authorizer/authorizer".format(self.current_path)
+            ),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
-            environment={
-                "JWT_SECRET": "secret"
-            },
+            environment={"JWT_SECRET": "secret"},
             layers=[
                 self.create_dependencies_layer(
                     "Authorizer", "Authorizer", "/authorizer/authorizer"
@@ -184,6 +193,7 @@ class OrganizationeStack(core.Stack):
                 handler=create_organization_lambda
             ),
         )
+
         self.http_api.add_routes(
             path="/organizations/{id}",
             methods=[HttpMethod.PUT],
@@ -191,6 +201,7 @@ class OrganizationeStack(core.Stack):
                 handler=edit_organization_lambda
             ),
         )
+
         self.http_api.add_routes(
             path="/organizations/{id}",
             methods=[HttpMethod.DELETE],
@@ -215,6 +226,24 @@ class OrganizationeStack(core.Stack):
             ),
         )
 
+        api_authz = apigw2.CfnAuthorizer(
+            self,
+            'LambdaAuthorizer',
+            api_id=self.http_api.http_api_id,
+            authorizer_type="REQUEST",
+            identity_source=['$request.header.Authorization'],
+            name=env_specific("LambdaAuthorizer"),
+            authorizer_payload_format_version="2.0",
+            authorizer_uri="arn:aws:apigateway:{}:lambda:path/2015-03-31/functions/{}/invocations".format(self.region, authorizer_lambda.function_arn)
+        )
+
+        authorizer_lambda.add_permission(
+            "ApiGWPermission",
+            principal=iam.ServicePrincipal('apigateway.amazonaws.com'),
+            action="lambda:InvokeFunction",
+            source_arn=api_authz.authorizer_credentials_arn
+        )
+        
         route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
 
     def create_dependencies_layer(
