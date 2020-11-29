@@ -1,0 +1,5 @@
+{
+    "AuthorizerFunction": {
+        "JWT_SECRET":"secret"
+    }
+}
