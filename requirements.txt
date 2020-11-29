@@ -14,3 +14,4 @@ python-dotenv
 pydantic==1.6.1
 python-dotenv
 SQLAlchemy-Paginator==0.2
+pyjwt
