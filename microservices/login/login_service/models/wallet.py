@@ -12,7 +12,6 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 name = "login_service"
-wallet_path = os.environ['WALLET_PATH']
 db_port = os.environ["DB_PORT"]
 db_host = os.environ["DB_HOST"]
 db_name = os.environ["DB_NAME"]
