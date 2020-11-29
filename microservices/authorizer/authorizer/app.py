@@ -8,6 +8,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text  # or whatever
 
 def validate_token(token):
     """Decrypt token and return user_uuid"""
@@ -27,10 +31,12 @@ def lambda_handler(event, context):
     """Main function"""
 
     response = {"isAuthorized": False, "context": {}}
-
-    user_token = event["headers"]["token"]
-    res = validate_token(user_token)
-    if res:
-        response = {"isAuthorized": True, "context": {"sub": res["sub"]}}
+    try:
+        user_token = remove_prefix(event["headers"]["Authorization"], "Bearer ")
+        res = validate_token(user_token)
+        if res:
+            response = {"isAuthorized": True, "context": {"sub": res["sub"]}}
+    except KeyError as error:
+        logger.error(error)
 
     return response
