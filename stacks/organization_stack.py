@@ -29,7 +29,7 @@ class OrganizationeStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         self.current_path = (
-            str(pathlib.Path().absolute()) + "/microservices/organization"
+            str(pathlib.Path().absolute()) + "/microservices"
         )
 
         # The code that defines your stack goes here
@@ -37,7 +37,7 @@ class OrganizationeStack(core.Stack):
             self,
             "CreateOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/create_organization".format(self.current_path)),
+            code=_lambda.Code.asset("{}/organization/create_organization".format(self.current_path)),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -50,10 +50,10 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "test", "CreateOrganization", "create_organization"
+                    "test", "CreateOrganization", "/organization/create_organization"
                 ),
                 self.create_model_layer(
-                    "test2", "CreateOrganization", "create_organization"
+                    "test2", "CreateOrganization", "/organization"
                 ),
             ],
         )
@@ -62,7 +62,7 @@ class OrganizationeStack(core.Stack):
             self,
             "EditOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/edit_organization".format(self.current_path)),
+            code=_lambda.Code.asset("{}/organization/edit_organization".format(self.current_path)),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -75,10 +75,10 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "EditOrganizationLibraries", "EditOrganization", "edit_organization"
+                    "EditOrganizationLibraries", "EditOrganization", "/organization/edit_organization"
                 ),
                 self.create_model_layer(
-                    "EditOrganizationModels", "EditOrganization", "edit_organization"
+                    "EditOrganizationModels", "EditOrganization", "/organization"
                 ),
             ],
         )
@@ -87,7 +87,7 @@ class OrganizationeStack(core.Stack):
             self,
             "DeleteOrganization",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/delete_organization".format(self.current_path)),
+            code=_lambda.Code.asset("{}/organization/delete_organization".format(self.current_path)),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -102,12 +102,12 @@ class OrganizationeStack(core.Stack):
                 self.create_dependencies_layer(
                     "DeleteOrganizationLibraries",
                     "DeleteOrganization",
-                    "delete_organization",
+                    "/organization/delete_organization",
                 ),
                 self.create_model_layer(
                     "DeleteOrganizationModels",
                     "DeleteOrganization",
-                    "delete_organization",
+                    "/organization",
                 ),
             ],
         )
@@ -116,7 +116,7 @@ class OrganizationeStack(core.Stack):
             self,
             "GetOrganizations",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/get_organizations".format(self.current_path)),
+            code=_lambda.Code.asset("{}/organization/get_organizations".format(self.current_path)),
             handler="app.lambda_handler",
             tracing=_lambda.Tracing.ACTIVE,
             environment={
@@ -129,11 +129,28 @@ class OrganizationeStack(core.Stack):
             },
             layers=[
                 self.create_dependencies_layer(
-                    "GetOrganizationsLibraries", "GetOrganizations", "get_organizations"
+                    "GetOrganizationsLibraries", "GetOrganizations", "/organization/get_organizations"
                 ),
                 self.create_model_layer(
-                    "GetOrganizationsModels", "GetOrganizations", "get_organizations"
+                    "GetOrganizationsModels", "GetOrganizations", "/organization"
                 ),
+            ],
+        )
+
+        _lambda.Function(
+            self,
+            "Authorizer",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset("{}/authorizer/authorizer".format(self.current_path)),
+            handler="app.lambda_handler",
+            tracing=_lambda.Tracing.ACTIVE,
+            environment={
+                "JWT_SECRET": "secret"
+            },
+            layers=[
+                self.create_dependencies_layer(
+                    "Authorizer", "Authorizer", "/authorizer/authorizer"
+                )
             ],
         )
 
@@ -203,11 +220,10 @@ class OrganizationeStack(core.Stack):
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
-        requirements_file = "{}/{}/requirements.txt".format(
+        requirements_file = "{}{}/requirements.txt".format(
             self.current_path, folder_name
         )
         output_dir = ".lambda_dependencies/" + function_name
-
         # Install requirements for layer in the output_dir
         if not os.environ.get("SKIP_PIP"):
             # Note: Pip will create the output dir if it does not exist
@@ -223,15 +239,15 @@ class OrganizationeStack(core.Stack):
     def create_model_layer(
         self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
-        base_path = self.current_path
+        base_path = self.current_path + folder_name
         output_dir = ".lambda_dependencies/" + function_name + "/commodities"
         os.makedirs(output_dir + "/python", exist_ok=True)
         copyfile(
-            "{}/database.py".format(self.current_path),
+            "{}/database.py".format(base_path),
             f"{output_dir}/python/database.py",
         )
         copytree(
-            "{}/models".format(self.current_path),
+            "{}/models".format(base_path),
             f"{output_dir}/python/models/",
             dirs_exist_ok=True,
         )
