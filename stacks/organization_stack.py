@@ -47,7 +47,7 @@ class OrganizationeStack(core.Stack):
                 "DB_NAME": "organizations",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+                "DB_PASSWORD": "ciaociao",
             },
             layers=[
                 self.create_dependencies_layer(
@@ -72,7 +72,7 @@ class OrganizationeStack(core.Stack):
                 "DB_NAME": "organizations",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+                "DB_PASSWORD": "ciaociao",
             },
             layers=[
                 self.create_dependencies_layer(
@@ -101,7 +101,7 @@ class OrganizationeStack(core.Stack):
                 "DB_NAME": "organizations",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+                "DB_PASSWORD": "ciaociao",
             },
             layers=[
                 self.create_dependencies_layer(
@@ -132,7 +132,7 @@ class OrganizationeStack(core.Stack):
                 "DB_NAME": "organizations",
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
-                "DB_PASSWORD": "PmubepfDe^7.pd_=BA-UEKK9vMX5o2",
+                "DB_PASSWORD": "ciaociao",
             },
             layers=[
                 self.create_dependencies_layer(
