@@ -6,38 +6,42 @@ import boto3
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from os import environ
-from models.api_response import LambdaSuccessResponse, LambdaErrorResponse, Data, Message
+from models.api_response import (
+    LambdaSuccessResponse,
+    LambdaErrorResponse,
+    Data,
+    Message,
+)
 
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource("dynamodb")
+
 
 def get_session(session_id, dynamodb=None):
     if dynamodb == None:
-        dynamodb = boto3.resource('dynamodb')    
-    try:    
-        table_name = environ['SESSION_TABLE_NAME']  
+        dynamodb = boto3.resource("dynamodb")
+    try:
+        table_name = environ["SESSION_TABLE_NAME"]
 
-        if environ['DYNAMODB_ENDPOINT_OVERRIDE'] !=  "":
-            dynamodb = boto3.resource('dynamodb', endpoint_url=environ['DYNAMODB_ENDPOINT_OVERRIDE'])
+        if environ["DYNAMODB_ENDPOINT_OVERRIDE"] != "":
+            dynamodb = boto3.resource(
+                "dynamodb", endpoint_url=environ["DYNAMODB_ENDPOINT_OVERRIDE"]
+            )
 
         table = dynamodb.Table(table_name)
 
-        response = table.get_item(
-            Key={
-                'id': session_id
-            }
-        )
+        response = table.get_item(Key={"id": session_id})
         logger.info(response)
-        if 'user_uuid' in response['Item']:
-            return response['Item']['status'], response['Item']['user_uuid'] 
+        if "user_uuid" in response["Item"]:
+            return response["Item"]["status"], response["Item"]["user_uuid"]
         else:
-            return response['Item']['status'], None
+            return response["Item"]["status"], None
     except ClientError as e:
-        error_code = e.response['Error']['Code']
+        error_code = e.response["Error"]["Code"]
         logger.error(e)
         if error_code == "ResourceNotFoundException":
             return 404, None
@@ -49,37 +53,33 @@ def get_session(session_id, dynamodb=None):
         logger.error(e)
         return 404, None
 
+
 def terminate_session(session_id, dynamodb=None):
     if dynamodb == None:
-        dynamodb = boto3.resource('dynamodb')    
-    try:    
-        table_name = environ['SESSION_TABLE_NAME']  
-        status = 'DONE'
+        dynamodb = boto3.resource("dynamodb")
+    try:
+        table_name = environ["SESSION_TABLE_NAME"]
+        status = "DONE"
 
-        if environ['DYNAMODB_ENDPOINT_OVERRIDE'] !=  "":
-            dynamodb = boto3.resource('dynamodb', endpoint_url=environ['DYNAMODB_ENDPOINT_OVERRIDE'])
+        if environ["DYNAMODB_ENDPOINT_OVERRIDE"] != "":
+            dynamodb = boto3.resource(
+                "dynamodb", endpoint_url=environ["DYNAMODB_ENDPOINT_OVERRIDE"]
+            )
 
         table = dynamodb.Table(table_name)
 
         response = table.update_item(
-            Key={
-                'id': session_id
-            },
+            Key={"id": session_id},
             ConditionExpression="#st=:ok",
             UpdateExpression="set #st=:s",
-            ExpressionAttributeValues={
-                ':s': status,
-                ':ok': 'OK'
-            },
-            ExpressionAttributeNames={
-                '#st': 'status'
-            },
-            ReturnValues="UPDATED_NEW"
+            ExpressionAttributeValues={":s": status, ":ok": "OK"},
+            ExpressionAttributeNames={"#st": "status"},
+            ReturnValues="UPDATED_NEW",
         )
         logger.info(response)
         return 200
     except ClientError as e:
-        error_code = e.response['Error']['Code']
+        error_code = e.response["Error"]["Code"]
         logger.error(e)
         if error_code == "ConditionalCheckFailedException":
             return 400
@@ -90,64 +90,59 @@ def terminate_session(session_id, dynamodb=None):
         logger.error(e)
         return 500
 
+
 def validate_polling_jwt(polling_jwt, session_id):
     try:
-        res = jwt.decode(polling_jwt, environ['JWT_SECRET'], algorithms=['HS256'])
+        res = jwt.decode(polling_jwt, environ["JWT_SECRET"], algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
-        logger.error('Failed decode jwt')
+        logger.error("Failed decode jwt")
         return False
-    if res['sub'] == session_id:
+    if res["sub"] == session_id:
         return True
     return False
 
+
 def generate_jwt(user_uuid):
     logger.debug("Generate auth token")
-    secret = environ['JWT_SECRET']
+    secret = environ["JWT_SECRET"]
     encoded_jwt = jwt.encode(
         {
-            'name': 'authHydoLogin',
-            'sub': user_uuid,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=3600)
-        }, 
-        secret, algorithm='HS256').decode()
+            "name": "authHydoLogin",
+            "sub": user_uuid,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=3600),
+        },
+        secret,
+        algorithm="HS256",
+    ).decode()
     return encoded_jwt
 
+
 def lambda_handler(event, context):
-    
-    session_id = event['pathParameters']['id']
-    polling_jwt = event['headers']['Authorization']
+    session_id = event["pathParameters"]["id"]
+    polling_jwt = event["headers"]["authorization"]
     res = validate_polling_jwt(polling_jwt, session_id)
     if res == True:
         session_status, user_uuid = get_session(session_id)
-        if session_status == 'PENDING':
-            return {
-                "statusCode": 202, 
-                "body": json.dumps({"message": "Accepted"})
-            }
+        if session_status == "PENDING":
+            return {"statusCode": 202, "body": json.dumps({"message": "Accepted"})}
         res_status_code = terminate_session(session_id)
         if res_status_code == 200:
             jwt = generate_jwt(user_uuid)
-            return {
-                "statusCode": res_status_code, 
-                "body": json.dumps({"jwt": jwt})
-            }
+            return {"statusCode": res_status_code, "body": json.dumps({"jwt": jwt})}
         elif res_status_code == 404:
             return {
-                "statusCode": res_status_code, 
-                "body": json.dumps({"message": "Not found"})
+                "statusCode": res_status_code,
+                "body": json.dumps({"message": "Not found"}),
             }
         elif res_status_code == 400:
-            return {
-                "statusCode": 409, 
-                "body": json.dumps({"message": "Conflict"})
-            }
+            return {"statusCode": 409, "body": json.dumps({"message": "Conflict"})}
         else:
             return {
-                "statusCode": res_status_code, 
-                "body": json.dumps({"message": "Internal server error"})
+                "statusCode": res_status_code,
+                "body": json.dumps({"message": "Internal server error"}),
             }
     else:
         return {
-            "statusCode": res_status_code, 
-            "body": json.dumps({"message": "Internal server error"})
+            "statusCode": res_status_code,
+            "body": json.dumps({"message": "Internal server error"}),
         }
