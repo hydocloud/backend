@@ -34,12 +34,14 @@ def lambda_handler(event, context):
     """Main function"""
 
     response = {"isAuthorized": False, "context": {}}
+    logger.info(event)
     try:
-        user_token = remove_prefix(event["headers"]["Authorization"], "Bearer ")
+        user_token = remove_prefix(event["headers"]["authorization"], "Bearer ")
         res = validate_token(user_token)
         if res:
             response = {"isAuthorized": True, "context": {"sub": res["sub"]}}
     except KeyError as error:
         logger.error(error)
 
+    logger.info(response)
     return response
