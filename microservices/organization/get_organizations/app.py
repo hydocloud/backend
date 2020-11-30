@@ -19,8 +19,7 @@ def lambda_handler(event, context):
     Based on both path parameters or query parameters chose if
     user require info about one organization or multiple
     """
-
-    owner_id = "e12c1545-1362-4162-9c3b-ebe2e20f2e57"
+    owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
 
     if (
         "pathParameters" in event
