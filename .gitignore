@@ -15,3 +15,5 @@ cdk.out
 .aws-sam
 .vscode/settings.json
 .vscode/.ropeproject/config.py
+htmlcov
+.coverage
