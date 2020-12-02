@@ -1,8 +1,14 @@
 from models.organizations import Organization, OrganizationsList, ResponseModel
-from models.api_response import LambdaErrorResponse, LambdaSuccessResponse, Message, Data
+from models.api_response import (
+    LambdaErrorResponse,
+    LambdaSuccessResponse,
+    Message,
+    Data,
+)
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.session import Session
 import logging
-from database import init_db
+
 import datetime
 from aws_lambda_powertools import Tracer
 
@@ -10,14 +16,9 @@ tracer = Tracer(service="edit_organization")
 
 logger = logging.getLogger(__name__)
 
-conn = None
 
 @tracer.capture_method
-def edit_organization(owner_id, organization_id, payload):
-    global conn
-
-    if conn == None:
-        conn = init_db()
+def edit_organization(owner_id, organization_id, payload, connection: Session):
 
     name = None
     license_id = None
@@ -27,51 +28,44 @@ def edit_organization(owner_id, organization_id, payload):
     except KeyError as e:
         logger.error(e)
         return LambdaErrorResponse(
-            body=(
-                Message(message="Bad request")
-            ), 
-            statusCode=400
+            body=(Message(message="Bad request")), statusCode=400
         )
-        
+
     try:
-        org = conn.query(Organization).filter_by(
-            owner_id=owner_id,
-            id=organization_id
-        ).first()
+        org = (
+            connection.query(Organization)
+            .filter_by(owner_id=owner_id, id=organization_id)
+            .first()
+        )
 
     except (SQLAlchemyError, AttributeError) as e:
-        logger.error(e)  
-        conn.rollback()   
+        logger.error(e)
+        connection.rollback()
         return LambdaErrorResponse(
-            body=(
-                Message(message="Bad request")
-            ), 
-            statusCode=500
+            body=(Message(message="Bad request")), statusCode=500
         )
-    
+
     if org == None:
-        return LambdaErrorResponse(
-            statusCode=403, 
-            body=(
-                Message(message="Forbidden")
-            )
-        )
+        return LambdaErrorResponse(statusCode=403, body=(Message(message="Forbidden")))
     else:
-        if 'name' in payload:
-            org.name = payload['name']
-        if 'licenseId' in payload:
-            org.license_id = payload['licenseId']
-            conn.commit()
+        if "name" in payload:
+            org.name = payload["name"]
+        if "licenseId" in payload:
+            org.license_id = payload["licenseId"]
+            connection.commit()
             # Call user group
             return LambdaSuccessResponse(
-                statusCode=201, 
+                statusCode=201,
                 body=Data(
-                    data = OrganizationsList(
+                    data=OrganizationsList(
                         organizations=[
-                            ResponseModel(id=org.id, ownerId=org.owner_id, name=org.name, licenseId=org.license_id)
+                            ResponseModel(
+                                id=org.id,
+                                ownerId=org.owner_id,
+                                name=org.name,
+                                licenseId=org.license_id,
+                            )
                         ]
                     )
-                )
+                ),
             )
-
-        
