@@ -3,6 +3,7 @@
 import logging
 from aws_lambda_powertools import Tracer
 from get import get_organization, get_organizations
+from database import init_db
 
 tracer = Tracer(service="get_organization")
 
@@ -11,6 +12,7 @@ logger.setLevel(logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
+CONNECTION = None
 
 
 @tracer.capture_lambda_handler(capture_response=False)
@@ -19,7 +21,11 @@ def lambda_handler(event, context):
     Based on both path parameters or query parameters chose if
     user require info about one organization or multiple
     """
+    global CONNECTION
     owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
+
+    if CONNECTION is None:
+        CONNECTION = init_db()
 
     if (
         "pathParameters" in event
@@ -27,7 +33,7 @@ def lambda_handler(event, context):
         and "id" in event["pathParameters"]
     ):
         organization_id = event["pathParameters"]["id"]
-        response = get_organization(owner_id, organization_id)
+        response = get_organization(connection=CONNECTION, owner_id=owner_id, organization_id=organization_id)
     elif (
         "queryStringParameters" in event and event["queryStringParameters"] is not None
     ):
@@ -38,14 +44,20 @@ def lambda_handler(event, context):
         ):
             page_number = event["queryStringParameters"]["page"]
             page_size = event["queryStringParameters"]["pageSize"]
-            response = get_organizations(owner_id, int(page_number), int(page_size))
+            response = get_organizations(
+                connection=CONNECTION, owner_id=owner_id, page_number=int(page_number), page_size=int(page_size) 
+            )
         elif "pageSize" in event["queryStringParameters"]:
             page_size = event["queryStringParameters"]["pageSize"]
-            response = get_organizations(owner_id, page_size=int(page_size))
+            response = get_organizations(
+                connection=CONNECTION, owner_id=owner_id, page_size=int(page_size)
+            )
         elif "page" in event["queryStringParameters"]:
             page_number = event["queryStringParameters"]["page"]
-            response = get_organizations(owner_id, page_number=int(page_number))
+            response = get_organizations(
+                connection=CONNECTION, owner_id=owner_id, page_number=int(page_number)
+            )
     else:
-        response = get_organizations(owner_id)
+        response = get_organizations(connection=CONNECTION, owner_id=owner_id)
 
     return {"statusCode": response.statusCode, "body": response.body.json()}

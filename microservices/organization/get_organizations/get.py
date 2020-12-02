@@ -12,7 +12,8 @@ from models.api_response import (
     Data,
 )
 from sqlalchemy.exc import SQLAlchemyError
-from database import init_db
+from sqlalchemy.orm.session import Session
+
 from aws_lambda_powertools import Tracer
 from sqlalchemy_paginator import Paginator, exceptions
 
@@ -20,20 +21,16 @@ tracer = Tracer(service="get_organization")
 
 logger = logging.getLogger(__name__)
 
-CONNECTION = None
+
 
 
 @tracer.capture_method
-def get_organization(owner_id, organization_id):
+def get_organization(connection: Session, owner_id: str, organization_id: str):
     """ Get data about one organization"""
-    global CONNECTION
-
-    if CONNECTION is None:
-        CONNECTION = init_db()
 
     try:
         org = (
-            CONNECTION.query(Organization)
+            connection.query(Organization)
             .filter_by(owner_id=owner_id, id=organization_id)
             .first()
         )
@@ -66,15 +63,11 @@ def get_organization(owner_id, organization_id):
 
 
 @tracer.capture_method
-def get_organizations(owner_id, page_number: int = 1, page_size: int = 5):
+def get_organizations(connection: Session,owner_id: str, page_number: int = 1, page_size: int = 5, ):
     """ Return all organizations that belong to user"""
-    global CONNECTION
-
-    if CONNECTION is None:
-        CONNECTION = init_db()
 
     try:
-        res = CONNECTION.query(Organization).filter_by(owner_id=owner_id)
+        res = connection.query(Organization).filter_by(owner_id=owner_id)
         paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
         orgs = []
