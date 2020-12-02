@@ -1,89 +1,103 @@
-import json
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from pytest_postgresql import factories
+from models.organizations import Base, Organization
+from get_organizations.get import get_organization, get_organizations
+from create_organization.create import create_organization
+from edit_organization.edit import edit_organization
+from delete_organization.delete import delete_organization
 
-import pytest, os
+@pytest.fixture(scope='function')
+def setup_database():
 
-from create_organization import app  
+    engine = create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
 
+# @pytest.fixture(scope='function')
+# def dataset(setup_database):
+    
+#     session = setup_database
 
-@pytest.fixture()
-def apigw_event():
-    """ Generates API GW Event"""
+#     # Creates user
+#     org_1 = Organization(owner_id="ff1af476-cf84-47e9-a25a-e109060d4006", name="org1", license_id=1, created_at="2020-11-27 22:07:03", updated_at="2020-11-27 22:07:03" )
+#     org_2 = Organization(owner_id="ff1af476-cf84-47e9-a25a-e109060d4006", name="org2", license_id=2, created_at="2020-11-27 22:07:03", updated_at="2020-11-27 22:07:03" )
+#     session.add(org_1)
+#     session.add(org_2)
+#     session.commit()
 
-    return {
-        "body":  '{\"name\": \"hello\", \"licenseId\": 1 }',
-        "resource": "/{proxy+}",
-        "requestContext": {
-            "resourceId": "123456",
-            "apiId": "1234567890",
-            "resourcePath": "/{proxy+}",
-            "httpMethod": "POST",
-            "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-            "accountId": "123456789012",
-            "identity": {
-                "apiKey": "",
-                "userArn": "",
-                "cognitoAuthenticationType": "",
-                "caller": "",
-                "userAgent": "Custom User Agent String",
-                "user": "",
-                "cognitoIdentityPoolId": "",
-                "cognitoIdentityId": "",
-                "cognitoAuthenticationProvider": "",
-                "sourceIp": "127.0.0.1",
-                "accountId": "",
-            },
-            "stage": "prod",
-        },
-        "queryStringParameters": {"foo": "bar"},
-        "headers": {
-            "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-            "Accept-Language": "en-US,en;q=0.8",
-            "CloudFront-Is-Desktop-Viewer": "true",
-            "CloudFront-Is-SmartTV-Viewer": "false",
-            "CloudFront-Is-Mobile-Viewer": "false",
-            "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-            "CloudFront-Viewer-Country": "US",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Upgrade-Insecure-Requests": "1",
-            "X-Forwarded-Port": "443",
-            "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-            "X-Forwarded-Proto": "https",
-            "X-Amz-Cf-Id": "aaaaaaaaaae3VYQb9jd-nvCd-de396Uhbp027Y2JvkCPNLmGJHqlaA==",
-            "CloudFront-Is-Tablet-Viewer": "false",
-            "Cache-Control": "max-age=0",
-            "User-Agent": "Custom User Agent String",
-            "CloudFront-Forwarded-Proto": "https",
-            "Accept-Encoding": "gzip, deflate, sdch",
-        },
-        "pathParameters": {"proxy": "/examplepath"},
-        "httpMethod": "POST",
-        "stageVariables": {"baz": "qux"},
-        "path": "/examplepath",
-    }
+#     yield session
 
-@pytest.fixture()
-def mock_env_database(monkeypatch):    
-    monkeypatch.setenv("DB_PORT", "5432")
-    monkeypatch.setenv("DB_HOST", "MacBook-Pro-di-Riccardo.local")
-    monkeypatch.setenv("DB_NAME", "organizations")
-    monkeypatch.setenv("DB_ENGINE", "postgresql")
-    monkeypatch.setenv("DB_USER", "organization")
-    monkeypatch.setenv("DB_PASSWORD", "organization")
+def test_database(setup_database):
 
-def test_wrong_payload(mock_env_database):
+    # Gets the session from the fixture
+    session = setup_database
+    owner_id = "ff1af476-cf84-47e9-a25a-e109060d4006"
 
-    request = {
-        "body":  '{\"name\": \"hello\"}'
-    }
+    res = create_organization(owner_id=owner_id, payload={"name": "test1", "licenseId": 1}, connection=session)
+    org_1_id = res.body.data.organizations[0].id
+    assert res.statusCode == 201
+    assert res.body.data.organizations[0].name == "test1"
+    assert res.body.data.organizations[0].licenseId == 1
+    
 
-    ret = app.handler(request, "")
-    payload = ret["body"]
-    assert ret["statusCode"] == 400
-    assert  "message" in ret["body"]
+    res = get_organization(owner_id=owner_id, connection=session, organization_id=org_1_id)
+    assert res.statusCode == 201
+    assert res.body.data.organizations[0].name == "test1"
+    assert res.body.data.organizations[0].licenseId == 1
+    assert res.body.data.organizations[0].id == org_1_id
 
-def test_lambda_handler(apigw_event, mock_env_database):
+    res = edit_organization(owner_id=owner_id, organization_id=org_1_id, payload={"name": "edit", "licenseId": 2}, connection=session)
+    org_1_id = res.body.data.organizations[0].id
+    assert res.statusCode == 201
+    assert res.body.data.organizations[0].name == "edit"
+    assert res.body.data.organizations[0].licenseId == 2
 
-    ret = app.handler(apigw_event, "")
-    payload = ret["body"]
-    assert ret["statusCode"] == 201
-    assert len(payload["data"]) == 1
+    res = get_organization(owner_id=owner_id, connection=session, organization_id=org_1_id)
+    assert res.statusCode == 201
+    assert res.body.data.organizations[0].name == "edit"
+    assert res.body.data.organizations[0].licenseId == 2
+    assert res.body.data.organizations[0].id == org_1_id
+
+    res = delete_organization(owner_id=owner_id, connection=session, organization_id=org_1_id)
+    assert res.statusCode == 201
+    assert res.body.message == "ok"
+
+    ### Test dataset
+    dataset_size = 30
+    page_size=10
+    page_number = 2
+    org_ids = []
+
+    for i in range(dataset_size):
+        tmp = create_organization(owner_id=owner_id, payload={"name": "test1", "licenseId": 1}, connection=session)
+        org_ids.append(tmp.body.data.organizations[0].id)
+
+    res = get_organizations(owner_id=owner_id, connection=session)
+    assert res.statusCode == 201
+    assert res.body.data.total == dataset_size
+
+    res = get_organizations(owner_id=owner_id, page_size=10, connection=session)
+    assert res.statusCode == 201
+    assert res.body.data.total == dataset_size
+    assert res.body.data.totalPages == dataset_size/page_size
+
+    res = get_organizations(owner_id=owner_id, page_size=page_size, page_number=page_number, connection=session)
+    assert res.body.data.nextPage == page_number + 1
+    assert res.body.data.previousPage == page_number - 1
+
+    res = get_organizations(owner_id=owner_id, page_size=page_size, page_number=dataset_size/page_size, connection=session)
+    assert res.body.data.nextPage == None
+    assert res.body.data.previousPage == page_number
+
+    res = get_organizations(owner_id=owner_id, page_size=page_size, page_number=1, connection=session)
+    assert res.body.data.nextPage == page_number
+    assert res.body.data.previousPage == None
+        
+
+    for i in range(dataset_size):
+        delete_organization(owner_id=owner_id, connection=session, organization_id=org_ids[i])
