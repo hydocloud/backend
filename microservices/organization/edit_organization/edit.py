@@ -42,7 +42,7 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
         logger.error(e)
         connection.rollback()
         return LambdaErrorResponse(
-            body=(Message(message="Bad request")), statusCode=500
+            body=(Message(message="Internal server error")), statusCode=500
         )
 
     if org == None:
