@@ -59,7 +59,7 @@ def create_organization(owner_id, payload, connection: Session):
         )
     except SQLAlchemyError as e:
         logger.error(e)
-        conn.rollback()
+        connection.rollback()
         return LambdaErrorResponse(
             body=(Message(message="Bad request")), statusCode=500
         )
