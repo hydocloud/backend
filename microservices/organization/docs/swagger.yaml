@@ -1,3 +1,6 @@
+
+
+
 openapi: 3.0.0
 info:
   description: Organization microservice api
@@ -8,42 +11,57 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-tags:
-  - name: users
-    description: For all users
-  - name: mobile
-    description: Reserved for mobile app
+
+servers:
+  - url: http://api.dev.hydo.cloud
+    description: dev server
+
 paths:
   /organizations:
     post:
-      tags:
-        - users
       summary: Create organzation
       operationId: createOrganization
       description: |
         Create user organization
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              type: object
+              properties:
+                name:
+                  type: string
+                licenseId:
+                  type: number
         description: organization parameters
       responses:
         '201':
-          description: organization created
+          description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
-        '400':
-          description: 'invalid input, object invalid'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                success: false
-                message: 'Bad request'
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:                   
+                      organizations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            licenseid:
+                              type: integer
+                            ownerId:
+                              type: string
+                              format: uuid                                       
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
           description: error processing operation
           content:
@@ -51,15 +69,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Internal server error'
     get:
-      tags:
-        - users
       summary: List organzations
       operationId: getOrganizations
       description: |
         List user organizations or all organizations form admin
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+
       responses:
         '201':
           description: organization created
@@ -74,21 +99,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Bad request'
-        '500':
-          description: error processing operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                success: false
-                message: 'Internal server error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   /organizations/{organizationId}:
     get:
-      tags:
-        - users
       summary: List organzations
       operationId: getOrganization
       description: |
@@ -107,28 +122,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '400':
-          description: 'invalid input, object invalid'
+                $ref: '#/components/schemas/OK'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Organization not found'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
-                message: 'Bad request'
+                message: 'Not found'
         '500':
-          description: error processing operation
+          description: 'Internal server error'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Internal server error'
     put:
-      tags:
-        - users
       summary: Edit organzation
       operationId: editOrganization
       description: |
@@ -161,8 +174,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: 'Not authorized to perform update'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Forbidden'
         '500':
           description: error processing operation
           content:
@@ -170,11 +192,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Internal server error'
     delete:
-      tags:
-        - users
       summary: Delete organzation
       operationId: deleteOrganization
       description: |
@@ -194,15 +213,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleOK'
-        '400':
-          description: 'invalid input, object invalid'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Organization not found'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
-                message: 'Bad request'
+                message: 'Not found'
         '500':
           description: error processing operation
           content:
@@ -210,9 +230,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                success: false
                 message: 'Internal server error'
 components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
   schemas:
     Organization:
       title: Organization in Hydo
@@ -245,21 +272,25 @@ components:
         licenseId:
           type: integer
           description: License id 
-      required:
-        - name
-        - licenseId
     OK:
       title: Ok response
       type: object
       properties:
-        success:
-          type: boolean
-          description: Operation status
         data:
-          type: array
-          description: name
-          items:
-            $ref: '#/components/schemas/Organization'
+          type: object
+          properties:
+            organizations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Organization'
+            total:
+              type: number
+            nextPage:
+              type: number
+            previousPage:
+              type: number
+            totalpages:
+              type: number
       required:
         - name
         - licenseId
@@ -268,9 +299,6 @@ components:
       title: Ok response
       type: object
       properties:
-        success:
-          type: boolean
-          description: Operation status
         message:
           type: string
           description: error message
@@ -278,11 +306,9 @@ components:
       title: Error response
       type: object
       properties:
-        success:
-          type: boolean
-          description: Operation status
         message:
           type: string
           description: error message
-servers:
-  - url: 'http://virtserver.swaggerhub.com/Hyd9/Organization/1.0.0'
+
+security:
+  - bearerAuth: []
