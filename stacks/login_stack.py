@@ -14,6 +14,7 @@ from aws_cdk import (
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
+from aws_cdk.aws_dynamodb import BillingMode
 
 from utils.prefix import env_specific, domain_specific
 
@@ -46,6 +47,7 @@ class LoginStack(core.Stack):
                 name="id", type=dynamodb.AttributeType.STRING
             ),
             time_to_live_attribute="expiration_time",
+            billing_mode=BillingMode.PAY_PER_REQUEST
         )
         nonce_table = dynamodb.Table(
             self,
@@ -57,6 +59,7 @@ class LoginStack(core.Stack):
                 name="message", type=dynamodb.AttributeType.STRING
             ),
             time_to_live_attribute="expiration_time",
+            billing_mode=BillingMode.PAY_PER_REQUEST
         )
 
         # Lambda layer
