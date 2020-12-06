@@ -9,10 +9,10 @@ CREATE TABLE "user_groups" (
 CREATE TABLE "user_belong_user_groups" (
   "id" SERIAL PRIMARY KEY,
   "user_id" uuid,
-  "user_group_id" int UNIQUE,
+  "user_group_id" int UNIQUE NOT NULL,
   "attributes" varchar,
   "created_at" timestamp NOT NULL DEFAULT (now()),
   "updated_at" timestamp NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "user_groups" ADD FOREIGN KEY ("id") REFERENCES "user_belong_user_groups" ("user_group_id");
+ALTER TABLE "user_belong_user_groups" ADD FOREIGN KEY ("user_group_id") REFERENCES "user_groups" ("id");
