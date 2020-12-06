@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  CreateUserGroupsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: create_organization/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+      Events:
+        CreateOrganization:
+          Type: Api
+          Properties:
+            Path: /userGroups
+            Method: POST
+

@@ -1,0 +1,10 @@
+{
+    "CreateUserGroupsFunction": {
+        "DB_PORT":5432,
+        "DB_HOST":"MacBook-Pro-di-Riccardo.local",
+        "DB_NAME":"users",
+        "DB_ENGINE":"postgresql",
+        "DB_USER":"postgres",
+        "DB_PASSWORD":"ciaociao"
+    }      
+}
