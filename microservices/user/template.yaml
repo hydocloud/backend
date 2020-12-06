@@ -8,7 +8,7 @@ Resources:
   CreateUserGroupsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: create_organization/
+      CodeUri: create_user_groups/
       Handler: app.lambda_handler
       Runtime: python3.8
       Environment:
