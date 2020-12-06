@@ -30,14 +30,6 @@ class UserBelongUserGroups(Base):
     attributes = Column(String)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
-    user_groups = relationship("UserGroups", back_populates="user_belong_user_groups")
-
-
-UserGroups.user_belong_user_groups = relationship(
-    "UserBelongUserGroups",
-    order_by=UserBelongUserGroups.id,
-    back_populates="UserGroups",
-)
 
 
 class UserGroupsApiInput(BaseModel):
