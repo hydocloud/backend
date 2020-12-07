@@ -23,6 +23,7 @@ def create_user_groups(owner_id: str, payload: UserGroupsApiInput, connection: S
         user_groups = UserGroups(
             name=payload.name,
             organization_id=payload.organizationId,
+            owner_id=owner_id,
             created_at=datetime.datetime.utcnow(),
             updated_at=datetime.datetime.utcnow()
         )

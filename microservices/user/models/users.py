@@ -13,6 +13,7 @@ class UserGroups(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     organization_id = Column(Integer)
+    owner_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
