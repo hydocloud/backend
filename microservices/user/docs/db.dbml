@@ -1,0 +1,29 @@
+Project Hydo {
+  database_type: 'PostgreSQL'
+  note: '''
+  # Hydo Database
+  '''
+}
+// Creating tables
+Table user_groups {
+  id int [pk, increment]
+  name varchar
+  organization_id int
+  owner_id uuid [not null]
+  created_at timestamp [default: `now()`, not null]
+  updated_at timestamp [default: `now()`, not null]
+}
+
+Table user_belong_user_groups {
+  id int [pk, increment]
+  user_id uuid [not null]
+  user_group_id int [unique, not null]
+  attributes varchar 
+  created_at timestamp [default: `now()`, not null]
+  updated_at timestamp [default: `now()`, not null]
+
+  Note: 'Column attributes will save a JSON with this strucutre { name: "", surname: ""} '
+
+}
+
+Ref: user_belong_user_groups.user_group_id > user_groups.id

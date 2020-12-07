@@ -1,0 +1,202 @@
+
+
+
+openapi: 3.0.0
+info:
+  description: UserGroup microservice api
+  version: 1.0.0-oas3
+  title: UserGroup API
+  contact:
+    email: rtrivellato@hydo.cloud
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+servers:
+  - url: http://api.dev.hydo.cloud
+    description: dev server
+
+paths:
+  /userGroups:
+    post:
+      summary: Create organzation
+      operationId: createUserGroup
+      description: |
+        Create user group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                organizationId:
+                  type: number
+        description: User group parameters
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:                   
+                      userGroups:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            organizationId:
+                              type: integer
+                            ownerId:
+                              type: string
+                              format: uuid                                       
+        '400':
+          description: Bad input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'        
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+  /userGroups/{id}:
+    delete:
+      summary: Delete organzation
+      operationId: deleteUserGroup
+      description: |
+        Delete rganization
+      parameters:
+        - name: userGroupId
+          in: path
+          description: UserGroup Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleOK'
+              example:
+                message: 'Ok'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'UserGroup not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  schemas:
+    UserGroup:
+      title: UserGroup in Hydo
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id
+        name:
+          type: string
+          description: name
+        licenseId:
+          type: integer
+          description: License id 
+        userId:
+          type: string
+          format: uuid
+          description: user id
+      required:
+        - name
+        - licenseId
+        - user
+    EditUserGroup:
+      title: Edit organization in Hydo
+      type: object
+      properties:
+        name:
+          type: string
+          description: name
+        licenseId:
+          type: integer
+          description: License id 
+    OK:
+      title: Ok response
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            organizations:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserGroup'
+            total:
+              type: number
+            nextPage:
+              type: number
+            previousPage:
+              type: number
+            totalpages:
+              type: number
+      required:
+        - name
+        - licenseId
+        - userId
+    SimpleOK:
+      title: Ok response
+      type: object
+      properties:
+        message:
+          type: string
+          description: error message
+    Error:
+      title: Error response
+      type: object
+      properties:
+        message:
+          type: string
+          description: error message
+
+security:
+  - bearerAuth: []
