@@ -3,7 +3,6 @@
 import logging
 from models.users import UserGroups
 from models.api_response import LambdaResponse
-from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -41,15 +40,6 @@ def delete_user_groups(owner_id: str, user_group_id: int, connection: Session) -
         return LambdaResponse(
             statusCode = 500,
             body={
-                "message": "Internal server Error"
-            }
-        )
-    except ValidationError as e:
-        logger.error(e)
-        connection.rollback()
-        return LambdaResponse(
-            statusCode = 400,
-            body={
-                "message": "Bad request"
+                "message": "Internal server error"
             }
         )

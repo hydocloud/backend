@@ -61,7 +61,7 @@ def create_user_groups(owner_id: str, payload: UserGroupsApiInput, connection: S
         return LambdaResponse(
             statusCode = 500,
             body={
-                "message": "Internal server Error"
+                "message": "Internal server error"
             }
         )
     except ValidationError as e:
