@@ -14,6 +14,7 @@ class UserGroups(Base):
     name = Column(String)
     organization_id = Column(Integer)
     owner_id = Column(UUID(as_uuid=True))
+    user_group_belog_to_user = relationship("UserBelongUserGroups", cascade="all, delete")  
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
