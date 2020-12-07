@@ -9,7 +9,7 @@ from aws_lambda_powertools import Tracer
 from pydantic import ValidationError
 
 
-tracer = Tracer(service="create_organization")
+tracer = Tracer(service="create_user_group")
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
