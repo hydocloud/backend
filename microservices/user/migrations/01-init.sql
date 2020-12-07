@@ -16,4 +16,4 @@ CREATE TABLE "user_belong_user_groups" (
   "updated_at" timestamp NOT NULL DEFAULT (now())
 );
 
-ALTER TABLE "user_belong_user_groups" ADD FOREIGN KEY ("user_group_id") REFERENCES "user_groups" ("id");
+ALTER TABLE "user_belong_user_groups" ADD FOREIGN KEY ("user_group_id") REFERENCES "user_groups" ("id") ON DELETE CASCADE;
