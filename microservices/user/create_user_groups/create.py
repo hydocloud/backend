@@ -50,7 +50,7 @@ def create_user_groups(owner_id: str, payload: UserGroupsApiInput, connection: S
                             "id": user_groups.id,
                             "name": user_groups.name,
                             "organizationId": user_groups.organization_id,
-                            "ownerId": user_groups.owner_id
+                            "ownerId": str(user_groups.owner_id)
                         }
                     ]
                 }
