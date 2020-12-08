@@ -20,7 +20,7 @@ Resources:
           DB_USER: ""
           DB_PASSWORD: ""
       Events:
-        CreateOrganization:
+        CreateUserGroups:
           Type: Api
           Properties:
             Path: /userGroups
@@ -40,9 +40,35 @@ Resources:
           DB_USER: ""
           DB_PASSWORD: ""          
       Events:
-        CreateOrganization:
+        DeleteUserGroup:
           Type: Api
           Properties:
             Path: /userGroups/{id}
             Method: DELETE
+
+  GetUserGroupsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_user_groups/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
+      Events:
+        GetUserGroup:
+          Type: Api
+          Properties:
+            Path: /userGroups/{id}
+            Method: GET
+        GetUserGroups:
+          Type: Api
+          Properties:
+            Path: /userGroups
+            Method: GET
 
