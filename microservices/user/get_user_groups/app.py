@@ -61,4 +61,4 @@ def lambda_handler(event, context):
     else:
         response = get_user_groups(connection=CONNECTION, owner_id=owner_id)
 
-    return {"statusCode": response.statusCode, "body": json.dumps(response.body)}
+    return {"statusCode": response.statusCode, "body": response.body}
