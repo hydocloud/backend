@@ -1,8 +1,10 @@
+import uuid
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Base = declarative_base()
 
@@ -32,6 +34,42 @@ class UserBelongUserGroups(Base):
     attributes = Column(String)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
+
+
+class UserGroupsModel(BaseModel):
+
+    id: int
+    name: str
+    organization_id: int
+    owner_id: uuid.UUID
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        orm_mode = True
+
+class UserGroupsModelShort(BaseModel):
+
+    id: int
+    name: str
+    organization_id: int
+    owner_id: uuid.UUID
+
+    class Config:
+        orm_mode = True
+
+
+class UserBelongUserGroupsModel(BaseModel):
+
+    id: int
+    user_id: uuid.UUID
+    user_group_id: int
+    attributes: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        orm_mode = True
 
 
 class UserGroupsApiInput(BaseModel):
