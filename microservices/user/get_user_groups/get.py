@@ -65,9 +65,9 @@ def get_user_groups(
                 previousPage=(page.previous_page_number if page.has_previous() else None)
             ).json(by_alias=True)
 
-        return LambdaResponse(statusCode=status_code, body=body)
+        return LambdaResponse(statusCode=status_code, body=body).dict()
 
     except (SQLAlchemyError, ValidationError)  as err:
         logger.error(err)
-        return LambdaResponse(statusCode=500, body=Message(message="Internal server error").json())
+        return LambdaResponse(statusCode=500, body=Message(message="Internal server error").json()).dict()
 
