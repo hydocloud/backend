@@ -72,3 +72,24 @@ Resources:
             Path: /userGroups
             Method: GET
 
+  EditUserGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: edit_user_group/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
+      Events:
+        GetUserGroup:
+          Type: Api
+          Properties:
+            Path: /userGroups/{id}
+            Method: PUT
+            
