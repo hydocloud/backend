@@ -1,9 +1,11 @@
 import pytest
+import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
-from models.users import Base, UserGroups, UserGroupsApiInput
+from models.users import Base, UserGroups, UserGroupsApiInput, UserGroupsApiEditInput
 from create_user_groups.create import create_user_groups
+from edit_user_group.edit import edit_user_group
 from delete_user_groups.delete import delete_user_groups
 
 
@@ -32,28 +34,45 @@ def test_database(setup_database):
         payload=UserGroupsApiInput.parse_obj({"name": "test1", "organizationId": 1}),
         connection=session,
     )
-    user_group_1_id = res.body["data"]["userGroups"][0]["id"]
 
-    assert res.statusCode == 201
-    assert res.body["data"]["userGroups"][0]["name"] == "test1"
-    assert res.body["data"]["userGroups"][0]["organizationId"] == 1
+    body = json.loads(res["body"])
+    user_group_1_id = body["data"]["userGroups"][0]["id"]
+    assert res["statusCode"] == 201
+    assert body["data"]["userGroups"][0]["name"] == "test1"
+    assert body["data"]["userGroups"][0]["organizationId"] == 1
+
+    res = edit_user_group(
+        owner_id=owner_id,
+        user_group_id=user_group_1_id,
+        payload=UserGroupsApiEditInput.parse_obj({"name": "saeeqw"}),
+        connection=session,
+    )
+
+    body = json.loads(res["body"])
+    user_group_1_id = body["data"]["userGroups"][0]["id"]
+    assert res["statusCode"] == 201
+    assert body["data"]["userGroups"][0]["name"] == "saeeqw"
+    assert body["data"]["userGroups"][0]["organizationId"] == 1
 
     res = delete_user_groups(
         owner_id=owner_id, connection=session, user_group_id=user_group_1_id
     )
-    assert res.statusCode == 201
-    assert res.body["message"] == "Ok"
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 201
+    assert body["message"] == "Ok"
 
     # Bad behavior
 
     res = delete_user_groups(
         owner_id=owner_id, connection=session, user_group_id=100000
     )
-    assert res.statusCode == 404
-    assert res.body["message"] == "Not found"
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 404
+    assert body["message"] == "Not found"
 
     res = delete_user_groups(
         owner_id="asdsads", connection=session, user_group_id=user_group_1_id
     )
-    assert res.statusCode == 500
-    assert res.body["message"] == "Internal server error"
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 500
+    assert body["message"] == "Internal server error"
