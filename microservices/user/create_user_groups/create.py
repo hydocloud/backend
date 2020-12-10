@@ -3,9 +3,10 @@
 import logging
 import datetime
 import json
-from models.users import UserGroups, UserBelongUserGroups, UserGroupsApiInput
-from models.api_response import LambdaResponse
-from pydantic import ValidationError
+from  typing import List
+from models.users import UserGroups, UserBelongUserGroups, UserGroupsApiInput, UserGroupsModelShort
+from models.api_response import LambdaResponse, DataModel, UserGroupsList, Message
+from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -40,37 +41,26 @@ def create_user_groups(owner_id: str, payload: UserGroupsApiInput, connection: S
         )
         connection.add(user_group_belong_users)
         connection.commit()
+        body = DataModel(
+            data=UserGroupsList(userGroups=parse_obj_as(List[UserGroupsModelShort], [user_groups]))
+        ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(
             statusCode=201,
-            body= {
-                "data": {
-                    "userGroups": [
-                        {
-                            "id": user_groups.id,
-                            "name": user_groups.name,
-                            "organizationId": user_groups.organization_id,
-                            "ownerId": str(user_groups.owner_id)
-                        }
-                    ]
-                }
-            },
-        )
-    except SQLAlchemyError as e:
-        logger.error(e)
+            body=body
+        ).dict()
+
+    except SQLAlchemyError as err:
+        logger.error(err)
         connection.rollback()
         return LambdaResponse(
             statusCode = 500,
-            body={
-                "message": "Internal server error"
-            }
-        )
+            body=Message(message="Internal server Error").json()
+        ).dict()
     except ValidationError as e:
         logger.error(e)
         connection.rollback()
         return LambdaResponse(
             statusCode = 400,
-            body={
-                "message": "Bad request"
-            }
-        )
+            body=Message(message="Bad request").json()
+        ).dict()

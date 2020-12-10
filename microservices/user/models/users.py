@@ -52,11 +52,12 @@ class UserGroupsModelShort(BaseModel):
 
     id: int
     name: str
-    organization_id: int
-    owner_id: uuid.UUID
+    organization_id: int = Field(..., alias="organizationId")
+    owner_id: uuid.UUID = Field(..., alias="ownerId")
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
 
 
 class UserBelongUserGroupsModel(BaseModel):

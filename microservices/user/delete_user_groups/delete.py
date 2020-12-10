@@ -2,7 +2,7 @@
 
 import logging
 from models.users import UserGroups
-from models.api_response import LambdaResponse
+from models.api_response import LambdaResponse, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -30,16 +30,12 @@ def delete_user_groups(owner_id: str, user_group_id: int, connection: Session) -
 
         return LambdaResponse(
             statusCode=status_code,
-            body= {
-                "message": message
-            }
-        )
+            body= Message(message=message).json()
+        ).dict()
     except SQLAlchemyError as e:
         logger.error(e)
         connection.rollback()
         return LambdaResponse(
             statusCode = 500,
-            body={
-                "message": "Internal server error"
-            }
-        )
+            body= Message(message="Internal server error").json()
+        ).dict()

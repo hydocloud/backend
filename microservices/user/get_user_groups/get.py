@@ -63,7 +63,7 @@ def get_user_groups(
                 totalPages=page.paginator.total_pages,
                 nextPage=(page.next_page_number if page.has_next() else None),
                 previousPage=(page.previous_page_number if page.has_previous() else None)
-            ).json()
+            ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body)
 

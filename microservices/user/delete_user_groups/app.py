@@ -4,6 +4,7 @@ import logging
 import json
 from delete import delete_user_groups
 from models.users import UserGroupsApiInput
+from models.api_response import Message, LambdaResponse
 from database import init_db
 from aws_lambda_powertools import Tracer
 from pydantic import ValidationError
@@ -35,6 +36,9 @@ def lambda_handler(event, context):
         )
     except ValidationError:
         logger.error("Validation input error")
-        return {"statusCode": 400, "body": {"message": "Bad request"}}
+        return LambdaResponse(
+            statusCode = 400,
+            body= Message(message="Bad request").json()
+        ).dict()
 
-    return {"statusCode": response.statusCode, "body": json.dumps(response.body)}
+    return response

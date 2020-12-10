@@ -43,11 +43,10 @@ def edit_user_group(
     else:
         user_group.name = payload.name
         connection.commit()
-        tmp = [user_group]
-        m = UserGroupsList(userGroups=parse_obj_as(List[UserGroupsModelShort], tmp))
+        m = UserGroupsList(userGroups=parse_obj_as(List[UserGroupsModelShort], [user_group]))
 
         body = DataModel(
             data=m, total=None, totalPages=None, nextPage=None, previousPage=None
-        ).json(exclude_none=True)
+        ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()
