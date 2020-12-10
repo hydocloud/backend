@@ -75,3 +75,7 @@ class UserBelongUserGroupsModel(BaseModel):
 class UserGroupsApiInput(BaseModel):
     name: str
     organizationId: int
+
+class UserGroupsApiEditInput(BaseModel):
+    name: str
+    
