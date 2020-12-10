@@ -11,8 +11,10 @@ class LambdaResponse(BaseModel):
 class UserGroupsList(BaseModel):
     userGroups: List[UserGroupsModelShort]
 
+
 class Message(BaseModel):
     message: str
+
 
 class DataModel(BaseModel):
     data: UserGroupsList
