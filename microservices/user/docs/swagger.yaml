@@ -19,7 +19,7 @@ servers:
 paths:
   /userGroups:
     post:
-      summary: Create organzation
+      summary: Create user group
       operationId: createUserGroup
       description: |
         Create user group
@@ -78,7 +78,145 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 message: 'Internal server error'
+    get:
+      summary: List user groups
+      operationId: getUserGroups
+      description: |
+        List user user group for an user
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'user groups not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: 'error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
   /userGroups/{id}:
+    get:
+      summary: List user group
+      operationId: getUserGroup
+      description: |
+        User group information
+      parameters:
+        - name: userGroupId
+          in: path
+          description: User group Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: user group's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Organization not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+    put:
+      summary: Edit user group
+      operationId: editUserGroup
+      description: |
+        Edit user group data
+      parameters:
+        - name: userGroupId
+          in: path
+          description: User group Id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserGroup'
+        description: organization parameters
+      responses:
+        '201':
+          description: user group edited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OK'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: 'Not authorized to perform update'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Forbidden'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
     delete:
       summary: Delete organzation
       operationId: deleteUserGroup
@@ -139,27 +277,22 @@ components:
         name:
           type: string
           description: name
-        licenseId:
+        organizationId:
           type: integer
           description: License id 
-        userId:
+        ownerId:
           type: string
           format: uuid
           description: user id
       required:
         - name
-        - licenseId
-        - user
     EditUserGroup:
-      title: Edit organization in Hydo
+      title: Edit user group in Hydo
       type: object
       properties:
         name:
           type: string
           description: name
-        licenseId:
-          type: integer
-          description: License id 
     OK:
       title: Ok response
       type: object
@@ -167,7 +300,7 @@ components:
         data:
           type: object
           properties:
-            organizations:
+            userGroups:
               type: array
               items:
                 $ref: '#/components/schemas/UserGroup'
@@ -179,10 +312,6 @@ components:
               type: number
             totalpages:
               type: number
-      required:
-        - name
-        - licenseId
-        - userId
     SimpleOK:
       title: Ok response
       type: object
