@@ -17,3 +17,4 @@ cdk.out
 .vscode/.ropeproject/config.py
 htmlcov
 .coverage
+.vscode
