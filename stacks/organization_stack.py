@@ -1,20 +1,20 @@
 from aws_cdk import (
     core,
     aws_lambda as _lambda,
-    aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_apigatewayv2 as apigw2,
     aws_apigatewayv2_integrations as apigw2_integrations,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
-    aws_iam as iam
+    aws_iam as iam,
 )
-from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
-import os, pathlib
+import os
+import pathlib
 import subprocess
-from shutil import copyfile, copytree, rmtree
+from shutil import copyfile, copytree
+import hydo.user_group as user_group
 
 
 class OrganizationeStack(core.Stack):
@@ -30,6 +30,7 @@ class OrganizationeStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         self.current_path = str(pathlib.Path().absolute()) + "/microservices"
+        self.rds = rds
 
         # The code that defines your stack goes here
         create_organization_lambda = _lambda.Function(
@@ -228,23 +229,27 @@ class OrganizationeStack(core.Stack):
 
         api_authz = apigw2.CfnAuthorizer(
             self,
-            'LambdaAuthorizer',
+            "LambdaAuthorizer",
             api_id=self.http_api.http_api_id,
             authorizer_type="REQUEST",
-            identity_source=['$request.header.Authorization'],
+            identity_source=["$request.header.Authorization"],
             name=env_specific("LambdaAuthorizer"),
             authorizer_payload_format_version="2.0",
-            authorizer_uri="arn:aws:apigateway:{}:lambda:path/2015-03-31/functions/{}/invocations".format(self.region, authorizer_lambda.function_arn)
+            authorizer_uri="arn:aws:apigateway:{}:lambda:path/2015-03-31/functions/{}/invocations".format(
+                self.region, authorizer_lambda.function_arn
+            ),
         )
 
         authorizer_lambda.add_permission(
             "ApiGWPermission",
-            principal=iam.ServicePrincipal('apigateway.amazonaws.com'),
+            principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=api_authz.authorizer_credentials_arn
+            source_arn=api_authz.authorizer_credentials_arn,
         )
-        
+
         route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
+
+        user_group.lambdas(self)
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
