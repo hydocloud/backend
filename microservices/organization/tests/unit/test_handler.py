@@ -12,14 +12,14 @@ from moto import mock_sqs
 
 @mock_sqs
 def test_sqs_send_message():
-    sqs = boto3.resource('sqs')
+    sqs = boto3.client('sqs', region_name='eu-west-1')
     queue = sqs.create_queue(QueueName='create-user-group')
     expected_message = str({"name": "DEFAULT", "organizationId": 1000})
-    create.QUEUE_URL = queue.url
+    create.QUEUE_URL = queue["QueueUrl"]
     create_user_group(organization_id=1000)
-    sqs_messages = queue.receive_messages()
-    assert sqs_messages[0].body == expected_message
-    assert len(sqs_messages) == 1
+    sqs_messages = sqs.receive_message(QueueUrl=queue["QueueUrl"])
+    assert sqs_messages["Messages"][0]["Body"] == expected_message
+    assert len(sqs_messages["Messages"]) == 1
 
 
 @pytest.fixture(scope='function')
