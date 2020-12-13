@@ -1,3 +1,8 @@
+import logging
+import datetime
+import os
+import boto3
+from botocore.exceptions import ClientError
 from models.organizations import Organization, OrganizationsList, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
@@ -7,13 +12,21 @@ from models.api_response import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-import logging
-import datetime
 from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="create_organization")
 
 logger = logging.getLogger(__name__)
+QUEUE_URL = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
+
+
+def create_user_group(organization_id: int, name: str = "DEFAULT"):
+    sqs = boto3.client("sqs")
+    message = str({"name": name, "organizationId": organization_id})
+    try:
+        sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=(message))
+    except ClientError as err:
+        logger.error(err)
 
 
 @tracer.capture_method
@@ -41,7 +54,10 @@ def create_organization(owner_id, payload, connection: Session):
         connection.add(org)
         connection.commit()
         connection.refresh(org)
+
         # Call user group
+        create_user_group(organization_id=org.id)
+
         return LambdaSuccessResponse(
             statusCode=201,
             body=Data(
