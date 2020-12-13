@@ -1,5 +1,3 @@
-import database
-import os
 import logging
 import json
 from create import create_user_groups
@@ -21,23 +19,39 @@ logger = logging.getLogger(__name__)
 CONNECTION = None
 
 
+def parse_input(event: dict) -> dict:
+    """ Parse input to check if it's came from api or sqs """
+    try:
+        message = json.loads(event["body"])
+        UserGroupsApiInput.parse_obj(message)
+        return json.loads(event["body"])
+    except (ValidationError, KeyError) as err:
+        logger.info(err)
+    try:
+        message = json.loads(event["Records"][0]["body"])
+        return message
+    except (ValidationError, KeyError) as err:
+        logger.info(err)
+
+    return {}
+
+
 @tracer.capture_lambda_handler(capture_response=False)
 def lambda_handler(event, context):
     global CONNECTION
 
-    if CONNECTION == None:
+    if CONNECTION is None:
         CONNECTION = init_db()
 
     try:
-        owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"#event["requestContext"]["authorizer"]["lambda"]["sub"]
-        payload = json.loads(event["body"])
+        owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"  # event["requestContext"]["authorizer"]["lambda"]["sub"]
+        payload = parse_input(event)
         m = UserGroupsApiInput.parse_obj(payload)
         response = create_user_groups(owner_id, m, CONNECTION)
     except ValidationError:
         logger.error("Validation input error")
         return LambdaResponse(
-            statusCode = 400,
-            body=Message(message="Bad request").json()
+            statusCode=400, body=Message(message="Bad request").json()
         ).dict
 
     return response
