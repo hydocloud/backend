@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
+    aws_sqs as sqs
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
@@ -32,6 +33,12 @@ class OrganizationeStack(core.Stack):
         self.current_path = str(pathlib.Path().absolute()) + "/microservices"
         self.rds = rds
 
+        create_user_group_queue = sqs.Queue(
+            self,
+            "CreateUserGroupQueue",
+            queue_name="create-user-group"
+        )
+
         # The code that defines your stack goes here
         create_organization_lambda = _lambda.Function(
             self,
@@ -49,6 +56,7 @@ class OrganizationeStack(core.Stack):
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
                 "DB_PASSWORD": "ciaociao",
+                "QUEUE_URL": create_user_group_queue.queue_url
             },
             layers=[
                 self.create_dependencies_layer(
