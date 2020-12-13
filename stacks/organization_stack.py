@@ -33,7 +33,7 @@ class OrganizationeStack(core.Stack):
         self.current_path = str(pathlib.Path().absolute()) + "/microservices"
         self.rds = rds
 
-        create_user_group_queue = sqs.Queue(
+        self.create_user_group_queue = sqs.Queue(
             self,
             "CreateUserGroupQueue",
             queue_name="create-user-group"
@@ -56,7 +56,7 @@ class OrganizationeStack(core.Stack):
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
                 "DB_PASSWORD": "ciaociao",
-                "QUEUE_URL": create_user_group_queue.queue_url
+                "QUEUE_URL": self.create_user_group_queue.queue_url
             },
             layers=[
                 self.create_dependencies_layer(
@@ -64,6 +64,10 @@ class OrganizationeStack(core.Stack):
                 ),
                 self.create_model_layer("test2", "CreateOrganization", "/organization"),
             ],
+        )
+
+        self.create_user_group_queue.grant_send_messages(
+            grantee=create_organization_lambda
         )
 
         edit_organization_lambda = _lambda.Function(
