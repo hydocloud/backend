@@ -3,12 +3,13 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as apigw2_integrations,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
+from aws_cdk.aws_lambda_event_sources import SqsEventSource
 
 
 def lambdas(self):
     path = self.current_path
 
-    create_organization_lambda = _lambda.Function(
+    create_user_groups_lambda = _lambda.Function(
         self,
         "CreateUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
@@ -30,8 +31,14 @@ def lambdas(self):
             self.create_model_layer("ModelLayer", "CreateUserGroup", "/user"),
         ],
     )
+    create_user_groups_lambda.add_event_source(
+        source=SqsEventSource(
+            self.create_user_group_queue,
+            batch_size=1
+        )
+    )
 
-    delete_organization_lambda = _lambda.Function(
+    delete_user_groups_lambda = _lambda.Function(
         self,
         "DeleteUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
@@ -54,7 +61,7 @@ def lambdas(self):
         ],
     )
 
-    edit_organization_lambda = _lambda.Function(
+    edit_user_groups_lambda = _lambda.Function(
         self,
         "EditUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
@@ -77,7 +84,7 @@ def lambdas(self):
         ],
     )
 
-    get_user_groupslambda = _lambda.Function(
+    get_user_groups_lambda = _lambda.Function(
         self,
         "GetUserGroups",
         runtime=_lambda.Runtime.PYTHON_3_8,
@@ -104,7 +111,7 @@ def lambdas(self):
         path="/userGroups",
         methods=[HttpMethod.POST],
         integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=create_organization_lambda
+            handler=create_user_groups_lambda
         ),
     )
 
@@ -112,7 +119,7 @@ def lambdas(self):
         path="/userGroups/{id}",
         methods=[HttpMethod.PUT],
         integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=edit_organization_lambda
+            handler=edit_user_groups_lambda
         ),
     )
 
@@ -120,7 +127,7 @@ def lambdas(self):
         path="/userGroups/{id}",
         methods=[HttpMethod.DELETE],
         integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=delete_organization_lambda
+            handler=delete_user_groups_lambda
         ),
     )
 
@@ -128,7 +135,7 @@ def lambdas(self):
         path="/userGroups",
         methods=[HttpMethod.GET],
         integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_user_groupslambda
+            handler=get_user_groups_lambda
         ),
     )
 
@@ -136,6 +143,6 @@ def lambdas(self):
         path="/userGroups/{id}",
         methods=[HttpMethod.GET],
         integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_user_groupslambda
+            handler=get_user_groups_lambda
         ),
     )
