@@ -1,5 +1,6 @@
 import pytest
 import boto3
+import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from get_organizations.get import get_organization, get_organizations
@@ -14,9 +15,9 @@ from moto import mock_sqs
 def test_sqs_send_message():
     sqs = boto3.client('sqs', region_name='eu-west-1')
     queue = sqs.create_queue(QueueName='create-user-group')
-    expected_message = str({"name": "DEFAULT", "organizationId": 1000})
+    expected_message = json.dumps({"name": "DEFAULT", "organizationId": 1000, "ownerId": "asdasd"})
     create.QUEUE_URL = queue["QueueUrl"]
-    create_user_group(organization_id=1000)
+    create_user_group(organization_id=1000, owner_id="asdasd")
     sqs_messages = sqs.receive_message(QueueUrl=queue["QueueUrl"])
     assert sqs_messages["Messages"][0]["Body"] == expected_message
     assert len(sqs_messages["Messages"]) == 1
