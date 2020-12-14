@@ -23,7 +23,7 @@ def lambda_handler(event, context):
     user require info about one user group or multiple
     """
     global CONNECTION
-    owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"#event["requestContext"]["authorizer"]["lambda"]["sub"]
+    owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
 
     if CONNECTION is None:
         CONNECTION = init_db()

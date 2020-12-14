@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         CONNECTION = init_db()
 
     try:
-        owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"  # event["requestContext"]["authorizer"]["lambda"]["sub"]
+        owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
         payload = json.loads(event["body"])
         user_group_id = event["pathParameters"]["id"]
         m = UserGroupsApiEditInput.parse_obj(payload)

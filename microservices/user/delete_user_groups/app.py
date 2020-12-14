@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         CONNECTION = init_db()
 
     try:
-        owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"  # event["requestContext"]["authorizer"]["lambda"]["sub"]
+        owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
         user_group_id = event["pathParameters"]["id"]
         response = delete_user_groups(
             owner_id=owner_id, user_group_id=user_group_id, connection=CONNECTION
