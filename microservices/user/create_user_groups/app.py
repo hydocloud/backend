@@ -22,14 +22,17 @@ CONNECTION = None
 def parse_input(event: dict) -> dict:
     """ Parse input to check if it's came from api or sqs """
     try:
+        owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
         message = json.loads(event["body"])
         UserGroupsApiInput.parse_obj(message)
-        return json.loads(event["body"])
+        return json.loads(event["body"]), owner_id
     except (ValidationError, KeyError) as err:
         logger.info(err)
     try:
         message = json.loads(event["Records"][0]["body"])
-        return message
+        owner_id = message["ownerId"]
+        del message['ownerId']
+        return message, owner_id
     except (ValidationError, KeyError) as err:
         logger.info(err)
 
@@ -44,8 +47,7 @@ def lambda_handler(event, context):
         CONNECTION = init_db()
 
     try:
-        owner_id = "ddd6de86-52be-447b-a8e2-54f40fa78cd1"  # event["requestContext"]["authorizer"]["lambda"]["sub"]
-        payload = parse_input(event)
+        payload, owner_id = parse_input(event)
         m = UserGroupsApiInput.parse_obj(payload)
         response = create_user_groups(owner_id, m, CONNECTION)
     except ValidationError:

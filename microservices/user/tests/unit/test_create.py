@@ -11,7 +11,7 @@ def sqs_event():
             {
                 "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
                 "receiptHandle": "MessageReceiptHandle",
-                "body": '{"name": "DEFAULT", "organizationId": 2}',
+                "body": '{"name": "DEFAULT", "organizationId": 2, "ownerId": "asdasd"}',
                 "attributes": {
                     "ApproximateReceiveCount": "1",
                     "SentTimestamp": "1523232000000",
@@ -84,6 +84,11 @@ def apigw_event():
             "X-Forwarded-Proto": ["https"],
         },
         "requestContext": {
+            "authorizer": {
+                "lambda": {
+                    "sub": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef"
+                }
+            },
             "accountId": "123456789012",
             "resourceId": "123456",
             "stage": "prod",
@@ -113,12 +118,18 @@ def apigw_event():
 
 
 def test_parse_input_sqs(sqs_event):
-    expected_message = json.loads(sqs_event["Records"][0]["body"])
-    res = parse_input(sqs_event)
+    message = json.loads(sqs_event["Records"][0]["body"])
+    expected_owner_id = message["ownerId"]
+    del message['ownerId']
+    expected_message = message
+    res, owner_id = parse_input(sqs_event)
     assert res == expected_message
+    assert owner_id == expected_owner_id
 
 
 def test_parse_input_apigw(apigw_event):
+    expected_owner_id = apigw_event["requestContext"]["authorizer"]["lambda"]["sub"]
     expected_message = json.loads(apigw_event["body"])
-    res = parse_input(apigw_event)
+    res, owner_id = parse_input(apigw_event)
     assert res == expected_message
+    assert owner_id == expected_owner_id

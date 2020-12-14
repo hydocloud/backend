@@ -20,9 +20,14 @@ logger = logging.getLogger(__name__)
 QUEUE_URL = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
 
 
-def create_user_group(organization_id: int, name: str = "DEFAULT"):
+def create_user_group(organization_id: int, owner_id: str, name: str = "DEFAULT"):
     sqs = boto3.client("sqs")
-    message = str({"name": name, "organizationId": organization_id})
+    message = str({
+        "name": name,
+        "organizationId": organization_id,
+        "ownerId": owner_id
+        }
+    )
     try:
         sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=(message))
     except ClientError as err:
