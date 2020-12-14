@@ -2,6 +2,7 @@ import logging
 import datetime
 import os
 import boto3
+import json
 from botocore.exceptions import ClientError
 from models.organizations import Organization, OrganizationsList, ResponseModel
 from models.api_response import (
@@ -22,7 +23,7 @@ QUEUE_URL = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
 
 def create_user_group(organization_id: int, owner_id: str, name: str = "DEFAULT"):
     sqs = boto3.client("sqs")
-    message = str({
+    message = json.dumps({
         "name": name,
         "organizationId": organization_id,
         "ownerId": owner_id
