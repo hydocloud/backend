@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -16,7 +16,7 @@ class UserGroups(Base):
     name = Column(String)
     organization_id = Column(Integer)
     owner_id = Column(UUID(as_uuid=True))
-    user_group_belog_to_user = relationship("UserBelongUserGroups", cascade="all, delete")  
+    user_group_belog_to_user = relationship("UserBelongUserGroups", cascade="all, delete")
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -48,6 +48,7 @@ class UserGroupsModel(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserGroupsModelShort(BaseModel):
 
     id: int
@@ -77,6 +78,6 @@ class UserGroupsApiInput(BaseModel):
     name: str
     organizationId: int
 
+
 class UserGroupsApiEditInput(BaseModel):
     name: str
-    
