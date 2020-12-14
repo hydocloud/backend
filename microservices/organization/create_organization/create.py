@@ -61,7 +61,7 @@ def create_organization(owner_id, payload, connection: Session):
         connection.refresh(org)
 
         # Call user group
-        create_user_group(organization_id=org.id)
+        create_user_group(organization_id=org.id, owner_id=owner_id)
 
         return LambdaSuccessResponse(
             statusCode=201,
