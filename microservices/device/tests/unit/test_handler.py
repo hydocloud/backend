@@ -2,13 +2,11 @@ import pytest
 import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.devices import (
-    Base,
-    DeviceGroupsApiInput,
-)
+from models.devices import Base, DeviceGroupsApiInput, DeviceGroupsApiEditInput
 from create_device_group.create import create_device_groups
 from delete_device_group.delete import delete_device_groups
 from get_device_groups.get import get_device_groups
+from edit_device_group.edit import edit_device_group
 
 
 @pytest.fixture(scope="function")
@@ -69,19 +67,7 @@ def test_database(setup_database):
     ids.append(body["data"]["deviceGroups"][0]["id"])
     assert res["statusCode"] == 201
     assert body["data"]["deviceGroups"][0]["name"] == "test1"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1        
-
-    # res = edit_device_group(
-    #     owner_id=owner_id,
-    #     device_group_id=device_group_1_id,
-    #     payload=DeviceGroupsApiEditInput.parse_obj({"name": "saeeqw"}),
-    #     connection=session,
-    # )
-
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 201
-    # assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
-    # assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
 
     res = get_device_groups(
         connection=session, device_group_id=device_group_1_id, owner_id=owner_id
@@ -89,6 +75,26 @@ def test_database(setup_database):
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
     assert body["data"]["deviceGroups"][0]["name"] == "test1"
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+
+    res = edit_device_group(
+        owner_id=owner_id,
+        device_group_id=device_group_1_id,
+        payload=DeviceGroupsApiEditInput.parse_obj({"name": "saeeqw"}),
+        connection=session,
+    )
+
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 201
+    assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+
+    res = get_device_groups(
+        connection=session, device_group_id=device_group_1_id, owner_id=owner_id
+    )
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 200
+    assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
     assert body["data"]["deviceGroups"][0]["organizationId"] == 1
 
     res = get_device_groups(connection=session, owner_id=owner_id)
@@ -104,22 +110,20 @@ def test_database(setup_database):
     assert body["message"] == "Ok"
 
     for id in ids:
-        delete_device_groups(
-            owner_id=owner_id, connection=session, device_group_id=id
-        )
+        delete_device_groups(owner_id=owner_id, connection=session, device_group_id=id)
 
-    # # Bad behavior
+    # Bad behavior
 
-    # res = delete_device_groups(
-    #     owner_id=owner_id, connection=session, device_group_id=100000
-    # )
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 404
-    # assert body["message"] == "Not found"
+    res = delete_device_groups(
+        owner_id=owner_id, connection=session, device_group_id=100000
+    )
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 404
+    assert body["message"] == "Not found"
 
-    # res = delete_device_groups(
-    #     owner_id="asdsads", connection=session, device_group_id=device_group_1_id
-    # )
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 500
-    # assert body["message"] == "Internal server error"
+    res = delete_device_groups(
+        owner_id="asdsads", connection=session, device_group_id=device_group_1_id
+    )
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 500
+    assert body["message"] == "Internal server error"
