@@ -35,28 +35,28 @@ def lambdas(self):
         source=SqsEventSource(self.create_device_group_queue, batch_size=1)
     )
 
-    # delete_device_groups_lambda = _lambda.Function(
-    #     self,
-    #     "DeleteDeviceGroup",
-    #     runtime=_lambda.Runtime.PYTHON_3_8,
-    #     code=_lambda.Code.asset("{}/device/delete_device_groups".format(path)),
-    #     handler="app.lambda_handler",
-    #     tracing=_lambda.Tracing.ACTIVE,
-    #     environment={
-    #         "DB_PORT": self.rds.db_instance_endpoint_port,
-    #         "DB_HOST": self.rds.db_instance_endpoint_address,
-    #         "DB_NAME": "devices",
-    #         "DB_ENGINE": "postgresql",
-    #         "DB_USER": "loginService",
-    #         "DB_PASSWORD": "ciaociao",
-    #     },
-    #     layers=[
-    #         self.create_dependencies_layer(
-    #             "Depencendies", "DeleteDeviceGroup", "/device/delete_device_groups"
-    #         ),
-    #         self.create_model_layer("ModelLayer", "DeleteDeviceGroup", "/device"),
-    #     ],
-    # )
+    delete_device_group_lambda = _lambda.Function(
+        self,
+        "DeleteDeviceGroup",
+        runtime=_lambda.Runtime.PYTHON_3_8,
+        code=_lambda.Code.asset("{}/device/delete_device_group".format(path)),
+        handler="app.lambda_handler",
+        tracing=_lambda.Tracing.ACTIVE,
+        environment={
+            "DB_PORT": self.rds.db_instance_endpoint_port,
+            "DB_HOST": self.rds.db_instance_endpoint_address,
+            "DB_NAME": "devices",
+            "DB_ENGINE": "postgresql",
+            "DB_USER": "loginService",
+            "DB_PASSWORD": "ciaociao",
+        },
+        layers=[
+            self.create_dependencies_layer(
+                "Depencendies", "DeleteDeviceGroup", "/device/delete_device_group"
+            ),
+            self.create_model_layer("ModelLayer", "DeleteDeviceGroup", "/device"),
+        ],
+    )
 
     # edit_device_groups_lambda = _lambda.Function(
     #     self,
@@ -120,13 +120,13 @@ def lambdas(self):
     #     ),
     # )
 
-    # self.http_api.add_routes(
-    #     path="/devices/groups/{id}",
-    #     methods=[HttpMethod.DELETE],
-    #     integration=apigw2_integrations.LambdaProxyIntegration(
-    #         handler=delete_device_groups_lambda
-    #     ),
-    # )
+    self.http_api.add_routes(
+        path="/devices/groups/{id}",
+        methods=[HttpMethod.DELETE],
+        integration=apigw2_integrations.LambdaProxyIntegration(
+            handler=delete_device_group_lambda
+        ),
+    )
 
     # self.http_api.add_routes(
     #     path="/devices/groups",
