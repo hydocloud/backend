@@ -5,6 +5,8 @@ from aws_cdk import (
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
 
+LAMBDA_HANDLER = "app.lambda_handler"
+
 
 def lambdas(self):
     path = self.current_path
@@ -14,7 +16,7 @@ def lambdas(self):
         "CreateUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
         code=_lambda.Code.asset("{}/user/create_user_groups".format(path)),
-        handler="app.lambda_handler",
+        handler=LAMBDA_HANDLER,
         tracing=_lambda.Tracing.ACTIVE,
         environment={
             "DB_PORT": self.rds.db_instance_endpoint_port,
@@ -40,7 +42,7 @@ def lambdas(self):
         "DeleteUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
         code=_lambda.Code.asset("{}/user/delete_user_groups".format(path)),
-        handler="app.lambda_handler",
+        handler=LAMBDA_HANDLER,
         tracing=_lambda.Tracing.ACTIVE,
         environment={
             "DB_PORT": self.rds.db_instance_endpoint_port,
@@ -63,7 +65,7 @@ def lambdas(self):
         "EditUserGroup",
         runtime=_lambda.Runtime.PYTHON_3_8,
         code=_lambda.Code.asset("{}/user/edit_user_group".format(path)),
-        handler="app.lambda_handler",
+        handler=LAMBDA_HANDLER,
         tracing=_lambda.Tracing.ACTIVE,
         environment={
             "DB_PORT": self.rds.db_instance_endpoint_port,
@@ -86,7 +88,7 @@ def lambdas(self):
         "GetUserGroups",
         runtime=_lambda.Runtime.PYTHON_3_8,
         code=_lambda.Code.asset("{}/user/get_user_groups".format(path)),
-        handler="app.lambda_handler",
+        handler=LAMBDA_HANDLER,
         tracing=_lambda.Tracing.ACTIVE,
         environment={
             "DB_PORT": self.rds.db_instance_endpoint_port,
