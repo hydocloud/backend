@@ -7,7 +7,7 @@ from aws_cdk import (
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
-    aws_sqs as sqs
+    aws_sqs as sqs,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
@@ -15,7 +15,9 @@ import os
 import pathlib
 import subprocess
 from shutil import copyfile, copytree
-import hydo.user_group as user_group
+from hydo import user_group, devices
+
+LAMBDA_HANDLER = "app.lambda_handler"
 
 
 class OrganizationeStack(core.Stack):
@@ -34,15 +36,11 @@ class OrganizationeStack(core.Stack):
         self.rds = rds
 
         self.create_user_group_queue = sqs.Queue(
-            self,
-            "CreateUserGroupQueue",
-            queue_name="create-user-group"
+            self, "CreateUserGroupQueue", queue_name="create-user-group"
         )
 
         self.create_device_group_queue = sqs.Queue(
-            self,
-            "CreateDeviceGroupQueue",
-            queue_name="create-device-group"
+            self, "CreateDeviceGroupQueue", queue_name="create-device-group"
         )
 
         # The code that defines your stack goes here
@@ -53,7 +51,7 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.asset(
                 "{}/organization/create_organization".format(self.current_path)
             ),
-            handler="app.lambda_handler",
+            handler=LAMBDA_HANDLER,
             tracing=_lambda.Tracing.ACTIVE,
             environment={
                 "DB_PORT": rds.db_instance_endpoint_port,
@@ -62,7 +60,7 @@ class OrganizationeStack(core.Stack):
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
                 "DB_PASSWORD": "ciaociao",
-                "QUEUE_URL": self.create_user_group_queue.queue_url
+                "QUEUE_URL": self.create_user_group_queue.queue_url,
             },
             layers=[
                 self.create_dependencies_layer(
@@ -83,7 +81,7 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.asset(
                 "{}/organization/edit_organization".format(self.current_path)
             ),
-            handler="app.lambda_handler",
+            handler=LAMBDA_HANDLER,
             tracing=_lambda.Tracing.ACTIVE,
             environment={
                 "DB_PORT": rds.db_instance_endpoint_port,
@@ -112,7 +110,7 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.asset(
                 "{}/organization/delete_organization".format(self.current_path)
             ),
-            handler="app.lambda_handler",
+            handler=LAMBDA_HANDLER,
             tracing=_lambda.Tracing.ACTIVE,
             environment={
                 "DB_PORT": rds.db_instance_endpoint_port,
@@ -143,7 +141,7 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.asset(
                 "{}/organization/get_organizations".format(self.current_path)
             ),
-            handler="app.lambda_handler",
+            handler=LAMBDA_HANDLER,
             tracing=_lambda.Tracing.ACTIVE,
             environment={
                 "DB_PORT": rds.db_instance_endpoint_port,
@@ -172,7 +170,7 @@ class OrganizationeStack(core.Stack):
             code=_lambda.Code.asset(
                 "{}/authorizer/authorizer".format(self.current_path)
             ),
-            handler="app.lambda_handler",
+            handler=LAMBDA_HANDLER,
             tracing=_lambda.Tracing.ACTIVE,
             environment={"JWT_SECRET": "secret"},
             layers=[
@@ -268,6 +266,7 @@ class OrganizationeStack(core.Stack):
         route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
 
         user_group.lambdas(self)
+        devices.lambdas(self)
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
