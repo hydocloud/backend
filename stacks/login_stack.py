@@ -1,4 +1,4 @@
-''' Stack to deploy login service '''
+""" Stack to deploy login service """
 import os
 import pathlib
 import subprocess
@@ -20,18 +20,19 @@ from utils.prefix import env_specific, domain_specific
 
 
 class LoginStack(core.Stack):
-    '''
+    """
     Class that deploy all services for login:
     Lambdas,
     Http api,
     Certificate
     Database
-    '''
+    """
+
     def __init__(
         self,
         scope: core.Construct,
         id: str,
-        rds_stack: rds  ,
+        rds_stack: rds,
         dns_stack: route53,
         certificate_stack: certificate_manager,
         **kwargs,
@@ -47,7 +48,7 @@ class LoginStack(core.Stack):
                 name="id", type=dynamodb.AttributeType.STRING
             ),
             time_to_live_attribute="expiration_time",
-            billing_mode=BillingMode.PAY_PER_REQUEST
+            billing_mode=BillingMode.PAY_PER_REQUEST,
         )
         nonce_table = dynamodb.Table(
             self,
@@ -59,7 +60,7 @@ class LoginStack(core.Stack):
                 name="message", type=dynamodb.AttributeType.STRING
             ),
             time_to_live_attribute="expiration_time",
-            billing_mode=BillingMode.PAY_PER_REQUEST
+            billing_mode=BillingMode.PAY_PER_REQUEST,
         )
 
         # Lambda layer
@@ -260,7 +261,7 @@ class LoginStack(core.Stack):
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
     ) -> _lambda.LayerVersion:
-        ''' Install dependencies on lambda and return layer '''
+        """ Install dependencies on lambda and return layer """
         requirements_file = "{}/{}/requirements.txt".format(
             self.current_path, folder_name
         )

@@ -32,10 +32,7 @@ def lambdas(self):
         ],
     )
     create_user_groups_lambda.add_event_source(
-        source=SqsEventSource(
-            self.create_user_group_queue,
-            batch_size=1
-        )
+        source=SqsEventSource(self.create_user_group_queue, batch_size=1)
     )
 
     delete_user_groups_lambda = _lambda.Function(
