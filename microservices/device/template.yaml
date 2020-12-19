@@ -5,7 +5,7 @@ Globals:
     Timeout: 300
 
 Resources:
-  CreateDeviceGroupsFunction:
+  CreateDeviceGroupFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: create_device_group/
@@ -25,71 +25,71 @@ Resources:
           Properties:
             Path: /devices/groups
             Method: POST          
-  # DeleteDeviceGroupFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: delete_device_groups/
-  #     Handler: app.lambda_handler
-  #     Runtime: python3.8
-  #     Environment:
-  #       Variables:
-  #         DB_PORT: ""
-  #         DB_HOST: ""
-  #         DB_NAME: ""
-  #         DB_ENGINE: ""
-  #         DB_USER: ""
-  #         DB_PASSWORD: ""          
-  #     Events:
-  #       DeleteDeviceGroup:
-  #         Type: Api
-  #         Properties:
-  #           Path: /devices/groups/{id}
-  #           Method: DELETE
+  DeleteDeviceGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: delete_device_group/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
+      Events:
+        DeleteDeviceGroup:
+          Type: Api
+          Properties:
+            Path: /devices/groups/{id}
+            Method: DELETE
 
-  # GetDeviceGroupsFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: get_device_groups/
-  #     Handler: app.lambda_handler
-  #     Runtime: python3.8
-  #     Environment:
-  #       Variables:
-  #         DB_PORT: ""
-  #         DB_HOST: ""
-  #         DB_NAME: ""
-  #         DB_ENGINE: ""
-  #         DB_USER: ""
-  #         DB_PASSWORD: ""          
-  #     Events:
-  #       GetDeviceGroup:
-  #         Type: Api
-  #         Properties:
-  #           Path: /devices/groups/{id}
-  #           Method: GET
-  #       GetDeviceGroups:
-  #         Type: Api
-  #         Properties:
-  #           Path: /devices/groups
-  #           Method: GET
+  GetDeviceGroupsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get_device_groups/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
+      Events:
+        GetDeviceGroup:
+          Type: Api
+          Properties:
+            Path: /devices/groups/{id}
+            Method: GET
+        GetDeviceGroups:
+          Type: Api
+          Properties:
+            Path: /devices/groups
+            Method: GET
 
-  # EditDeviceGroupFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: edit_device_group/
-  #     Handler: app.lambda_handler
-  #     Runtime: python3.8
-  #     Environment:
-  #       Variables:
-  #         DB_PORT: ""
-  #         DB_HOST: ""
-  #         DB_NAME: ""
-  #         DB_ENGINE: ""
-  #         DB_USER: ""
-  #         DB_PASSWORD: ""          
-  #     Events:
-  #       GetDeviceGroup:
-  #         Type: Api
-  #         Properties:
-  #           Path: /devices/groups/{id}
-  #           Method: PUT
+  EditDeviceGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: edit_device_group/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""          
+      Events:
+        GetDeviceGroup:
+          Type: Api
+          Properties:
+            Path: /devices/groups/{id}
+            Method: PUT
             
