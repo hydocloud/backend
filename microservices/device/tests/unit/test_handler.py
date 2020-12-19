@@ -7,6 +7,8 @@ from models.devices import (
     DeviceGroupsApiInput,
 )
 from create_device_group.create import create_device_groups
+from delete_device_group.delete import delete_device_groups
+from get_device_groups.get import get_device_groups
 
 
 @pytest.fixture(scope="function")
@@ -27,6 +29,7 @@ def test_database(setup_database):
     # Gets the session from the fixture
     session = setup_database
     owner_id = "ff1af476-cf84-47e9-a25a-e109060d4006"
+    ids = []
 
     # Right behavior
     res = create_device_groups(
@@ -36,10 +39,37 @@ def test_database(setup_database):
     )
 
     body = json.loads(res["body"])
-    # device_group_1_id = body["data"]["deviceGroups"][0]["id"]
+    device_group_1_id = body["data"]["deviceGroups"][0]["id"]
     assert res["statusCode"] == 201
     assert body["data"]["deviceGroups"][0]["name"] == "test1"
     assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    ids.append(device_group_1_id)
+
+    # Right behavior
+    res = create_device_groups(
+        owner_id=owner_id,
+        payload=DeviceGroupsApiInput.parse_obj({"name": "test1", "organizationId": 1}),
+        connection=session,
+    )
+
+    body = json.loads(res["body"])
+    ids.append(body["data"]["deviceGroups"][0]["id"])
+    assert res["statusCode"] == 201
+    assert body["data"]["deviceGroups"][0]["name"] == "test1"
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+
+    # Right behavior
+    res = create_device_groups(
+        owner_id=owner_id,
+        payload=DeviceGroupsApiInput.parse_obj({"name": "test1", "organizationId": 1}),
+        connection=session,
+    )
+
+    body = json.loads(res["body"])
+    ids.append(body["data"]["deviceGroups"][0]["id"])
+    assert res["statusCode"] == 201
+    assert body["data"]["deviceGroups"][0]["name"] == "test1"
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1        
 
     # res = edit_device_group(
     #     owner_id=owner_id,
@@ -53,24 +83,30 @@ def test_database(setup_database):
     # assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
     # assert body["data"]["deviceGroups"][0]["organizationId"] == 1
 
-    # res = get_device_groups(connection=session, device_group_id=device_group_1_id, owner_id=owner_id)
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 200
-    # assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
-    # assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    res = get_device_groups(
+        connection=session, device_group_id=device_group_1_id, owner_id=owner_id
+    )
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 200
+    assert body["data"]["deviceGroups"][0]["name"] == "test1"
+    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
 
-    # res = get_device_groups(connection=session, owner_id=owner_id)
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 200
-    # assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
-    # assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    res = get_device_groups(connection=session, owner_id=owner_id)
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 200
+    assert len(body["data"]["deviceGroups"]) == 3
 
-    # res = delete_device_groups(
-    #     owner_id=owner_id, connection=session, device_group_id=device_group_1_id
-    # )
-    # body = json.loads(res["body"])
-    # assert res["statusCode"] == 201
-    # assert body["message"] == "Ok"
+    res = delete_device_groups(
+        owner_id=owner_id, connection=session, device_group_id=device_group_1_id
+    )
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 201
+    assert body["message"] == "Ok"
+
+    for id in ids:
+        delete_device_groups(
+            owner_id=owner_id, connection=session, device_group_id=id
+        )
 
     # # Bad behavior
 
