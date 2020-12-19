@@ -108,7 +108,7 @@ def lambdas(self):
     )
 
     self.http_api.add_routes(
-        path="/userGroups",
+        path="/users/groups",
         methods=[HttpMethod.POST],
         integration=apigw2_integrations.LambdaProxyIntegration(
             handler=create_user_groups_lambda
@@ -116,7 +116,7 @@ def lambdas(self):
     )
 
     self.http_api.add_routes(
-        path="/userGroups/{id}",
+        path="/users/groups/{id}",
         methods=[HttpMethod.PUT],
         integration=apigw2_integrations.LambdaProxyIntegration(
             handler=edit_user_groups_lambda
@@ -124,7 +124,7 @@ def lambdas(self):
     )
 
     self.http_api.add_routes(
-        path="/userGroups/{id}",
+        path="/users/groups/{id}",
         methods=[HttpMethod.DELETE],
         integration=apigw2_integrations.LambdaProxyIntegration(
             handler=delete_user_groups_lambda
@@ -132,7 +132,7 @@ def lambdas(self):
     )
 
     self.http_api.add_routes(
-        path="/userGroups",
+        path="/users/groups",
         methods=[HttpMethod.GET],
         integration=apigw2_integrations.LambdaProxyIntegration(
             handler=get_user_groups_lambda
@@ -140,7 +140,7 @@ def lambdas(self):
     )
 
     self.http_api.add_routes(
-        path="/userGroups/{id}",
+        path="/users/groups/{id}",
         methods=[HttpMethod.GET],
         integration=apigw2_integrations.LambdaProxyIntegration(
             handler=get_user_groups_lambda
