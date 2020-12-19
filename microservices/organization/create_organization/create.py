@@ -18,20 +18,22 @@ from aws_lambda_powertools import Tracer
 tracer = Tracer(service="create_organization")
 
 logger = logging.getLogger(__name__)
-QUEUE_URL = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
+QUEUE_URLS = os.environ["QUEUE_URLS"] if "QUEUE_URLS" in os.environ else None
 
 
-def create_user_group(organization_id: int, owner_id: str, name: str = "DEFAULT"):
+def create_user_device_default_group(organization_id: int, owner_id: str, name: str = "DEFAULT"):
+
     sqs = boto3.client("sqs")
-    message = json.dumps({
-        "name": name,
-        "organizationId": organization_id,
-        "ownerId": owner_id
-        }
+    message = json.dumps(
+        {"name": name, "organizationId": organization_id, "ownerId": owner_id}
     )
     try:
-        sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=(message))
+        queue_urls = json.loads(QUEUE_URLS)
+        for queue in queue_urls:
+            sqs.send_message(QueueUrl=queue, MessageBody=(message))
     except ClientError as err:
+        logger.error(err)
+    except ValueError as err:
         logger.error(err)
 
 
