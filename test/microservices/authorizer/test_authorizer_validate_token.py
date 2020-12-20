@@ -1,8 +1,7 @@
-import json
-import pytest
-import jwt
 import datetime
-import sys, os, uuid
+import uuid
+import jwt
+
 from microservices.authorizer.authorizer.app import validate_token
 
 user_uuid = uuid.uuid4().__str__()
