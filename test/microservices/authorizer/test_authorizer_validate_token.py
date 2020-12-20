@@ -37,4 +37,4 @@ def test_validate_token_not_valid(monkeypatch):
         algorithm="HS256",
     ).decode()
     res = validate_token(encoded_jwt)
-    assert res == False
+    assert res is False

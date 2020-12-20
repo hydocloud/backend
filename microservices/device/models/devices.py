@@ -38,7 +38,6 @@ class Devices(Base):
 
 
 class DeviceGroupsModel(BaseModel):
-
     id: int
     name: str
     organization_id: int
@@ -51,7 +50,6 @@ class DeviceGroupsModel(BaseModel):
 
 
 class DeviceGroupsModelShort(BaseModel):
-
     id: int
     name: str
     organization_id: int = Field(..., alias="organizationId")
@@ -63,7 +61,6 @@ class DeviceGroupsModelShort(BaseModel):
 
 
 class DevicesModel(BaseModel):
-
     id: int
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
