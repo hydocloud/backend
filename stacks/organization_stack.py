@@ -43,6 +43,12 @@ class OrganizationeStack(core.Stack):
             self, "CreateDeviceGroupQueue", queue_name="create-device-group"
         )
 
+        self.create_authorization_device_queue = sqs.Queue(
+            self,
+            "CreateAuthorizationDeviceQueue",
+            queue_name="create-authorization-device",
+        )
+
         # The code that defines your stack goes here
         create_organization_lambda = _lambda.Function(
             self,
