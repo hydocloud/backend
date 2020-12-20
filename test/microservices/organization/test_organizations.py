@@ -1,19 +1,38 @@
 import pytest
+import boto3
+import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from microservices.organization.models.organizations import Base
-from microservices.organization.get_organizations.get import (
-    get_organization,
-    get_organizations,
-)
-from microservices.organization.create_organization.create import create_organization
-from microservices.organization.edit_organization.edit import edit_organization
-from microservices.organization.delete_organization.delete import delete_organization
+from get_organizations.get import get_organization, get_organizations
+from create_organization.create import create_organization, create_user_device_default_group
+import create_organization.create as create
+from edit_organization.edit import edit_organization
+from delete_organization.delete import delete_organization
+from moto import mock_sqs
+
+
+@mock_sqs
+def test_sqs_send_message():
+    sqs = boto3.client("sqs", region_name="eu-west-1")
+    user_queue = sqs.create_queue(QueueName="create-user-group")
+    device_queue = sqs.create_queue(QueueName="create-device-group")
+    expected_message = json.dumps(
+        {"name": "DEFAULT", "organizationId": 1000, "ownerId": "asdasd"}
+    )
+    create.QUEUE_URLS = f'["{user_queue["QueueUrl"]}", "{device_queue["QueueUrl"]}"]'
+    create_user_device_default_group(organization_id=1000, owner_id="asdasd")
+    sqs_user_messages = sqs.receive_message(QueueUrl=user_queue["QueueUrl"])
+    sqs_device_messages = sqs.receive_message(QueueUrl=device_queue["QueueUrl"])
+    assert sqs_user_messages["Messages"][0]["Body"] == expected_message
+    assert len(sqs_user_messages["Messages"]) == 1
+    assert sqs_device_messages["Messages"][0]["Body"] == expected_message
+    assert len(sqs_device_messages["Messages"]) == 1
 
 
 @pytest.fixture(scope="function")
 def setup_database():
+
     engine = create_engine(
         "postgresql://postgres:ciaociao@localhost:5432/test_database"
     )
@@ -25,6 +44,7 @@ def setup_database():
 
 
 def test_database(setup_database):
+
     # Gets the session from the fixture
     session = setup_database
     owner_id = "ff1af476-cf84-47e9-a25a-e109060d4006"
@@ -105,7 +125,7 @@ def test_database(setup_database):
     res = get_organizations(
         owner_id=owner_id,
         page_size=page_size,
-        page_number=int(dataset_size / page_size),
+        page_number=dataset_size / page_size,
         connection=session,
     )
     assert res.body.data.nextPage is None
@@ -118,10 +138,6 @@ def test_database(setup_database):
     assert res.body.data.previousPage is None
 
     for i in range(dataset_size):
-        print(org_ids[i])
-        res = delete_organization(
+        delete_organization(
             owner_id=owner_id, connection=session, organization_id=org_ids[i]
         )
-        assert res.statusCode == 201
-
-# sys.path.pop()

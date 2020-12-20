@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".") + "/microservices/user")
+sys.path.insert(0, os.path.abspath("..") + "/microservices/user")
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
