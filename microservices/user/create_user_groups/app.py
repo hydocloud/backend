@@ -4,9 +4,9 @@ from create import create_user_groups
 from models.users import UserGroupsApiInput
 from models.api_response import Message, LambdaResponse
 from database import init_db
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 from pydantic import ValidationError
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 tracer = Tracer(service="create_user_group")
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 CONNECTION = None
 
 
-def parse_input(event: dict) -> Tuple[dict, str]:
+def parse_input(event: dict) -> Tuple[dict, Optional[str]]:
     """ Parse input to check if it's came from api or sqs """
     try:
         owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]

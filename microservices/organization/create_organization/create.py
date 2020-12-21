@@ -13,12 +13,12 @@ from models.api_response import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="create_organization")
 
 logger = logging.getLogger(__name__)
-QUEUE_URLS = os.environ["QUEUE_URLS"] if "QUEUE_URLS" in os.environ else None
+QUEUE_URLS = str(os.environ["QUEUE_URLS"]) if "QUEUE_URLS" in os.environ else ""
 
 
 def create_user_device_default_group(

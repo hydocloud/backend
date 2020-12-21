@@ -14,8 +14,8 @@ from models.api_response import (
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
-from aws_lambda_powertools import Tracer
-from sqlalchemy_paginator import Paginator, exceptions
+from aws_lambda_powertools import Tracer  # type: ignore
+from sqlalchemy_paginator import Paginator, exceptions  # type: ignore
 
 tracer = Tracer(service="get_organization")
 

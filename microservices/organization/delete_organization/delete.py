@@ -7,7 +7,7 @@ from models.api_response import (
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 import logging
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="delete_organization")
 

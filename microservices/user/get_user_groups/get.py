@@ -10,8 +10,8 @@ from models.api_response import LambdaResponse, UserGroupsList, DataModel, Messa
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
-from aws_lambda_powertools import Tracer
-from sqlalchemy_paginator import Paginator
+from aws_lambda_powertools import Tracer  # type: ignore
+from sqlalchemy_paginator import Paginator  # type: ignore
 from pydantic import ValidationError, parse_obj_as
 
 tracer = Tracer(service="get_user_group")
@@ -26,7 +26,7 @@ def get_user_groups(
     user_group_id: str = None,
     page_number: int = 1,
     page_size: int = 5,
-) -> LambdaResponse:
+) -> dict:
     """ Get data about one user group or multiple"""
 
     try:

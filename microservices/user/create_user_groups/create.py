@@ -13,7 +13,7 @@ from models.api_response import LambdaResponse, DataModel, UserGroupsList, Messa
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="create_user_group")
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @tracer.capture_method
 def create_user_groups(
     owner_id: str, payload: UserGroupsApiInput, connection: Session
-) -> LambdaResponse:
+) -> dict:
     """ Function that create user group on db """
 
     try:

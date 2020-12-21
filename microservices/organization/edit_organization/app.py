@@ -3,7 +3,7 @@ import json
 from edit import edit_organization
 from models.organizations import OrganizationsUpdate
 from database import init_db
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="edit_organization")
 
