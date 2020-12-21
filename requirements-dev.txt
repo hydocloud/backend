@@ -2,3 +2,6 @@ black
 eradicate
 vulture
 pylint
+pre-commit
+mypy
+sqlalchemy-stubs
