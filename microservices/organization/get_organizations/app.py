@@ -33,7 +33,9 @@ def lambda_handler(event, context):
         and "id" in event["pathParameters"]
     ):
         organization_id = event["pathParameters"]["id"]
-        response = get_organization(connection=CONNECTION, owner_id=owner_id, organization_id=organization_id)
+        response = get_organization(
+            connection=CONNECTION, owner_id=owner_id, organization_id=organization_id
+        )
     elif (
         "queryStringParameters" in event and event["queryStringParameters"] is not None
     ):
@@ -45,7 +47,10 @@ def lambda_handler(event, context):
             page_number = event["queryStringParameters"]["page"]
             page_size = event["queryStringParameters"]["pageSize"]
             response = get_organizations(
-                connection=CONNECTION, owner_id=owner_id, page_number=int(page_number), page_size=int(page_size) 
+                connection=CONNECTION,
+                owner_id=owner_id,
+                page_number=int(page_number),
+                page_size=int(page_size),
             )
         elif "pageSize" in event["queryStringParameters"]:
             page_size = event["queryStringParameters"]["pageSize"]

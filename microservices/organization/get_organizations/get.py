@@ -22,8 +22,6 @@ tracer = Tracer(service="get_organization")
 logger = logging.getLogger(__name__)
 
 
-
-
 @tracer.capture_method
 def get_organization(connection: Session, owner_id: str, organization_id: str):
     """ Get data about one organization"""
@@ -63,7 +61,9 @@ def get_organization(connection: Session, owner_id: str, organization_id: str):
 
 
 @tracer.capture_method
-def get_organizations(connection: Session,owner_id: str, page_number: int = 1, page_size: int = 5, ):
+def get_organizations(
+    connection: Session, owner_id: str, page_number: int = 1, page_size: int = 5,
+):
     """ Return all organizations that belong to user"""
 
     try:
@@ -107,6 +107,7 @@ def get_organizations(connection: Session,owner_id: str, page_number: int = 1, p
         )
 
     except exceptions.EmptyPage as err:
+        logger.error(err)
         return LambdaSuccessResponse(
             statusCode=201, body=Data(data=OrganizationsList(organizations=[]))
         )

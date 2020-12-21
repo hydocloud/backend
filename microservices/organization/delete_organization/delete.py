@@ -1,15 +1,12 @@
-from models.organizations import Organization, OrganizationsList, ResponseModel
+from models.organizations import Organization
 from models.api_response import (
     LambdaErrorResponse,
     LambdaSuccessResponseWithoutData,
     Message,
-    Data,
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 import logging
-from database import init_db
-import datetime
 from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="delete_organization")

@@ -1,12 +1,17 @@
 import json
 import logging
 from os import environ
-from models.api import LambdaSuccessResponse, LambdaErrorResponse, Message, InputMessage
+from models.api import InputMessage
 from models.wallet import Wallet
 from pydantic import ValidationError
 import boto3
 from botocore.exceptions import ClientError
-from compare_messages import get_message, decrypt, validate_data, update_session, delete_data
+from compare_messages import (
+    get_message,
+    decrypt,
+    validate_data,
+    update_session,
+)
 import asyncio
 
 loop = asyncio.get_event_loop()
@@ -16,25 +21,24 @@ logger.setLevel(logging.INFO)
 logging.basicConfig(level=logging.DEBUG)
 wallet_handle = None
 
-def get_session(session_id, dynamodb=None):
-    if dynamodb == None:
-        dynamodb = boto3.resource('dynamodb')    
-    try:    
-        table_name = environ['SESSION_TABLE_NAME']  
 
-        if environ['DYNAMODB_ENDPOINT_OVERRIDE'] !=  "":
-            dynamodb = boto3.resource('dynamodb', endpoint_url=environ['DYNAMODB_ENDPOINT_OVERRIDE'])
+def get_session(session_id, dynamodb=None):
+    if dynamodb is None:
+        dynamodb = boto3.resource("dynamodb")
+    try:
+        table_name = environ["SESSION_TABLE_NAME"]
+
+        if environ["DYNAMODB_ENDPOINT_OVERRIDE"] != "":
+            dynamodb = boto3.resource(
+                "dynamodb", endpoint_url=environ["DYNAMODB_ENDPOINT_OVERRIDE"]
+            )
 
         table = dynamodb.Table(table_name)
 
-        response = table.get_item(
-            Key={
-                'id': session_id
-            }
-        )
-        return response['Item']['status']
+        response = table.get_item(Key={"id": session_id})
+        return response["Item"]["status"]
     except ClientError as e:
-        error_code = e.response['Error']['Code']
+        error_code = e.response["Error"]["Code"]
         logger.error(e)
         if error_code == "ResourceNotFoundException":
             return 404
@@ -49,13 +53,14 @@ def get_session(session_id, dynamodb=None):
 
 async def init_wallet():
     global wallet_handle
-    
-    if wallet_handle == None:
+
+    if wallet_handle is None:
         x = Wallet()
         wallet_handle = await x.open_wallet()
-      
+
+
 def lambda_handler(event, context):
-    logger.info('Open wallet')
+    logger.info("Open wallet")
     loop.run_until_complete(init_wallet())
     try:
         payload = json.loads(event["body"])
@@ -63,35 +68,22 @@ def lambda_handler(event, context):
     except ValidationError as e:
         logger.error(e)
 
-    if get_session(payload['sessionId']) != 'PENDING':
-        return {
-            "statusCode": 400, 
-            "body": json.dumps({ "success": False})
-        }  
+    if get_session(payload["sessionId"]) != "PENDING":
+        return {"statusCode": 400, "body": json.dumps({"success": False})}
 
-    service_message = get_message(payload['message'])
+    service_message = get_message(payload["message"])
     if not service_message:
-        return {
-            "statusCode": 409, 
-            "body": json.dumps({ "success": False})
-        }
-    decrypted_user_message, decrypted_service_message = loop.run_until_complete(decrypt(payload['message'], service_message))
-    res, user_uuid = validate_data(json.loads(decrypted_user_message['message']), json.loads(decrypted_service_message['message']))
-    ### USE SQS TO SEND THIS MESSAGE ASYNC TO ANOTHER LAMBDA THAT WILL DELETE MESSAGE ###
-    #delete_data(payload['message'])
-    ########################
+        return {"statusCode": 409, "body": json.dumps({"success": False})}
+    decrypted_user_message, decrypted_service_message = loop.run_until_complete(
+        decrypt(payload["message"], service_message)
+    )
+    res, user_uuid = validate_data(
+        json.loads(decrypted_user_message["message"]),
+        json.loads(decrypted_service_message["message"]),
+    )
     logger.info(res)
     if res:
         update_session(payload["sessionId"], user_uuid)
-        return {
-            "statusCode": 200, 
-            "body": json.dumps({ "success": True})
-        }
+        return {"statusCode": 200, "body": json.dumps({"success": True})}
 
-    return {
-            "statusCode": 404, 
-            "body": json.dumps({ "success": False})
-    }
-
-
-    
+    return {"statusCode": 404, "body": json.dumps({"success": False})}

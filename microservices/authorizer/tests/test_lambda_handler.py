@@ -1,8 +1,6 @@
-import json
-import pytest
 import jwt
 import datetime
-import sys, os, uuid
+import uuid
 from authorizer.app import lambda_handler
 
 user_uuid = uuid.uuid4().__str__()
@@ -20,15 +18,11 @@ def test_lambda_handler_validate_token(monkeypatch):
         "secret",
         algorithm="HS256",
     ).decode()
-    event = {
-        "headers": {
-            "token": encoded_jwt
-        }
-    }
+    event = {"headers": {"token": encoded_jwt}}
     res = lambda_handler(event, None)
 
     assert res["context"]["sub"] == user_uuid
-    assert res["isAuthorized"] == True
+    assert res["isAuthorized"] is True
 
 
 def test_lambda_handler_invalidate_token(monkeypatch):
@@ -43,11 +37,7 @@ def test_lambda_handler_invalidate_token(monkeypatch):
         "secret2",
         algorithm="HS256",
     ).decode()
-    event = {
-        "headers": {
-            "token": encoded_jwt
-        }
-    }
+    event = {"headers": {"token": encoded_jwt}}
     res = lambda_handler(event, None)
 
-    assert res["isAuthorized"] == False
+    assert res["isAuthorized"] is False

@@ -47,6 +47,7 @@ class FixedOffsetTimezone(datetime.tzinfo):
 
     .. __: https://docs.python.org/library/datetime.html
     """
+
     _name = None
     _offset = ZERO
 
@@ -71,8 +72,10 @@ class FixedOffsetTimezone(datetime.tzinfo):
 
     def __repr__(self):
         offset_mins = self._offset.seconds // 60 + self._offset.days * 24 * 60
-        return "psycopg2.tz.FixedOffsetTimezone(offset=%r, name=%r)" \
-            % (offset_mins, self._name)
+        return "psycopg2.tz.FixedOffsetTimezone(offset=%r, name=%r)" % (
+            offset_mins,
+            self._name,
+        )
 
     def __getinitargs__(self):
         offset_mins = self._offset.seconds // 60 + self._offset.days * 24 * 60
@@ -110,6 +113,7 @@ class LocalTimezone(datetime.tzinfo):
 
     This is the exact implementation from the Python 2.3 documentation.
     """
+
     def utcoffset(self, dt):
         if self._isdst(dt):
             return DSTOFFSET
@@ -126,9 +130,17 @@ class LocalTimezone(datetime.tzinfo):
         return time.tzname[self._isdst(dt)]
 
     def _isdst(self, dt):
-        tt = (dt.year, dt.month, dt.day,
-              dt.hour, dt.minute, dt.second,
-              dt.weekday(), 0, -1)
+        tt = (
+            dt.year,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
+            dt.weekday(),
+            0,
+            -1,
+        )
         stamp = time.mktime(tt)
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0

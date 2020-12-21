@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
-from models.users import UserGroupsModelShort, UserBelongUserGroups
+from typing import List
+from models.users import UserGroupsModelShort
 
 
 class LambdaResponse(BaseModel):

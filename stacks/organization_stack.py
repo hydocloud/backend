@@ -133,9 +133,7 @@ class OrganizationeStack(core.Stack):
                     "/organization/delete_organization",
                 ),
                 self.create_model_layer(
-                    "DeleteOrganizationModels",
-                    "DeleteOrganization",
-                    "/organization",
+                    "DeleteOrganizationModels", "DeleteOrganization", "/organization",
                 ),
             ],
         )
@@ -300,8 +298,7 @@ class OrganizationeStack(core.Stack):
         output_dir = ".lambda_dependencies/" + function_name + "/commodities"
         os.makedirs(output_dir + "/python", exist_ok=True)
         copyfile(
-            "{}/database.py".format(base_path),
-            f"{output_dir}/python/database.py",
+            "{}/database.py".format(base_path), f"{output_dir}/python/database.py",
         )
         copytree(
             "{}/models".format(base_path),

@@ -4,15 +4,7 @@ import jwt
 import datetime
 import boto3
 from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Key, Attr
 from os import environ
-from models.api_response import (
-    LambdaSuccessResponse,
-    LambdaErrorResponse,
-    Data,
-    Message,
-)
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -22,7 +14,7 @@ dynamodb = boto3.resource("dynamodb")
 
 
 def get_session(session_id, dynamodb=None):
-    if dynamodb == None:
+    if dynamodb is None:
         dynamodb = boto3.resource("dynamodb")
     try:
         table_name = environ["SESSION_TABLE_NAME"]
@@ -55,7 +47,7 @@ def get_session(session_id, dynamodb=None):
 
 
 def terminate_session(session_id, dynamodb=None):
-    if dynamodb == None:
+    if dynamodb is None:
         dynamodb = boto3.resource("dynamodb")
     try:
         table_name = environ["SESSION_TABLE_NAME"]
@@ -121,7 +113,7 @@ def lambda_handler(event, context):
     session_id = event["pathParameters"]["id"]
     polling_jwt = event["headers"]["authorization"]
     res = validate_polling_jwt(polling_jwt, session_id)
-    if res == True:
+    if res is True:
         session_status, user_uuid = get_session(session_id)
         if session_status == "PENDING":
             return {"statusCode": 202, "body": json.dumps({"message": "Accepted"})}
@@ -143,6 +135,6 @@ def lambda_handler(event, context):
             }
     else:
         return {
-            "statusCode": res_status_code,
+            "statusCode": 500,
             "body": json.dumps({"message": "Internal server error"}),
         }

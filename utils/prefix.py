@@ -1,5 +1,6 @@
 def deploy_env():
-  return "dev"
+    return "dev"
+
 
 def env_specific(logical_name):
     if type(logical_name) == str:
@@ -7,12 +8,13 @@ def env_specific(logical_name):
     else:
         suffix = logical_name.name
 
-    return '{}-{}'.format(deploy_env(), suffix)
+    return "{}-{}".format(deploy_env(), suffix)
+
 
 def domain_specific(prefix, logical_name=None):
-    if logical_name == None:
-        return '{}.{}'.format(prefix, deploy_env())
-    if deploy_env() != 'prod':
-        return '{}.{}.{}'.format(prefix, deploy_env(),logical_name)
+    if logical_name is None:
+        return "{}.{}".format(prefix, deploy_env())
+    if deploy_env() != "prod":
+        return "{}.{}.{}".format(prefix, deploy_env(), logical_name)
     else:
-        return '{}.{}'.format(prefix, logical_name)
+        return "{}.{}".format(prefix, logical_name)

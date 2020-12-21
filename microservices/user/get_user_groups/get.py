@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
 from aws_lambda_powertools import Tracer
-from sqlalchemy_paginator import Paginator, exceptions
+from sqlalchemy_paginator import Paginator
 from pydantic import ValidationError, parse_obj_as
 
 tracer = Tracer(service="get_user_group")
@@ -48,9 +48,10 @@ def get_user_groups(
 
         paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
-        groups = []
-        
-        m = UserGroupsList(userGroups=parse_obj_as(List[UserGroupsModelShort], page.object_list))
+
+        m = UserGroupsList(
+            userGroups=parse_obj_as(List[UserGroupsModelShort], page.object_list)
+        )
 
         if len(m.userGroups) == 0:
             status_code = 404
@@ -62,12 +63,15 @@ def get_user_groups(
                 total=page.paginator.count,
                 totalPages=page.paginator.total_pages,
                 nextPage=(page.next_page_number if page.has_next() else None),
-                previousPage=(page.previous_page_number if page.has_previous() else None)
+                previousPage=(
+                    page.previous_page_number if page.has_previous() else None
+                ),
             ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body).dict()
 
-    except (SQLAlchemyError, ValidationError)  as err:
+    except (SQLAlchemyError, ValidationError) as err:
         logger.error(err)
-        return LambdaResponse(statusCode=500, body=Message(message="Internal server error").json()).dict()
-
+        return LambdaResponse(
+            statusCode=500, body=Message(message="Internal server error").json()
+        ).dict()

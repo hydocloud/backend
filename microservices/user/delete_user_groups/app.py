@@ -1,9 +1,5 @@
-import database
-import os
 import logging
-import json
 from delete import delete_user_groups
-from models.users import UserGroupsApiInput
 from models.api_response import Message, LambdaResponse
 from database import init_db
 from aws_lambda_powertools import Tracer
@@ -25,7 +21,7 @@ CONNECTION = None
 def lambda_handler(event, context):
     global CONNECTION
 
-    if CONNECTION == None:
+    if CONNECTION is None:
         CONNECTION = init_db()
 
     try:
@@ -37,8 +33,7 @@ def lambda_handler(event, context):
     except ValidationError:
         logger.error("Validation input error")
         return LambdaResponse(
-            statusCode = 400,
-            body= Message(message="Bad request").json()
+            statusCode=400, body=Message(message="Bad request").json()
         ).dict()
 
     return response

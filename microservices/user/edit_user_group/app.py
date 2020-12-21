@@ -1,5 +1,3 @@
-import database
-import os
 import logging
 import json
 from pydantic import ValidationError
@@ -24,7 +22,7 @@ CONNECTION = None
 def lambda_handler(event, context):
     global CONNECTION
 
-    if CONNECTION == None:
+    if CONNECTION is None:
         CONNECTION = init_db()
 
     try:

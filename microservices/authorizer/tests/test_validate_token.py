@@ -1,8 +1,6 @@
-import json
-import pytest
 import jwt
 import datetime
-import sys, os, uuid
+import uuid
 from authorizer.app import validate_token
 
 user_uuid = uuid.uuid4().__str__()
@@ -29,13 +27,9 @@ def test_validate_token_not_valid(monkeypatch):
     monkeypatch.setenv("JWT_SECRET", "secret")
 
     encoded_jwt = jwt.encode(
-        {
-            "name": "authHydoLogin",
-            "sub": user_uuid,
-            "exp": 100000000,
-        },
+        {"name": "authHydoLogin", "sub": user_uuid, "exp": 100000000,},
         "secret",
         algorithm="HS256",
     ).decode()
     res = validate_token(encoded_jwt)
-    assert res == False
+    assert res is False

@@ -1,10 +1,9 @@
 """ Edit user """
 
 import logging
-import datetime
 from typing import List
 from pydantic import parse_obj_as
-from models.users import UserGroups, UserGroupsModelShort, UserGroupsModel
+from models.users import UserGroups, UserGroupsModelShort
 from models.api_response import LambdaResponse, Message, DataModel, UserGroupsList
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -36,14 +35,16 @@ def edit_user_group(
             statusCode=500, body=Message(message="Internal server error").json()
         ).dict()
 
-    if user_group == None:
+    if user_group is None:
         return LambdaResponse(
             statusCode=403, body=(Message(message="Forbidden")).json()
         ).dict()
     else:
         user_group.name = payload.name
         connection.commit()
-        m = UserGroupsList(userGroups=parse_obj_as(List[UserGroupsModelShort], [user_group]))
+        m = UserGroupsList(
+            userGroups=parse_obj_as(List[UserGroupsModelShort], [user_group])
+        )
 
         body = DataModel(
             data=m, total=None, totalPages=None, nextPage=None, previousPage=None

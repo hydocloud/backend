@@ -1,7 +1,6 @@
 """ Entry point lambda"""
 
 import logging
-import json
 from aws_lambda_powertools import Tracer
 from get import get_user_groups
 from database import init_db
@@ -34,7 +33,9 @@ def lambda_handler(event, context):
         and "id" in event["pathParameters"]
     ):
         user_group_id = event["pathParameters"]["id"]
-        response = get_user_groups(connection=CONNECTION, owner_id=owner_id, user_group_id=user_group_id)
+        response = get_user_groups(
+            connection=CONNECTION, owner_id=owner_id, user_group_id=user_group_id
+        )
     elif (
         "queryStringParameters" in event and event["queryStringParameters"] is not None
     ):
@@ -46,7 +47,10 @@ def lambda_handler(event, context):
             page_number = event["queryStringParameters"]["page"]
             page_size = event["queryStringParameters"]["pageSize"]
             response = get_user_groups(
-                connection=CONNECTION, owner_id=owner_id, page_number=int(page_number), page_size=int(page_size) 
+                connection=CONNECTION,
+                owner_id=owner_id,
+                page_number=int(page_number),
+                page_size=int(page_size),
             )
         elif "pageSize" in event["queryStringParameters"]:
             page_size = event["queryStringParameters"]["pageSize"]

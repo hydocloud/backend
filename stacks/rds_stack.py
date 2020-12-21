@@ -25,8 +25,7 @@ class RdsStack(core.Stack):
             vpc=vpc,
             port=5432,
             instance_type=ec2.InstanceType.of(
-                ec2.InstanceClass.BURSTABLE3,
-                ec2.InstanceSize.MICRO,
+                ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO,
             ),
             removal_policy=core.RemovalPolicy.DESTROY,
             deletion_protection=False,

@@ -1,5 +1,3 @@
-import database
-import os
 import logging
 import json
 from edit import edit_organization
@@ -22,7 +20,7 @@ CONNECTION = None
 def lambda_handler(event, context):
     global CONNECTION
 
-    if CONNECTION == None:
+    if CONNECTION is None:
         CONNECTION = init_db()
 
     owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]

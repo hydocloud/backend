@@ -16,9 +16,7 @@ class DeviceGroups(Base):
     name = Column(String)
     organization_id = Column(Integer)
     owner_id = Column(UUID(as_uuid=True))
-    devices = relationship(
-        "Devices", cascade="all, delete"
-    )
+    devices = relationship("Devices", cascade="all, delete")
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -28,11 +26,8 @@ class Devices(Base):
 
     id = Column(Integer, primary_key=True)
     serial = Column(String)
-    device_group_id = Column(
-        Integer,
-        ForeignKey("device_groups.id"),
-        unique=True,
-    )
+    device_group_id = Column(Integer, ForeignKey("device_groups.id"), unique=True,)
+    owner_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -64,8 +59,20 @@ class DevicesModel(BaseModel):
     id: int
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
+    owner_id: uuid.UUID = Field(..., alias="ownerId")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+
+
+class DevicesModelShort(BaseModel):
+    id: int
+    serial: str
+    device_group_id: int = Field(..., alias="deviceGroupId")
+    owner_id: uuid.UUID = Field(..., alias="ownerId")
 
     class Config:
         orm_mode = True

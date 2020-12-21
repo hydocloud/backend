@@ -33,7 +33,7 @@ def parse_input(event: dict) -> Tuple[dict, str]:
         logger.info(type(event["Records"][0]["body"]))
         message = json.loads(event["Records"][0]["body"])
         owner_id = message["ownerId"]
-        del message['ownerId']
+        del message["ownerId"]
         return message, owner_id
     except (ValidationError, KeyError) as err:
         logger.info(err)
