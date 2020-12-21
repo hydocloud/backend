@@ -84,11 +84,7 @@ def apigw_event():
             "X-Forwarded-Proto": ["https"],
         },
         "requestContext": {
-            "authorizer": {
-                "lambda": {
-                    "sub": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef"
-                }
-            },
+            "authorizer": {"lambda": {"sub": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef"}},
             "accountId": "123456789012",
             "resourceId": "123456",
             "stage": "prod",
@@ -120,7 +116,7 @@ def apigw_event():
 def test_parse_input_sqs(sqs_event):
     message = json.loads(sqs_event["Records"][0]["body"])
     expected_owner_id = message["ownerId"]
-    del message['ownerId']
+    del message["ownerId"]
     expected_message = message
     res, owner_id = parse_input(sqs_event)
     assert res == expected_message

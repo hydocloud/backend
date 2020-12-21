@@ -1,9 +1,9 @@
+import uuid
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 from pydantic import BaseModel
-import uuid
 
 Base = declarative_base()
 

@@ -2,8 +2,7 @@ import pytest
 import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from pytest_postgresql import factories
-from models.users import Base, UserGroups, UserGroupsApiInput, UserGroupsApiEditInput
+from models.users import Base, UserGroupsApiInput, UserGroupsApiEditInput
 from create_user_groups.create import create_user_groups
 from edit_user_group.edit import edit_user_group
 from delete_user_groups.delete import delete_user_groups
@@ -29,7 +28,7 @@ def test_database(setup_database):
     session = setup_database
     owner_id = "ff1af476-cf84-47e9-a25a-e109060d4006"
 
-    ## Right behavior
+    # Right behavior
     res = create_user_groups(
         owner_id=owner_id,
         payload=UserGroupsApiInput.parse_obj({"name": "test1", "organizationId": 1}),
@@ -54,7 +53,9 @@ def test_database(setup_database):
     assert body["data"]["userGroups"][0]["name"] == "saeeqw"
     assert body["data"]["userGroups"][0]["organizationId"] == 1
 
-    res = get_user_groups(connection=session, user_group_id=user_group_1_id, owner_id=owner_id)
+    res = get_user_groups(
+        connection=session, user_group_id=user_group_1_id, owner_id=owner_id
+    )
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
     assert body["data"]["userGroups"][0]["name"] == "saeeqw"
