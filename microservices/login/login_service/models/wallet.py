@@ -1,8 +1,8 @@
 import json
 import logging
 import sys
-from indy import wallet
-from indy.error import ErrorCode, IndyError
+from indy import wallet  # type: ignore
+from indy.error import ErrorCode, IndyError  # type: ignore
 from ctypes import CDLL, c_char_p
 import os
 

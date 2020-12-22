@@ -5,7 +5,7 @@ from models.users import UserGroups
 from models.api_response import LambdaResponse, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="delete_user_group")
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 @tracer.capture_method
 def delete_user_groups(
     owner_id: str, user_group_id: int, connection: Session
-) -> LambdaResponse:
+) -> dict:
     """ Function that delete user group on db """
 
     try:

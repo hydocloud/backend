@@ -1,12 +1,12 @@
 import json
 import logging
 from os import environ
-from models.api import InputMessage
-from models.wallet import Wallet
+from models.api import InputMessage  # type: ignore
+from models.wallet import Wallet  # type: ignore
 from pydantic import ValidationError
 import boto3
 from botocore.exceptions import ClientError
-from compare_messages import (
+from compare_messages import (  # type: ignore
     get_message,
     decrypt,
     validate_data,

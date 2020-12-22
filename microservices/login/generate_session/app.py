@@ -1,11 +1,11 @@
 import json
-import qrcode
+import qrcode  # type: ignore
 import logging
 import jwt
-import datetime
 import boto3
 from os import environ
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Optional
 
 
 logger = logging.getLogger()
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 client = boto3.client("dynamodb")
 
 
-def store_session(session_id, dynamodb=None):
+def store_session(session_id: str, dynamodb=None) -> Optional[dict]:
     if dynamodb is None:
         dynamodb = boto3.resource("dynamodb")
 
@@ -44,7 +44,7 @@ def store_session(session_id, dynamodb=None):
         return response
     except Exception as e:
         logger.error(e)
-        return False
+        return None
 
 
 def make_qrcode(service_id, session_id):
@@ -53,7 +53,7 @@ def make_qrcode(service_id, session_id):
     return qr
 
 
-def polling_jwt(session_id):
+def polling_jwt(session_id: str) -> str:
     logger.debug("Generate polling token")
     secret = environ["JWT_SECRET"]
     encoded_jwt = jwt.encode(
@@ -68,7 +68,7 @@ def polling_jwt(session_id):
     return encoded_jwt
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, context) -> dict:
 
     service_id = environ["LOGIN_ID"]
     session_id = context.aws_request_id

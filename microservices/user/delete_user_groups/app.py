@@ -1,8 +1,8 @@
 import logging
-from delete import delete_user_groups
+from delete import delete_user_groups  # type: ignore
 from models.api_response import Message, LambdaResponse
 from database import init_db
-from aws_lambda_powertools import Tracer
+from aws_lambda_powertools import Tracer  # type: ignore
 from pydantic import ValidationError
 
 

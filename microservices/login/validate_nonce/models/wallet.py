@@ -2,8 +2,8 @@ import json
 import logging
 import sys
 import os
-from indy import wallet
-from indy.error import ErrorCode, IndyError
+from indy import wallet  # type: ignore
+from indy.error import ErrorCode, IndyError  # type: ignore
 from ctypes import c_char_p, CDLL
 
 logger = logging.getLogger(__name__)

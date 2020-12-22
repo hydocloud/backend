@@ -1,6 +1,6 @@
 import logging
 import json
-from create import create_user_groups
+from create import create_user_groups  # type: ignore
 from models.users import UserGroupsApiInput
 from models.api_response import Message, LambdaResponse
 from database import init_db

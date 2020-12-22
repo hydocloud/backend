@@ -1,7 +1,7 @@
 import json
 import logging
-from indy import did
-from indy.error import IndyError
+from indy import did  # type: ignore
+from indy.error import IndyError  # type: ignore
 
 
 logger = logging.getLogger(__name__)

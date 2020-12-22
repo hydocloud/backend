@@ -3,8 +3,8 @@ import json
 from os import environ
 import boto3
 from botocore.exceptions import ClientError
-from indy import crypto, IndyError
-from models.wallet import Wallet
+from indy import crypto, IndyError  # type: ignore
+from models.wallet import Wallet  # type: ignore
 
 logger = logging.getLogger(__name__)
 

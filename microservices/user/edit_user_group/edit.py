@@ -6,8 +6,8 @@ from pydantic import parse_obj_as
 from models.users import UserGroups, UserGroupsModelShort
 from models.api_response import LambdaResponse, Message, DataModel, UserGroupsList
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
+from sqlalchemy.orm.session import Session  # type: ignore
+from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="edit_user_group")
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @tracer.capture_method
 def edit_user_group(
     owner_id: str, user_group_id: str, payload, connection: Session
-) -> LambdaResponse:
+) -> dict:
     """ Edit user """
 
     try:

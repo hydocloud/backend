@@ -1,9 +1,9 @@
 import json
 import logging
-from models.wallet import Wallet
-from store_nonce import store as store_nonce
+from models.wallet import Wallet  # type: ignore
+from store_nonce import store as store_nonce  # type: ignore
 import asyncio
-import urllib3
+import urllib3  # type: ignore
 
 loop = asyncio.get_event_loop()
 

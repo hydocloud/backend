@@ -1,10 +1,10 @@
 import json
 import logging
 from os import environ
-from models.wallet import Wallet
-from models.did import DidVerkey
+from models.wallet import Wallet  # type: ignore
+from models.did import DidVerkey  # type: ignore
 import asyncio
-import urllib3
+import urllib3  # type: ignore
 
 loop = asyncio.get_event_loop()
 

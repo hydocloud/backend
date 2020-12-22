@@ -2,6 +2,7 @@
 import logging
 import os
 import jwt
+from typing import Optional
 
 
 logger = logging.getLogger()
@@ -16,17 +17,17 @@ def remove_prefix(text: str, prefix: str) -> str:
     return text  # or whatever
 
 
-def validate_token(token: str) -> str:
+def validate_token(token: str) -> Optional[dict]:
     """Decrypt token and return user_uuid"""
     secret = os.environ["JWT_SECRET"]
     try:
         res = jwt.decode(token, secret, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
         logger.error("Failed decode jwt")
-        return False
+        return None
     except jwt.InvalidSignatureError:
         logger.error("Failed decode jwt")
-        return False
+        return None
     return res
 
 
