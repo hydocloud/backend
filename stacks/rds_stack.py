@@ -35,5 +35,5 @@ class RdsStack(core.Stack):
 
         self.postgres_db.connections.allow_from_any_ipv4(ec2.Port.tcp(5432))
 
-    def get_rds_instance(self):
+    def get_rds_instance(self) -> rds.DatabaseInstance:
         return self.postgres_db
