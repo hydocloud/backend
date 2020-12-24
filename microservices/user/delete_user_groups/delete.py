@@ -13,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @tracer.capture_method
-def delete_user_groups(
-    owner_id: str, user_group_id: int, connection: Session
-) -> dict:
+def delete_user_groups(owner_id: str, user_group_id: int, connection: Session) -> dict:
     """ Function that delete user group on db """
 
     try:
