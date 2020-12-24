@@ -1,8 +1,46 @@
 repos:
-    # - repo: https://github.com/pre-commit/mirrors-mypy
-    #   rev: "" # Use the sha / tag you want to point at
-    #   hooks:
-    #       - id: mypy
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: "" # Use the sha / tag you want to point at
+      hooks:
+          - id: mypy
+            name: mypy cdk stacks
+            files: "^stacks"
+            additional_dependencies:
+              - "pydantic"
+              - "sqlalchemy-stubs"
+              - "boto3-stubs[sqs,dynamodb]"
+          - id: mypy
+            name: mypy login
+            files: "^microservices\/login"
+            exclude: ".*\/tests"
+            additional_dependencies:
+              - "pydantic"
+              - "sqlalchemy-stubs"
+              - "boto3-stubs[sqs,dynamodb]"
+          - id: mypy
+            name: mypy organization
+            files: "^microservices\/organization"
+            exclude: ".*\/tests"
+            additional_dependencies:
+              - "pydantic"
+              - "sqlalchemy-stubs"
+              - "boto3-stubs[sqs,dynamodb]"
+          - id: mypy
+            name: mypy user
+            files: "^microservices\/user"
+            exclude: ".*\/tests"
+            additional_dependencies:
+              - "pydantic"
+              - "sqlalchemy-stubs"
+              - "boto3-stubs[sqs,dynamodb]"
+          - id: mypy
+            name: mypy authorizer
+            files: "^microservices\/authorizer"
+            exclude: ".*\/tests"
+            additional_dependencies:
+              - "pydantic"
+              - "sqlalchemy-stubs"
+              - "boto3-stubs[sqs,dynamodb]"
     - repo: https://gitlab.com/pycqa/flake8
       rev: "" # pick a git hash / tag to point to
       hooks:
