@@ -26,7 +26,8 @@ class Devices(Base):
     __tablename__ = "devices"
 
     id = Column(Integer, primary_key=True)
-    serial = Column(String)
+    serial = Column(String, unique=True)
+    name = Column(String)
     device_group_id = Column(
         Integer,
         ForeignKey("device_groups.id"),
@@ -61,6 +62,7 @@ class DeviceGroupsModelShort(BaseModel):
 
 class DevicesModel(BaseModel):
     id: int
+    name: str
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -73,6 +75,7 @@ class DevicesModel(BaseModel):
 
 class DevicesModelShort(BaseModel):
     id: int
+    name: str
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
 
@@ -91,10 +94,11 @@ class DeviceGroupsApiEditInput(BaseModel):
 
 
 class DevicesApiInput(BaseModel):
+    name: str
     serial: str
     deviceGroupId: int
 
 
 class DevicesEditInput(BaseModel):
-    serial: Optional[str]
+    name: Optional[str]
     deviceGroupId: Optional[int]
