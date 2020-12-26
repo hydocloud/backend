@@ -3,10 +3,11 @@ import json
 import boto3
 import uuid
 import datetime
+import copy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from moto import mock_sqs
-from create_device import create
+from create_device import app
 from create_device.create import create_authorization, create_device
 from models.devices import DevicesApiInput, Base, DeviceGroups
 
@@ -37,10 +38,10 @@ def sqs_event():
 
 
 @pytest.fixture
-def apigw_event():
+def apigw_event(device):
     """ Generate SQS event """
     return {
-        "body": '{"name": "DEFAULT", "organizationId": 2}',
+        "body": json.dumps(device.dict()),
         "resource": "/{proxy+}",
         "path": "/path/to/resource",
         "httpMethod": "POST",
@@ -172,11 +173,12 @@ def device(setup_device_group_id):
 
 
 @mock_sqs
-def test_create_authorization():
+def test_create_authorization(monkeypatch):
     sqs = boto3.client("sqs", region_name="eu-west-1")
     authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
     expected_message = json.dumps({"deviceId": 1000, "userId": "asdasd"})
-    create.QUEUE_URL = authorization_queue["QueueUrl"]
+
+    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     create_authorization(device_id=1000, user_id="asdasd")
     sqs_authorization_messages = sqs.receive_message(
         QueueUrl=authorization_queue["QueueUrl"]
@@ -195,10 +197,26 @@ def test_create_device_ok(device, session):
     assert body["deviceGroupId"] == device.deviceGroupId
 
 
+@mock_sqs
+def test_handler(apigw_event, session, monkeypatch):
+    app.CONNECTION = session
+    sqs = boto3.client("sqs", region_name="eu-west-1")
+    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
+    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
+    res = app.lambda_handler(apigw_event, None)
+    body = (json.loads(res["body"]))["data"]["devices"][0]
+    apigw_event_body = json.loads(apigw_event["body"])
+
+    assert res["statusCode"] == 201
+    assert body["serial"] == apigw_event_body["serial"]
+    assert body["deviceGroupId"] == apigw_event_body["deviceGroupId"]
+
+
 def test_create_device_validation_error(device, session):
     user_id = "asddss"
-    device.__delattr__("serial")
-    res = create_device(user_id=user_id, payload=device, connection=session)
+    local_device = copy.deepcopy(device)
+    local_device.__delattr__("serial")
+    res = create_device(user_id=user_id, payload=local_device, connection=session)
     assert res["statusCode"] == 400
 
 
