@@ -4,12 +4,10 @@ import boto3
 import uuid
 import datetime
 import copy
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from moto import mock_sqs
 from create_device import app
 from create_device.create import create_authorization, create_device
-from models.devices import DevicesApiInput, Base, DeviceGroups
+from models.devices import DevicesApiInput, DeviceGroups
 
 
 @pytest.fixture
@@ -119,36 +117,6 @@ def apigw_event(device):
             "protocol": "HTTP/1.1",
         },
     }
-
-
-@pytest.fixture(scope="session")
-def engine():
-    return create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database")
-
-
-@pytest.fixture(scope="session")
-def tables(engine):
-    Base.metadata.create_all(engine)
-    yield
-    Base.metadata.drop_all(engine)
-
-
-@pytest.fixture
-def session(engine, tables):
-    """Returns an sqlalchemy session, and after the test tears down everything properly."""
-    connection = engine.connect()
-    # begin the nested transaction
-    transaction = connection.begin()
-    # use the connection with the already started transaction
-    session = Session(bind=connection)
-
-    yield session
-
-    session.close()
-    # roll back the broader transaction
-    transaction.rollback()
-    # put back the connection to the connection pool
-    connection.close()
 
 
 @pytest.fixture(scope="function")
