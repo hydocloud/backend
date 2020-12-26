@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 @tracer.capture_method
 def create_device_groups(
     owner_id: str, payload: DeviceGroupsApiInput, connection: Session
-) -> LambdaResponse:
+) -> dict:
     """ Function that create device group on db """
 
     try:
