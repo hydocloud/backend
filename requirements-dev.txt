@@ -5,4 +5,4 @@ pylint
 pre-commit
 mypy
 sqlalchemy-stubs
-boto3-stubs[sqs,dynamodb]
+boto3-stubs[all]
