@@ -1,9 +1,14 @@
 import pytest
 import json
 import boto3
+import uuid
+import datetime
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from moto import mock_sqs
 from create_device import create
-from create_device.create import create_authorization
+from create_device.create import create_authorization, create_device
+from models.devices import DevicesApiInput, Base, DeviceGroups
 
 
 @pytest.fixture
@@ -57,7 +62,6 @@ def apigw_event():
             "CloudFront-Viewer-Country": "US",
             "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Custom User Agent String",
             "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
             "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
             "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
@@ -116,8 +120,59 @@ def apigw_event():
     }
 
 
+@pytest.fixture(scope="session")
+def engine():
+    return create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database")
+
+
+@pytest.fixture(scope="session")
+def tables(engine):
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def session(engine, tables):
+    """Returns an sqlalchemy session, and after the test tears down everything properly."""
+    connection = engine.connect()
+    # begin the nested transaction
+    transaction = connection.begin()
+    # use the connection with the already started transaction
+    session = Session(bind=connection)
+
+    yield session
+
+    session.close()
+    # roll back the broader transaction
+    transaction.rollback()
+    # put back the connection to the connection pool
+    connection.close()
+
+
+@pytest.fixture(scope="function")
+def setup_device_group_id(session):
+
+    device_groups = DeviceGroups(
+        name="asd",
+        organization_id=1,
+        owner_id=uuid.uuid4().__str__(),
+        created_at=datetime.datetime.utcnow(),
+        updated_at=datetime.datetime.utcnow(),
+    )
+    session.add(device_groups)
+    session.commit()
+    session.refresh(device_groups)
+    return device_groups.id
+
+
+@pytest.fixture
+def device(setup_device_group_id):
+    return DevicesApiInput(serial="12315", deviceGroupId=setup_device_group_id)
+
+
 @mock_sqs
-def test_sqs_send_message():
+def test_create_authorization():
     sqs = boto3.client("sqs", region_name="eu-west-1")
     authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
     expected_message = json.dumps({"deviceId": 1000, "userId": "asdasd"})
@@ -130,9 +185,25 @@ def test_sqs_send_message():
     assert len(sqs_authorization_messages["Messages"]) == 1
 
 
-# def test_parse_input_apigw(apigw_event):
-#     expected_owner_id = apigw_event["requestContext"]["authorizer"]["lambda"]["sub"]
-#     expected_message = json.loads(apigw_event["body"])
-#     res, owner_id = parse_input(apigw_event)
-#     assert res == expected_message
-#     assert owner_id == expected_owner_id
+def test_create_device_ok(device, session):
+    user_id = "asddss"
+    res = create_device(user_id=user_id, payload=device, connection=session)
+    body = (json.loads(res["body"]))["data"]["devices"][0]
+
+    assert res["statusCode"] == 201
+    assert body["serial"] == device.serial
+    assert body["deviceGroupId"] == device.deviceGroupId
+
+
+def test_create_device_validation_error(device, session):
+    user_id = "asddss"
+    device.__delattr__("serial")
+    res = create_device(user_id=user_id, payload=device, connection=session)
+    assert res["statusCode"] == 400
+
+
+def test_create_device_sqlalchemy_error(device, session):
+    session.invalidate()
+    user_id = "asddss"
+    res = create_device(user_id=user_id, payload=device, connection=session)
+    assert res["statusCode"] == 500

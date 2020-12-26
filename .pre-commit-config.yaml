@@ -2,13 +2,20 @@ repos:
     - repo: https://github.com/pre-commit/mirrors-mypy
       rev: "" # Use the sha / tag you want to point at
       hooks:
-          - id: mypy
-            name: mypy cdk stacks
-            files: "^stacks"
-            additional_dependencies:
-              - "pydantic"
-              - "sqlalchemy-stubs"
-              - "boto3-stubs[sqs,dynamodb]"
+          # - id: mypy
+          #   name: mypy utils
+          #   files: "^utils"
+          #   additional_dependencies:
+          #     - "pydantic"
+          #     - "sqlalchemy-stubs"
+          # - id: mypy
+          #   name: mypy cdk stacks
+          #   entry: mypy
+          #   files: "^stacks\/.*"
+            # additional_dependencies:
+            #   - "boto3-stubs[all]"
+            #   - "pydantic"
+            #   - "sqlalchemy-stubs"
           - id: mypy
             name: mypy login
             files: "^microservices\/login"
@@ -16,7 +23,6 @@ repos:
             additional_dependencies:
               - "pydantic"
               - "sqlalchemy-stubs"
-              - "boto3-stubs[sqs,dynamodb]"
           - id: mypy
             name: mypy organization
             files: "^microservices\/organization"
@@ -24,7 +30,6 @@ repos:
             additional_dependencies:
               - "pydantic"
               - "sqlalchemy-stubs"
-              - "boto3-stubs[sqs,dynamodb]"
           - id: mypy
             name: mypy user
             files: "^microservices\/user"
@@ -32,7 +37,6 @@ repos:
             additional_dependencies:
               - "pydantic"
               - "sqlalchemy-stubs"
-              - "boto3-stubs[sqs,dynamodb]"
           - id: mypy
             name: mypy authorizer
             files: "^microservices\/authorizer"

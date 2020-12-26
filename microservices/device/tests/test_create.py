@@ -54,7 +54,6 @@ def apigw_event():
             "CloudFront-Viewer-Country": "US",
             "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Custom User Agent String",
             "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
             "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
             "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
