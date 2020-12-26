@@ -137,7 +137,9 @@ def setup_device_group_id(session):
 
 @pytest.fixture
 def device(setup_device_group_id):
-    return DevicesApiInput(serial="12315", deviceGroupId=setup_device_group_id)
+    return DevicesApiInput(
+        name="test", serial="12315", deviceGroupId=setup_device_group_id
+    )
 
 
 @mock_sqs
@@ -163,6 +165,7 @@ def test_create_device_ok(device, session):
     assert res["statusCode"] == 201
     assert body["serial"] == device.serial
     assert body["deviceGroupId"] == device.deviceGroupId
+    assert body["name"] == device.name
 
 
 @mock_sqs
@@ -178,6 +181,7 @@ def test_handler(apigw_event, session, monkeypatch):
     assert res["statusCode"] == 201
     assert body["serial"] == apigw_event_body["serial"]
     assert body["deviceGroupId"] == apigw_event_body["deviceGroupId"]
+    assert body["name"] == apigw_event_body["name"]
 
 
 def test_create_device_validation_error(device, session):

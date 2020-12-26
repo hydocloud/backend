@@ -32,6 +32,7 @@ def create_authorization(device_id: int, user_id: str):
 def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -> dict:
     try:
         device = Devices(
+            name=payload.name,
             serial=payload.serial,
             device_group_id=payload.deviceGroupId,
             created_at=datetime.datetime.utcnow(),
