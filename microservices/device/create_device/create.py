@@ -5,7 +5,7 @@ import boto3
 import json
 from typing import List
 from pydantic import parse_obj_as, ValidationError
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, ParamValidationError
 from models.devices import Devices, DevicesModelShort, DevicesApiInput
 from models.api_response import LambdaResponse, Message, DevicesDataModel, DevicesList
 from sqlalchemy.exc import SQLAlchemyError
@@ -15,24 +15,21 @@ from aws_lambda_powertools import Tracer
 tracer = Tracer(service="create_device")
 
 logger = logging.getLogger(__name__)
-QUEUE_URL = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
 
 
 def create_authorization(device_id: int, user_id: str):
+    queue_url = os.environ["QUEUE_URL"] if "QUEUE_URL" in os.environ else None
     sqs = boto3.client("sqs")
     message = json.dumps({"deviceId": device_id, "userId": user_id})
     try:
-        queue = QUEUE_URL
+        queue = queue_url
         sqs.send_message(QueueUrl=queue, MessageBody=message)
-    except ClientError as err:
-        logger.error(err)
-    except ValueError as err:
+    except (ClientError, ParamValidationError, ValueError) as err:
         logger.error(err)
 
 
 @tracer.capture_method
 def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -> dict:
-
     try:
         device = Devices(
             serial=payload.serial,
@@ -60,8 +57,8 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
         return LambdaResponse(
             statusCode=500, body=Message(message="Internal server Error").json()
         ).dict()
-    except (ValidationError, AttributeError) as e:
-        logger.error(e)
+    except (ValidationError, AttributeError) as err:
+        logger.error(err)
         connection.rollback()
         return LambdaResponse(
             statusCode=400, body=Message(message="Bad request").json()
