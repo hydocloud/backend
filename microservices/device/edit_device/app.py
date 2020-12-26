@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         m = DevicesEditInput.parse_obj(payload)
         response = edit_device(device_id, m, CONNECTION)
         logger.info(response)
-    except ValidationError:
+    except (ValidationError, json.decoder.JSONDecodeError):
         logger.error("Validation input error")
         return LambdaResponse(
             statusCode=400, body=(Message(message="Bad request")).json()

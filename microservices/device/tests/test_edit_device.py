@@ -146,3 +146,39 @@ def test_handler_not_found(apigw_event, session):
     apigw_event["pathParameters"]["id"] = 0
     res = app.lambda_handler(apigw_event, None)
     assert res["statusCode"] == 404
+
+
+def test_handler_bad_input_no_json(apigw_event, session):
+    app.CONNECTION = session
+    apigw_event["pathParameters"]["id"] = 0
+    apigw_event["body"] = "asds"
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 400
+
+
+def test_handler_bad_input_json(apigw_event, session):
+    app.CONNECTION = session
+    apigw_event["pathParameters"]["id"] = 0
+    apigw_event["body"] = '{"test":"asdsa}'
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 400
+
+
+def test_handler_no_connection(apigw_event, monkeypatch):
+    monkeypatch.setenv("DB_HOST", "localhost")
+    monkeypatch.setenv("DB_PORT", "5432")
+    monkeypatch.setenv("DB_NAME", "test_database")
+    monkeypatch.setenv("DB_USER", "postgres")
+    monkeypatch.setenv("DB_PASSWORD", "ciaociao")
+    monkeypatch.setenv("DB_ENGINE", "postgresql")
+    app.CONNECTION = None
+    apigw_event["pathParameters"]["id"] = 0
+    apigw_event["body"] = '{"test":"asdsa}'
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 400
+
+
+def test_edit_device_invalidate_session(device_edit, session):
+    session.invalidate()
+    res = edit_device(device_id=0, payload=device_edit, connection=session)
+    assert res["statusCode"] == 500
