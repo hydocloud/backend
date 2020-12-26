@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from models.devices import DeviceGroupsModelShort, DevicesModelShort
 
 
@@ -22,15 +22,15 @@ class Message(BaseModel):
 
 class DataModel(BaseModel):
     data: DeviceGroupsList
-    total: int = None
-    nextPage: int = None
-    previousPage: int = None
-    totalPages: int = None
+    total: Optional[int]
+    nextPage: Optional[int]
+    previousPage: Optional[int]
+    totalPages: Optional[int]
 
 
 class DevicesDataModel(BaseModel):
     data: DevicesList
-    total: int = None
-    nextPage: int = None
-    previousPage: int = None
-    totalPages: int = None
+    total: Optional[int]
+    nextPage: Optional[int]
+    previousPage: Optional[int]
+    totalPages: Optional[int]
