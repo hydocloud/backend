@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel, Field
+from typing import Optional
 
 Base = declarative_base()
 
@@ -26,8 +27,11 @@ class Devices(Base):
 
     id = Column(Integer, primary_key=True)
     serial = Column(String)
-    device_group_id = Column(Integer, ForeignKey("device_groups.id"), unique=True,)
-    owner_id = Column(UUID(as_uuid=True))
+    device_group_id = Column(
+        Integer,
+        ForeignKey("device_groups.id"),
+        unique=True,
+    )
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -59,7 +63,6 @@ class DevicesModel(BaseModel):
     id: int
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
-    owner_id: uuid.UUID = Field(..., alias="ownerId")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -72,7 +75,6 @@ class DevicesModelShort(BaseModel):
     id: int
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
-    owner_id: uuid.UUID = Field(..., alias="ownerId")
 
     class Config:
         orm_mode = True
@@ -86,3 +88,13 @@ class DeviceGroupsApiInput(BaseModel):
 
 class DeviceGroupsApiEditInput(BaseModel):
     name: str
+
+
+class DevicesApiInput(BaseModel):
+    serial: str
+    deviceGroupId: int
+
+
+class DevicesEditInput(BaseModel):
+    serial: Optional[str]
+    deviceGroupId: Optional[int]
