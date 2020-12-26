@@ -1,7 +1,7 @@
 import logging
 import json
 from create import create_device
-from models.devices import DevicesModel
+from models.devices import DevicesApiInput
 from database import init_db
 from aws_lambda_powertools import Tracer
 
@@ -26,7 +26,7 @@ def lambda_handler(event, context):
 
     user_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
     payload = json.loads(event["body"])
-    DevicesModel.parse_obj(payload)
+    payload = DevicesApiInput.parse_obj(payload)
     response = create_device(user_id, payload, CONNECTION)
-
-    return {"statusCode": response.statusCode, "body": response.body.json()}
+    logger.info(response)
+    return response
