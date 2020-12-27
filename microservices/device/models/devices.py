@@ -31,7 +31,6 @@ class Devices(Base):
     device_group_id = Column(
         Integer,
         ForeignKey("device_groups.id"),
-        unique=True,
     )
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
