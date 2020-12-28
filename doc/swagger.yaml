@@ -1,6 +1,3 @@
-
-
-
 openapi: 3.0.0
 info:
   description: UserGroup microservice api
@@ -10,7 +7,7 @@ info:
     email: rtrivellato@hydo.cloud
   license:
     name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 
 servers:
   - url: http://api.dev.hydo.cloud
@@ -38,7 +35,7 @@ paths:
                   type: number
         description: organization parameters
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
@@ -47,7 +44,7 @@ paths:
                 properties:
                   data:
                     type: object
-                    properties:                   
+                    properties:
                       organizations:
                         type: array
                         items:
@@ -61,17 +58,17 @@ paths:
                               type: integer
                             ownerId:
                               type: string
-                              format: uuid                                       
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
+                              format: uuid
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     get:
       tags:
         - Organization
@@ -90,22 +87,22 @@ paths:
             type: number
 
       responses:
-        '201':
+        "201":
           description: organization created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationsList'
-        '400':
-          description: 'invalid input, object invalid'
+                $ref: "#/components/schemas/OrganizationsList"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
   /organizations/{organizationId}:
     get:
       tags:
@@ -123,30 +120,30 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
+        "201":
           description: organization's data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationsList'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Organization not found'
+                $ref: "#/components/schemas/OrganizationsList"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Organization not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
-          description: 'Internal server error'
+                message: "Not found"
+        "500":
+          description: "Internal server error"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     put:
       tags:
         - Organization
@@ -166,41 +163,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditOrganization'
+              $ref: "#/components/schemas/EditOrganization"
         description: organization parameters
       responses:
-        '201':
+        "201":
           description: organization created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '400':
-          description: 'invalid input, object invalid'
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          description: 'Not authorized to perform update'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: "Not authorized to perform update"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Forbidden'
-        '500':
+                message: "Forbidden"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     delete:
       tags:
         - Organization
@@ -217,30 +214,30 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
+        "201":
           description: response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleOK'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Organization not found'
+                $ref: "#/components/schemas/SimpleOK"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Organization not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
+                message: "Not found"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
   /userGroups:
     post:
       tags:
@@ -262,7 +259,7 @@ paths:
                   type: number
         description: User group parameters
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
@@ -271,7 +268,7 @@ paths:
                 properties:
                   data:
                     type: object
-                    properties:                   
+                    properties:
                       userGroups:
                         type: array
                         items:
@@ -285,25 +282,25 @@ paths:
                               type: integer
                             ownerId:
                               type: string
-                              format: uuid                                       
-        '400':
+                              format: uuid
+        "400":
           description: Bad input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'        
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     get:
       tags:
         - User group
@@ -322,38 +319,38 @@ paths:
             type: number
 
       responses:
-        '201':
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroupsList'
-        '400':
-          description: 'invalid input, object invalid'
+                $ref: "#/components/schemas/UserGroupsList"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'user groups not found'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "user groups not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
-          description: 'error'
+                message: "Not found"
+        "500":
+          description: "error"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
   /userGroups/{id}:
     get:
       tags:
@@ -371,30 +368,30 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
+        "201":
           description: user group's data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGroupsList'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Organization not found'
+                $ref: "#/components/schemas/UserGroupsList"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Organization not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
-          description: 'Internal server error'
+                message: "Not found"
+        "500":
+          description: "Internal server error"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     put:
       tags:
         - User group
@@ -414,41 +411,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditUserGroup'
+              $ref: "#/components/schemas/EditUserGroup"
         description: organization parameters
       responses:
-        '201':
+        "201":
           description: user group edited
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '400':
-          description: 'invalid input, object invalid'
+                $ref: "#/components/schemas/Organization"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          description: 'Not authorized to perform update'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: "Not authorized to perform update"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Forbidden'
-        '500':
+                message: "Forbidden"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     delete:
       tags:
         - User group
@@ -465,32 +462,32 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
+        "201":
           description: response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleOK'
+                $ref: "#/components/schemas/SimpleOK"
               example:
-                message: 'Ok'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'UserGroup not found'
+                message: "Ok"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "UserGroup not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
+                message: "Not found"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
   /devices:
     post:
       tags:
@@ -501,10 +498,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Devices'
+              $ref: "#/components/schemas/Devices"
       responses:
-        '201':
-          description: 'Device successfully created'
+        "201":
+          description: "Device successfully created"
           content:
             application/json:
               schema:
@@ -513,7 +510,258 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Devices'
+                      $ref: "#/components/schemas/Devices"
+        "400":
+          description: "invalid input, object invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Internal server error"
+    get:
+      tags:
+        - Devices
+      summary: List devices
+      operationId: getDevices
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+        - in: query
+          name: deviceGroupId
+          schema:
+            type: number
+          required: true
+
+      responses:
+        "201":
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Devices"
+                  total:
+                    type: integer
+                    readOnly: true
+                  nextPage:
+                    type: integer
+                    readOnly: true
+                  previousPage:
+                    type: integer
+                    readOnly: true
+                  totalPages:
+                    type: integer
+                    readOnly: true
+        "400":
+          description: "invalid input, object invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Devicesnot found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Not found"
+        "500":
+          description: "error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Internal server error"
+  /devices/{id}:
+    get:
+      tags:
+        - "Devices"
+      summary: "Get device"
+      operationId: "getDevice"
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "201":
+          description: "Device successfully edited"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Devices"
+        "400":
+          description: "invalid input, object invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Not found"
+        "500":
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Internal server error"
+    put:
+      tags:
+        - "Devices"
+      summary: "Edit device"
+      operationId: "editDevice"
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevicesSmall"
+      responses:
+        "201":
+          description: "Device successfully edited"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Devices"
+        "400":
+          description: "invalid input, object invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Not found"
+        "500":
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Internal server error"
+    delete:
+      tags:
+        - "Devices"
+      summary: "Delete device"
+      operationId: "deleteDevice"
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "201":
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleOK"
+              example:
+                message: "Ok"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Not found"
+  /devices/groups:
+    post:
+      tags:
+        - "Devices"
+      summary: "Create device group"
+      operationId: "createDeviceGroup"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceGroups'
+      responses:
+        '201':
+          description: 'Device group successfully created'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeviceGroups'
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -535,8 +783,8 @@ paths:
     get:
       tags:
         - Devices
-      summary: List devices
-      operationId: getDevices
+      summary: List device groups
+      operationId: getDeviceGroups
       parameters:
         - in: query
           name: page
@@ -563,7 +811,19 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Devices'
+                      $ref: '#/components/schemas/DeviceGroups'
+                  total:
+                    type: integer
+                    readOnly: true
+                  nextPage:
+                    type: integer
+                    readOnly: true
+                  previousPage:
+                    type: integer
+                    readOnly: true
+                  totalPages:
+                    type: integer
+                    readOnly: true
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -575,7 +835,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: 'Devicesnot found'
+          description: 'Device groups not found'
           content:
             application/json:
               schema:
@@ -590,23 +850,23 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 message: 'Internal server error'
-  /devices/{id}:
+  /devices/groups/{id}:
     get:
       tags:
         - "Devices"
-      summary: "Get device"
-      operationId: "getDevice"
+      summary: "Get device group"
+      operationId: "getDeviceGroup"
       parameters:
-        - name: deviceId
+        - name: deviceGroupId
           in: path
-          description: Device id
+          description: Device group id
           required: true
           schema:
             type: integer
             format: int64
       responses:
         '201':
-          description: 'Device successfully edited'
+          description: 'Device group list'
           content:
             application/json:
               schema:
@@ -615,7 +875,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Devices'
+                      $ref: '#/components/schemas/DeviceGroups'
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -627,7 +887,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: 'Device not found'
+          description: 'Device group not found'
           content:
             application/json:
               schema:
@@ -645,16 +905,24 @@ paths:
     put:
       tags:
         - "Devices"
-      summary: "Edit device"
-      operationId: "editDevice"
+      summary: "Edit device group"
+      operationId: "editDeviceGroup"
+      parameters:
+        - name: deviceGroupId
+          in: path
+          description: Device group id
+          required: true
+          schema:
+            type: integer
+            format: int64
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DevicesSmall'
+              $ref: '#/components/schemas/DeviceGroupsSmall'
       responses:
         '201':
-          description: 'Device successfully edited'
+          description: 'Device group successfully edited'
           content:
             application/json:
               schema:
@@ -663,7 +931,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Devices'
+                      $ref: '#/components/schemas/DeviceGroups'
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -675,7 +943,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: 'Device not found'
+          description: 'Device group not found'
           content:
             application/json:
               schema:
@@ -693,12 +961,12 @@ paths:
     delete:
       tags:
         - "Devices"
-      summary: "Delete device"
-      operationId: "deleteDevice"
+      summary: "Delete device group"
+      operationId: "deleteDeviceGroup"
       parameters:
-        - name: deviceId
+        - name: deviceGroupId
           in: path
-          description: Device id
+          description: Device group id
           required: true
           schema:
             type: integer
@@ -724,10 +992,10 @@ paths:
                 message: 'Not found'
 components:
   securitySchemes:
-    bearerAuth:            # arbitrary name for the security scheme
+    bearerAuth: # arbitrary name for the security scheme
       type: http
       scheme: bearer
-      bearerFormat: JWT 
+      bearerFormat: JWT
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid
@@ -744,7 +1012,7 @@ components:
           description: name
         licenseId:
           type: integer
-          description: License id 
+          description: License id
         userId:
           type: string
           format: uuid
@@ -761,7 +1029,7 @@ components:
           description: name
         licenseId:
           type: integer
-          description: License id 
+          description: License id
     OrganizationsList:
       title: Ok response
       type: object
@@ -772,7 +1040,7 @@ components:
             organizations:
               type: array
               items:
-                $ref: '#/components/schemas/Organization'
+                $ref: "#/components/schemas/Organization"
             total:
               type: number
             nextPage:
@@ -793,7 +1061,7 @@ components:
           description: name
         organizationId:
           type: integer
-          description: License id 
+          description: License id
         ownerId:
           type: string
           format: uuid
@@ -817,7 +1085,7 @@ components:
             userGroups:
               type: array
               items:
-                $ref: '#/components/schemas/UserGroup'
+                $ref: "#/components/schemas/UserGroup"
             total:
               type: number
             nextPage:
@@ -857,6 +1125,34 @@ components:
               type: string
           required:
             - "serial"
+    DeviceGroupsSmall:
+      title: Device groups
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - "name"
+    DeviceGroups:
+      allOf:
+        - $ref: "#/components/schemas/DeviceGroupsSmall"
+        - type: object
+          properties:
+            organizationId:
+              type: integer
+          required:
+            - "organizationId"
     SimpleOK:
       title: Ok response
       type: object
