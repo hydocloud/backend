@@ -174,7 +174,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: '#/components/schemas/Organization'
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -422,7 +422,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OK'
+                $ref: '#/components/schemas/Organization'
         '400':
           description: 'invalid input, object invalid'
           content:
@@ -491,6 +491,237 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 message: 'Internal server error'
+  /devices:
+    post:
+      tags:
+        - "Devices"
+      summary: "Create device"
+      operationId: "createDevice"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Devices'
+      responses:
+        '201':
+          description: 'Device successfully created'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Devices'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+    get:
+      tags:
+        - Devices
+      summary: List devices
+      operationId: getDevices
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+        - in: query
+          name: deviceGroupId
+          schema:
+            type: number
+          required: true
+
+      responses:
+        '201':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Devices'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Devicesnot found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: 'error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+  /devices/{id}:
+    get:
+      tags:
+        - "Devices"
+      summary: "Get device"
+      operationId: "getDevice"
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: 'Device successfully edited'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Devices'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Device not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+    put:
+      tags:
+        - "Devices"
+      summary: "Edit device"
+      operationId: "editDevice"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicesSmall'
+      responses:
+        '201':
+          description: 'Device successfully edited'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Devices'
+        '400':
+          description: 'invalid input, object invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Bad request'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Device not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
+        '500':
+          description: error processing operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Internal server error'
+    delete:
+      tags:
+        - "Devices"
+      summary: "Delete device"
+      operationId: "deleteDevice"
+      parameters:
+        - name: deviceId
+          in: path
+          description: Device id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleOK'
+              example:
+                message: 'Ok'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: 'Device not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: 'Not found'
 components:
   securitySchemes:
     bearerAuth:            # arbitrary name for the security scheme
@@ -595,6 +826,37 @@ components:
               type: number
             totalpages:
               type: number
+    DevicesSmall:
+      title: Devices
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        deviceGroupId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - "name"
+        - "deviceGroupId"
+    Devices:
+      allOf:
+        - $ref: "#/components/schemas/DevicesSmall"
+        - type: object
+          properties:
+            serial:
+              type: string
+          required:
+            - "serial"
     SimpleOK:
       title: Ok response
       type: object
