@@ -14,7 +14,7 @@ class Authorization(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(UUID(as_uuid=True))
-    device_id = (Column(Integer),)
+    device_id = Column(Integer)
     access_time = Column(Integer)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime)
@@ -46,6 +46,7 @@ class AuthorizationModelShort(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
+        orm_mode = True
 
 
 class AuthorizationModelApiInput(BaseModel):
