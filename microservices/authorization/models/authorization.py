@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import Optional
 
 Base = declarative_base()
@@ -55,3 +55,29 @@ class AuthorizationModelApiInput(BaseModel):
     accessTime: Optional[int]
     startTime: datetime = Field(default_factory=datetime.utcnow)
     endTime: Optional[datetime]
+
+
+class AuthorizationModelParameters(BaseModel):
+    authorizationId: Optional[int]
+    userId: Optional[uuid.UUID]
+    deviceId: Optional[int]
+    pageNumber: Optional[int] = Field(default=1)
+    pageSize: Optional[int] = Field(default=5)
+
+    @root_validator(pre=True)
+    def authorization_id_user_id_device_id(cls, values):
+        if values.get("authorizationId") is not None and (
+            values.get("deviceId") is not None or values.get("userId") is not None
+        ):
+            raise ValueError("incompatible input")
+        return values
+
+    @root_validator(pre=True)
+    def user_id_device_id(cls, values):
+        if (
+            values.get("authorizationId") is None
+            and values.get("deviceId") is None
+            and values.get("userId") is None
+        ):
+            raise ValueError("incompatible input")
+        return values
