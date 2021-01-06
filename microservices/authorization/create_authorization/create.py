@@ -31,6 +31,8 @@ def create_authorization(
     """ Function that create authorization on db """
 
     try:
+        # Perform logic to validate authorization type
+
         authorization = Authorization(
             user_id=payload.userId,
             device_id=payload.deviceId,
