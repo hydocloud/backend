@@ -20,3 +20,4 @@ black
 mypy
 sqlalchemy-stubs
 Faker
+SQLAlchemy-Paginator==0.2
