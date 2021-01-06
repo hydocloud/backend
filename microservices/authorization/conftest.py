@@ -26,7 +26,7 @@ def session(engine, tables):
     """Returns an sqlalchemy session, and after the test tears down everything properly."""
     connection = engine.connect()
     # begin the nested transaction
-    #transaction = connection.begin()
+    # transaction = connection.begin()
     # use the connection with the already started transaction
     session = Session(bind=connection)
 
@@ -66,9 +66,9 @@ def session(engine, tables):
     yield session
 
     session.close()
-    # # roll back the broader transaction
-    #transaction.rollback()
-    # # put back the connection to the connection pool
+    # roll back the broader transaction
+    # transaction.rollback()
+    # put back the connection to the connection pool
     connection.close()
 
 
@@ -105,6 +105,8 @@ def populate_db(session):
     ]
     session.bulk_save_objects(authorizations)
     session.commit()
+    
+    return authorizations
 
 
 @mock_dynamodb2
