@@ -105,7 +105,7 @@ def populate_db(session):
     ]
     session.bulk_save_objects(authorizations)
     session.commit()
-    
+
     return authorizations
 
 
