@@ -35,7 +35,7 @@ class Devices(Base):
         Integer,
         ForeignKey("device_groups.id"),
     )
-    hmac_key = Column(EncryptedType(Integer, secret_key, AesEngine))
+    hmac_key = Column(EncryptedType(String, secret_key, AesEngine))
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -68,6 +68,7 @@ class DevicesModel(BaseModel):
     name: str
     serial: str
     device_group_id: int = Field(..., alias="deviceGroupId")
+    hmac_key: str = Field(..., alias="hmacKey")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
