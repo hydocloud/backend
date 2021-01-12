@@ -15,7 +15,7 @@ import os
 import pathlib
 import subprocess
 from shutil import copyfile, copytree
-from hydo import user_group, devices
+from hydo import user_group, devices, secrets
 
 LAMBDA_HANDLER = "app.lambda_handler"
 
@@ -271,6 +271,7 @@ class OrganizationeStack(core.Stack):
 
         user_group.lambdas(self)
         devices.lambdas(self)
+        secrets.device_symmetric_key(self)
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
