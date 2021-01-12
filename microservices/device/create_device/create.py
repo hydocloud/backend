@@ -35,6 +35,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
             name=payload.name,
             serial=payload.serial,
             device_group_id=payload.deviceGroupId,
+            hmac_key=payload.hmacKey,
             created_at=datetime.datetime.utcnow(),
             updated_at=datetime.datetime.utcnow(),
         )

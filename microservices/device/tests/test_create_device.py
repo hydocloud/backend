@@ -138,7 +138,7 @@ def setup_device_group_id(session):
 @pytest.fixture
 def device(setup_device_group_id):
     return DevicesApiInput(
-        name="test", serial="12315", deviceGroupId=setup_device_group_id
+        name="test", serial="12315", deviceGroupId=setup_device_group_id, hmacKey="testest"
     )
 
 
@@ -160,6 +160,7 @@ def test_create_authorization(monkeypatch):
 def test_create_device_ok(device, session):
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
+    print(res)
     body = (json.loads(res["body"]))["data"]["devices"][0]
 
     assert res["statusCode"] == 201

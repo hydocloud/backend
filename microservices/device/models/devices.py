@@ -1,13 +1,16 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy_utils import EncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 from pydantic import BaseModel, Field
 from typing import Optional
 
 Base = declarative_base()
+secret_key = "secretkey1234"
 
 
 class DeviceGroups(Base):
@@ -32,6 +35,7 @@ class Devices(Base):
         Integer,
         ForeignKey("device_groups.id"),
     )
+    hmac_key = Column(EncryptedType(Integer, secret_key, AesEngine))
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -96,6 +100,7 @@ class DevicesApiInput(BaseModel):
     name: str
     serial: str
     deviceGroupId: int
+    hmacKey: str
 
 
 class DevicesEditInput(BaseModel):
