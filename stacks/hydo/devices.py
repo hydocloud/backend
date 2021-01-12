@@ -11,7 +11,7 @@ DEVICE_FOLDER = "/device"
 
 
 def lambdas(self):
-    PATH = self.current_PATH
+    PATH = self.current_path
 
     create_device_group_lambda = _lambda.Function(
         self,
