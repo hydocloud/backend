@@ -4,8 +4,6 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinar
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import EncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -35,7 +33,7 @@ class Devices(Base):
         Integer,
         ForeignKey("device_groups.id"),
     )
-    hmac_key = Column(EncryptedType(String, secret_key, AesEngine))
+    hmac_key = Column(LargeBinary)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
