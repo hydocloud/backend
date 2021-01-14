@@ -3,6 +3,7 @@ import datetime
 import os
 import boto3
 import json
+import crypt
 from typing import List
 from pydantic import parse_obj_as, ValidationError
 from botocore.exceptions import ClientError, ParamValidationError
@@ -35,7 +36,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
             name=payload.name,
             serial=payload.serial,
             device_group_id=payload.deviceGroupId,
-            hmac_key=payload.hmacKey,
+            hmac_key=crypt.encrypt(payload.hmacKey),
             created_at=datetime.datetime.utcnow(),
             updated_at=datetime.datetime.utcnow(),
         )
