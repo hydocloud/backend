@@ -15,6 +15,7 @@ CREATE TABLE "devices"
   "id" SERIAL PRIMARY KEY,
   "serial" varchar NOT NULL,
   "device_group_id" int NOT NULL,
+  "hmac_key" bytea NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
   "updated_at" timestamp NOT NULL DEFAULT (now()),
   UNIQUE("device_id", "device_group_id")
