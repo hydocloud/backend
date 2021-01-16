@@ -81,3 +81,11 @@ class AuthorizationModelParameters(BaseModel):
         ):
             raise ValueError("incompatible input")
         return values
+
+
+class Unlock(BaseModel):
+    userId: Optional[uuid.UUID]
+    deviceId: int
+    message: str
+    deviceNonce: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
