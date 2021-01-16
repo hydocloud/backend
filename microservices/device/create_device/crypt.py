@@ -3,6 +3,7 @@ import logging
 from os import environ
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
+from Crypto.Random import get_random_bytes
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Tracer
 from base64 import b64encode
@@ -30,6 +31,6 @@ def get_key(secret_manager=None) -> bytes:
 
 def encrypt(data: str) -> bytes:
     key = get_key()
-    cipher = AES.new(key, AES.MODE_CBC)
-    iv = cipher.iv
+    iv = get_random_bytes(16)
+    cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
     return b64encode(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size)))
