@@ -4,6 +4,8 @@ from create import create_device
 from models.devices import DevicesApiInput
 from database import init_db
 from aws_lambda_powertools import Tracer
+from pydantic import ValidationError
+from models.api_response import LambdaResponse, Message
 
 
 tracer = Tracer(service="create_device")
@@ -26,7 +28,11 @@ def lambda_handler(event, context):
 
     user_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
     payload = json.loads(event["body"])
-    payload = DevicesApiInput.parse_obj(payload)
+    try:
+        payload = DevicesApiInput.parse_obj(payload)
+    except ValidationError as err:
+        logger.error(err)
+        return LambdaResponse(statusCode=400, body=Message(message="Bad request").json()).dict()
     response = create_device(user_id, payload, CONNECTION)
     logger.info(response)
     return response
