@@ -5,6 +5,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Tracer
+from base64 import b64encode
 
 
 tracer = Tracer(service="create_device")
@@ -18,7 +19,9 @@ def get_key(secret_manager=None) -> bytes:
         secret_manager = session.client(service_name="secretsmanager")
 
     try:
-        get_secret_value_response = secret_manager.get_secret_value(SecretId=secret_name)
+        get_secret_value_response = secret_manager.get_secret_value(
+            SecretId=secret_name
+        )
         return get_secret_value_response["SecretString"].encode()
     except ClientError as err:
         logger.error(err)
@@ -29,7 +32,4 @@ def encrypt(data: str) -> bytes:
     key = get_key()
     cipher = AES.new(key, AES.MODE_CBC)
     iv = cipher.iv
-    cipher_text = cipher.encrypt(pad(data.encode(), AES.block_size))
-    total = iv.hex() + ";" + cipher_text.hex()
-
-    return total.encode()
+    return b64encode(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size)))
