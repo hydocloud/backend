@@ -13,6 +13,7 @@ CREATE TABLE "device_groups"
 CREATE TABLE "devices"
 (
   "id" SERIAL PRIMARY KEY,
+  "name" varchar NOT NULL,
   "serial" varchar NOT NULL,
   "device_group_id" int NOT NULL,
   "hmac_key" bytea NOT NULL,
