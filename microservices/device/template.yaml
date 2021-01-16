@@ -93,3 +93,24 @@ Resources:
             Path: /devices/groups/{id}
             Method: PUT
             
+  CreateDeviceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: create_device/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          DB_PORT: ""
+          DB_HOST: ""
+          DB_NAME: ""
+          DB_ENGINE: ""
+          DB_USER: ""
+          DB_PASSWORD: ""
+          SECRET_NAME: ""
+      Events:
+        CreateDeviceGroups:
+          Type: Api
+          Properties:
+            Path: /devices
+            Method: POST      
