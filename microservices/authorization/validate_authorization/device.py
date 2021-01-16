@@ -1,4 +1,5 @@
 import logging
+from Crypto.Hash import HMAC, SHA256
 from typing import Optional
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -30,3 +31,9 @@ class DeviceClass:
         except SQLAlchemyError as err:
             logger.error(err)
         return None
+
+    def digest(self, message: str) -> str:
+
+        h = HMAC.new(self.hmac_key, digestmod=SHA256)
+        h.update(message.encode())
+        return h.hexdigest()

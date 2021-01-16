@@ -38,7 +38,7 @@ def create_device(session):
         name=faker.sentence(nb_words=1),
         serial=faker.sentence(nb_words=1),
         device_group_id=1,
-        hmac_key=faker.sentence(nb_words=1).encode(),
+        hmac_key="ciaociaociaociaociaociaociaociao".encode(),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
@@ -102,3 +102,12 @@ class TestDeviceClass:
         assert res.id == create_device.id
         assert res.hmac_key == create_device.hmac_key
         assert x.hmac_key == create_device.hmac_key
+
+    def test_digest(self, create_device, session):
+        from validate_authorization.device import DeviceClass
+
+        x = DeviceClass(create_device.id)
+        x.hmac_key = create_device.hmac_key
+        res = x.digest(message="ciao")
+
+        assert res == "d5cfd1d870147b8f1cbced82e601233e74b671710fcf83aef82d2cbd0e7f4675"
