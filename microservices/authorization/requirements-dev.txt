@@ -21,3 +21,5 @@ mypy
 sqlalchemy-stubs
 Faker
 SQLAlchemy-Paginator==0.2
+python3-indy==1.15
+pycryptodome
