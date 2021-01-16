@@ -23,7 +23,7 @@ def store(message: str, dynamodb=None) -> bool:
             TableName=table_name,
             Item={
                 "message": message,
-                "service_id": environ["AUTHORIZATION_ID"],
+                "service_id": environ["SERVICE_ID"],
                 "expiration_time": int(
                     (datetime.utcnow() + timedelta(minutes=2)).timestamp()
                 ),
