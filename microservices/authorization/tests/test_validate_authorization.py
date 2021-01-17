@@ -8,6 +8,7 @@ from models.devices import Devices
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from Crypto.Random import get_random_bytes
+from pydantic import ValidationError
 
 
 faker = Faker()
@@ -81,8 +82,8 @@ def test_authorization_validation_ko(unlock):
     from validate_authorization.authorization import AuthorizationClass
 
     del unlock["deviceId"]
-    x = AuthorizationClass(unlock)
-    assert hasattr(x, "unlock") is False
+    with pytest.raises(ValidationError):
+        assert AuthorizationClass(unlock)
 
 
 def test_authorization_get_message(unlock, dynamodb, create_nonce, monkeypatch):
