@@ -10,7 +10,8 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import or_
 from models.authorization import Unlock, Authorization
 from models.wallet import Wallet
-
+from device import DeviceClass
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class AuthorizationClass:
             self.unlock = Unlock.parse_obj(obj)
         except ValidationError as err:
             logger.error(err)
+            raise ValidationError(errors="Validation error", model=Unlock)
 
     def get_message(self, dynamodb=None):
         if dynamodb is None:
@@ -41,11 +43,13 @@ class AuthorizationClass:
             )
         except ClientError as e:
             logger.error(e.response["Error"]["Message"])
+            raise ClientError
         else:
             try:
                 self.service_message = response["Item"]["message"]
             except KeyError as e:
                 logger.error(e)
+                raise KeyError
 
     async def decrypt(self) -> bool:
         x = Wallet.get_instance()
@@ -86,17 +90,14 @@ class AuthorizationClass:
 
         return True
 
-    def validation(self, user_id: str, connection: Session):
-        """
-        select
-            a.id
-        from
-            authorizations a
-        where
-            (a.end_time is null or a.end_time > TO_TIMESTAMP( '2021-01-17 12:38:59', 'YYYY-MM-DD HH:MI:SS' ))
-            and a.start_time <= TO_TIMESTAMP( '2021-01-17 12:38:59', 'YYYY-MM-DD HH:MI:SS' )
-            and (a.access_limit is null or a.access_limit > 0)
-        """
+    def validation(
+        self,
+        user_id: str,
+        connection: Session,
+        device: DeviceClass,
+        key: bytes
+    ) -> Optional[str]:
+
         try:
             item = (
                 connection.query(Authorization.id, Authorization.access_time)
@@ -113,9 +114,17 @@ class AuthorizationClass:
                     )
                 )
             )
-            if item.access_time:
-                item.access_limit = item.access_limit - 1
-                connection.commit()
-        except SQLAlchemyError as err:
+            if item:
+                device.get_hmac(key=key, connection=connection)
+                digest = device.digest(self.unlock.deviceNonce)
+                if item.access_time:
+                    item.access_limit = item.access_limit - 1
+                    connection.commit()
+                return digest
+            else:
+                return None
+
+        except (SQLAlchemyError, Exception) as err:
             logger.error(err)
             connection.rollback()
+            return None
