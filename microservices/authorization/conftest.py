@@ -26,48 +26,17 @@ def session(engine, tables):
     """Returns an sqlalchemy session, and after the test tears down everything properly."""
     connection = engine.connect()
     # begin the nested transaction
-    # transaction = connection.begin()
+    transaction = connection.begin()
     # use the connection with the already started transaction
     session = Session(bind=connection)
 
-    authorizations = [
-        Authorization(
-            user_id=faker.uuid4(),
-            device_id=faker.random_int(),
-            access_time=faker.random_int(),
-            start_time=faker.iso8601(),
-            end_time=faker.iso8601(),
-            created_at=faker.iso8601(),
-            updated_at=faker.iso8601(),
-        ),
-        Authorization(
-            user_id=faker.uuid4(),
-            device_id=faker.random_int(),
-            access_time=faker.random_int(),
-            start_time=faker.iso8601(),
-            end_time=faker.iso8601(),
-            created_at=faker.iso8601(),
-            updated_at=faker.iso8601(),
-        ),
-        Authorization(
-            user_id=faker.uuid4(),
-            device_id=faker.random_int(),
-            access_time=faker.random_int(),
-            start_time=faker.iso8601(),
-            end_time=faker.iso8601(),
-            created_at=faker.iso8601(),
-            updated_at=faker.iso8601(),
-        )
-    ]
-
-    session.bulk_save_objects(authorizations)
     session.commit()
 
     yield session
 
     session.close()
     # roll back the broader transaction
-    # transaction.rollback()
+    transaction.rollback()
     # put back the connection to the connection pool
     connection.close()
 
@@ -101,7 +70,7 @@ def populate_db(session):
             end_time=faker.iso8601(),
             created_at=faker.iso8601(),
             updated_at=faker.iso8601(),
-        )
+        ),
     ]
     session.bulk_save_objects(authorizations)
     session.commit()
@@ -128,3 +97,13 @@ def dynamodb():
             BillingMode="PAY_PER_REQUEST",
         )
         yield dynamodb
+
+
+@pytest.fixture(autouse=True)
+def env_setup(monkeypatch):
+    monkeypatch.setenv("DB_PORT", "5432")
+    monkeypatch.setenv("DB_HOST", "localhost")
+    monkeypatch.setenv("DB_NAME", "5432")
+    monkeypatch.setenv("DB_ENGINE", "5432")
+    monkeypatch.setenv("DB_USER", "5432")
+    monkeypatch.setenv("DB_PASSWORD", "5432")
