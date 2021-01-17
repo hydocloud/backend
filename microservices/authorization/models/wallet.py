@@ -8,12 +8,11 @@ import os
 
 logger = logging.getLogger(__name__)
 
-name = "login_service"
-db_port = os.environ["DB_PORT"]
-db_host = os.environ["DB_HOST"]
-db_name = os.environ["DB_NAME"]
-db_user = os.environ["DB_USER"]
-db_password = os.environ["DB_PASSWORD"]
+db_port = os.environ["DB_INDY_PORT"]
+db_host = os.environ["DB_INDY_HOST"]
+db_name = os.environ["DB_INDY_NAME"]
+db_user = os.environ["DB_INDY_USER"]
+db_password = os.environ["DB_INDY_PASSWORD"]
 
 
 class Wallet(object):
@@ -31,8 +30,8 @@ class Wallet(object):
             raise Exception("This class is a singleton!")
         else:
             Wallet.__instance = self
-            self.name = name
-            self.key = os.environ["LOGIN_SERVICE_PASSWORD"]
+            self.name = os.environ["DB_INDY_SERVICE_NAME"]
+            self.key = os.environ["DB_INDY_SERVICE_PASSWORD"]
             self.name_json = json.dumps(
                 {
                     "id": self.name,
