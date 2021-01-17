@@ -270,10 +270,9 @@ class OrganizationeStack(core.Stack):
         route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
 
         user_group.lambdas(self)
-        devices.lambdas(self)
         device_secret_key = secrets.device_symmetric_key(self)
+        devices.lambdas(self, device_secret_key)
         authorizations.lambdas(self, device_secret_key)
-
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str
