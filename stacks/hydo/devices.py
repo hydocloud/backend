@@ -2,6 +2,7 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_lambda_python as lambda_python,
     aws_apigatewayv2_integrations as apigw2_integrations,
+    aws_secretsmanager as secret_manager
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
@@ -10,7 +11,7 @@ LAMBDA_HANDLER = "app.lambda_handler"
 DEVICE_FOLDER = "/device"
 
 
-def lambdas(self):
+def lambdas(self, device_secret_key: secret_manager.Secret):
     PATH = self.current_path
 
     create_device_group_lambda = _lambda.Function(
@@ -26,7 +27,7 @@ def lambdas(self):
             "DB_NAME": "devices",
             "DB_ENGINE": "postgresql",
             "DB_USER": "loginService",
-            "DB_PASSWORD": "ciaociao",
+            "DB_PASSWORD": "ciaociao"
         },
         layers=[
             self.create_dependencies_layer(
@@ -167,6 +168,7 @@ def lambdas(self):
             "DB_ENGINE": "postgresql",
             "DB_USER": "loginService",
             "DB_PASSWORD": "ciaociao",
+            "SECRET_NAME": device_secret_key.secret_name,
         },
         layers=[
             self.create_model_layer("ModelLayer", "CreateDevice", DEVICE_FOLDER),
@@ -176,6 +178,8 @@ def lambdas(self):
     create_device_lambda.add_event_source(
         source=SqsEventSource(self.create_authorization_device_queue, batch_size=1)
     )
+
+    device_secret_key.grant_read(grantee=create_device_lambda)
 
     delete_device_lambda = lambda_python.PythonFunction(
         self,
