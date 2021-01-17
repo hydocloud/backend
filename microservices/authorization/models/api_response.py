@@ -22,3 +22,9 @@ class DataModel(BaseModel):
     nextPage: Optional[int]
     previousPage: Optional[int]
     totalPages: Optional[int]
+
+
+class UnlockModel(BaseModel):
+    success: bool
+    message: Optional[str]
+    digest: Optional[str]
