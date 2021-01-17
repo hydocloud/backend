@@ -14,7 +14,7 @@ setuptools.setup(
     author="author",
     package_dir={"": "stacks"},
     packages=setuptools.find_packages(where="stacks"),
-    install_requires=["aws-cdk.core==1.74.0",],
+    install_requires=["aws-cdk.core==1.80.0",],
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 4 - Beta",
