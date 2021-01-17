@@ -257,7 +257,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             self.create_model_layer(
                 "ModelLayer",
                 "ValidateAuthorization",
-                f"{LAMBDAS_FOLDER}/validate_authorization",
+                f"{LAMBDAS_FOLDER}",
             ),
         ],
     )
