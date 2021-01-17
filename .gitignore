@@ -19,5 +19,4 @@ htmlcov
 .coverage
 .vscode
 .idea
-
-microservices/device/.mypy.ini
+doc/api
