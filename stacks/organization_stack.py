@@ -66,7 +66,7 @@ class OrganizationeStack(core.Stack):
                 "DB_ENGINE": "postgresql",
                 "DB_USER": "loginService",
                 "DB_PASSWORD": "ciaociao",
-                "QUEUE_URL": self.create_user_group_queue.queue_url,
+                "QUEUE_URLS": f'["{self.create_user_group_queue.queue_url}","{self.create_device_group_queue.queue_url}"]',
             },
             layers=[
                 self.create_dependencies_layer(
@@ -77,6 +77,10 @@ class OrganizationeStack(core.Stack):
         )
 
         self.create_user_group_queue.grant_send_messages(
+            grantee=create_organization_lambda
+        )
+
+        self.create_device_group_queue.grant_send_messages(
             grantee=create_organization_lambda
         )
 
@@ -133,7 +137,9 @@ class OrganizationeStack(core.Stack):
                     "/organization/delete_organization",
                 ),
                 self.create_model_layer(
-                    "DeleteOrganizationModels", "DeleteOrganization", "/organization",
+                    "DeleteOrganizationModels",
+                    "DeleteOrganization",
+                    "/organization",
                 ),
             ],
         )
@@ -300,7 +306,8 @@ class OrganizationeStack(core.Stack):
         output_dir = ".lambda_dependencies/" + function_name + "/commodities"
         os.makedirs(output_dir + "/python", exist_ok=True)
         copyfile(
-            "{}/database.py".format(base_path), f"{output_dir}/python/database.py",
+            "{}/database.py".format(base_path),
+            f"{output_dir}/python/database.py",
         )
         copytree(
             "{}/models".format(base_path),
