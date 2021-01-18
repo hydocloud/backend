@@ -2,7 +2,7 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_lambda_python as lambda_python,
     aws_apigatewayv2_integrations as apigw2_integrations,
-    aws_secretsmanager as secret_manager
+    aws_secretsmanager as secret_manager,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
@@ -27,7 +27,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             "DB_NAME": "devices",
             "DB_ENGINE": "postgresql",
             "DB_USER": "loginService",
-            "DB_PASSWORD": "ciaociao"
+            "DB_PASSWORD": "ciaociao",
         },
         layers=[
             self.create_dependencies_layer(
@@ -169,7 +169,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             "DB_USER": "loginService",
             "DB_PASSWORD": "ciaociao",
             "SECRET_NAME": device_secret_key.secret_name,
-            "QUEUE_URL": self.create_authorization_device_queue.queue_url
+            "QUEUE_URL": self.create_authorization_device_queue.queue_url,
         },
         layers=[
             self.create_model_layer("ModelLayer", "CreateDevice", DEVICE_FOLDER),
@@ -178,6 +178,10 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     create_device_lambda.add_event_source(
         source=SqsEventSource(self.create_authorization_device_queue, batch_size=1)
+    )
+
+    self.create_authorization_device_queue.grant_send_messages(
+        grantee=create_device_lambda
     )
 
     device_secret_key.grant_read(grantee=create_device_lambda)
