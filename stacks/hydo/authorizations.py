@@ -8,6 +8,7 @@ from aws_cdk import (
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from aws_cdk.aws_dynamodb import BillingMode
+from aws_cdk.core import Duration
 from utils.prefix import env_specific
 
 LAMBDA_HANDLER = "app.lambda_handler"
@@ -225,6 +226,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         code=_lambda.Code.asset(f"{PATH}{LAMBDAS_FOLDER}/validate_authorization"),
         handler=LAMBDA_HANDLER,
         tracing=_lambda.Tracing.ACTIVE,
+        timeout=Duration.seconds(350),
         memory_size=512,
         environment={
             "AUTHORIZATION_ID": "bf7d5894-e852-4022-bbc0-abdb26fbc6d5",
