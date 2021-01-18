@@ -15,7 +15,7 @@ class Authorization(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(UUID(as_uuid=True))
     device_id = Column(Integer)
-    access_time = Column(Integer)
+    access_limit = Column(Integer)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime)
     created_at = Column(DateTime, nullable=False)
@@ -26,7 +26,7 @@ class AuthorizationModel(BaseModel):
     id: int
     user_id: uuid.UUID
     device_id: int
-    access_time: Optional[int]
+    access_limit: Optional[int]
     start_time: datetime = Field(default_factory=datetime.utcnow)
     end_time: Optional[datetime]
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -40,7 +40,7 @@ class AuthorizationModelShort(BaseModel):
     id: int
     user_id: uuid.UUID = Field(..., alias="userId")
     device_id: int = Field(..., alias="deviceId")
-    access_time: Optional[int] = Field(..., alias="accessTime")
+    access_limit: Optional[int] = Field(..., alias="accessLimit")
     start_time: datetime = Field(default_factory=datetime.utcnow, alias="startTime")
     end_time: Optional[datetime] = Field(..., alias="endTime")
 
@@ -52,7 +52,7 @@ class AuthorizationModelShort(BaseModel):
 class AuthorizationModelApiInput(BaseModel):
     userId: uuid.UUID
     deviceId: int = Field(..., alias="deviceId")
-    accessTime: Optional[int]
+    accessLimit: Optional[int]
     startTime: datetime = Field(default_factory=datetime.utcnow)
     endTime: Optional[datetime]
 

@@ -13,7 +13,7 @@ def authorization_input():
     return AuthorizationModelApiInput(
         userId=uuid.uuid4().__str__(),
         deviceId=1,
-        accessTime=1,
+        accessLimit=1,
         endTime=datetime.utcnow(),
     )
 
@@ -110,22 +110,38 @@ def test_edit_authorization_ok(session, populate_db, authorization_input):
 
     assert res["statusCode"] == 201
     assert body["data"]["authorizations"][0]["id"] == 1
-    assert body["data"]["authorizations"][0]["userId"] == authorization_input.userId.__str__()
+    assert (
+        body["data"]["authorizations"][0]["userId"]
+        == authorization_input.userId.__str__()
+    )
     assert body["data"]["authorizations"][0]["deviceId"] == authorization_input.deviceId
-    assert body["data"]["authorizations"][0]["accessTime"] == authorization_input.accessTime
-    assert body["data"]["authorizations"][0]["startTime"] == authorization_input.startTime.isoformat()
-    assert body["data"]["authorizations"][0]["endTime"] == authorization_input.endTime.isoformat()
+    assert (
+        body["data"]["authorizations"][0]["accessLimit"]
+        == authorization_input.accessLimit
+    )
+    assert (
+        body["data"]["authorizations"][0]["startTime"]
+        == authorization_input.startTime.isoformat()
+    )
+    assert (
+        body["data"]["authorizations"][0]["endTime"]
+        == authorization_input.endTime.isoformat()
+    )
 
 
 def test_edit_authorization_not_found(session, populate_db, authorization_input):
     authorization_input.__delattr__("deviceId")
-    res = edit_authorization(authorization_id=100, payload=authorization_input, connection=session)
+    res = edit_authorization(
+        authorization_id=100, payload=authorization_input, connection=session
+    )
 
     assert res["statusCode"] == 404
 
 
 def test_edit_authorization_error(session, populate_db, authorization_input):
-    res = edit_authorization(authorization_id=100, payload=authorization_input, connection=session.close())
+    res = edit_authorization(
+        authorization_id=100, payload=authorization_input, connection=session.close()
+    )
 
     assert res["statusCode"] == 500
 
@@ -138,14 +154,28 @@ def test_lambda_handler_ok(session, populate_db, apigw_event, authorization_inpu
 
     assert res["statusCode"] == 201
     assert body["data"]["authorizations"][0]["id"] == 1
-    assert body["data"]["authorizations"][0]["userId"] == authorization_input.userId.__str__()
+    assert (
+        body["data"]["authorizations"][0]["userId"]
+        == authorization_input.userId.__str__()
+    )
     assert body["data"]["authorizations"][0]["deviceId"] == authorization_input.deviceId
-    assert body["data"]["authorizations"][0]["accessTime"] == authorization_input.accessTime
-    assert body["data"]["authorizations"][0]["startTime"] == authorization_input.startTime.isoformat()
-    assert body["data"]["authorizations"][0]["endTime"] == authorization_input.endTime.isoformat()
+    assert (
+        body["data"]["authorizations"][0]["accessLimit"]
+        == authorization_input.accessLimit
+    )
+    assert (
+        body["data"]["authorizations"][0]["startTime"]
+        == authorization_input.startTime.isoformat()
+    )
+    assert (
+        body["data"]["authorizations"][0]["endTime"]
+        == authorization_input.endTime.isoformat()
+    )
 
 
-def test_lambda_handler_bad_request(session, populate_db, apigw_event, authorization_input):
+def test_lambda_handler_bad_request(
+    session, populate_db, apigw_event, authorization_input
+):
     app.CONNECTION = session
     apigw_event["body"] = json.dumps({"test": "asds"})
     res = lambda_handler(apigw_event, None)

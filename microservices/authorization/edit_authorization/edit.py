@@ -47,7 +47,7 @@ def edit_authorization(
 
         authorization.user_id = payload.userId
         authorization.device_id = payload.deviceId
-        authorization.access_time = payload.accessTime
+        authorization.access_limit = payload.accessLimit
         authorization.start_time = payload.startTime
         authorization.end_time = payload.endTime
         connection.commit()

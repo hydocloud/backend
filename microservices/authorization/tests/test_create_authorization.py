@@ -13,7 +13,7 @@ def authorization_input():
     return AuthorizationModelApiInput(
         userId=uuid.uuid4().__str__(),
         deviceId=1,
-        accessTime=1,
+        accessLimit=1,
         endTime=datetime.utcnow(),
     )
 

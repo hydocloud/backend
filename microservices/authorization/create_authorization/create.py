@@ -36,7 +36,7 @@ def create_authorization(
         authorization = Authorization(
             user_id=payload.userId,
             device_id=payload.deviceId,
-            access_time=payload.accessTime,
+            access_limit=payload.accessLimit,
             start_time=payload.startTime,
             end_time=payload.endTime,
             created_at=datetime.datetime.utcnow(),
