@@ -268,6 +268,14 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         path="/authz",
         methods=[HttpMethod.POST],
         integration=apigw2_integrations.LambdaProxyIntegration(
+            handler=authorization_service_lambda
+        ),
+    )
+
+    self.http_api.add_routes(
+        path="/authz/validate",
+        methods=[HttpMethod.POST],
+        integration=apigw2_integrations.LambdaProxyIntegration(
             handler=validate_authorization_lambda
         ),
     )
