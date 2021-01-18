@@ -169,6 +169,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             "DB_USER": "loginService",
             "DB_PASSWORD": "ciaociao",
             "SECRET_NAME": device_secret_key.secret_name,
+            "QUEUE_URL": self.create_authorization_device_queue.queue_url
         },
         layers=[
             self.create_model_layer("ModelLayer", "CreateDevice", DEVICE_FOLDER),
