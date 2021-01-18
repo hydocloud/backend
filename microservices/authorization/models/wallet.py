@@ -26,7 +26,7 @@ class Wallet(object):
         return Wallet.__instance
 
     def __init__(self):
-        if Wallet.__instance is None:
+        if Wallet.__instance is not None:
             raise Exception("This class is a singleton!")
         else:
             Wallet.__instance = self
