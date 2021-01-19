@@ -1,6 +1,7 @@
 import logging
 import boto3
-from Crypto.Hash import HMAC, SHA256
+import hmac
+from hashlib import sha256
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from typing import Optional
@@ -40,9 +41,8 @@ class DeviceClass:
         return None
 
     def digest(self, message: str) -> str:
-        h = HMAC.new(self.hmac_key, digestmod=SHA256)
-        h.update(message.encode())
-        return h.hexdigest()
+        signature = hmac.new(self.hmac_key, msg=message.encode(), digestmod=sha256)
+        return signature.hexdigest()
 
     def get_secret_key(self, secret_manager=None) -> bytes:
         secret_name = environ["SECRET_NAME"]
