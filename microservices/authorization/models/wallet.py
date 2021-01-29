@@ -27,7 +27,7 @@ class Wallet(object):
 
     def __init__(self):
         if Wallet.__instance is not None:
-            raise Exception("This class is a singleton!")
+            return Wallet.__instance
         else:
             Wallet.__instance = self
             self.name = os.environ["DB_INDY_SERVICE_NAME"]
@@ -53,28 +53,27 @@ class Wallet(object):
                     },
                 }
             )
+            
+            stg_lib = CDLL("/opt/lib/libindystrgpostgres.so")
+            result = stg_lib["postgresstorage_init"]()
+            if result != 0:
+                logger.error("Error unable to load wallet storage {}".format(result))
+                sys.exit(0)
+            try:
+                logger.debug(
+                    "Calling init_storagetype() for postgres: {} {}".format(
+                        self.name_json, self.key_json
+                    )
+                )
+                init_storagetype = stg_lib["init_storagetype"]
+                c_config = c_char_p(self.name_json.encode("utf-8"))
+                c_credentials = c_char_p(self.key_json.encode("utf-8"))
+                result = init_storagetype(c_config, c_credentials)
+                logger.debug(" ... returns {}".format(result))
+            except RuntimeError as e:
+                logger.error("Error initializing storage, ignoring ... {}".format(e))
 
     async def set_wallet(self):
-
-        stg_lib = CDLL("/opt/lib/libindystrgpostgres.so")
-        result = stg_lib["postgresstorage_init"]()
-        if result != 0:
-            logger.error("Error unable to load wallet storage {}".format(result))
-            sys.exit(0)
-        try:
-            logger.debug(
-                "Calling init_storagetype() for postgres: {} {}".format(
-                    self.name_json, self.key_json
-                )
-            )
-            init_storagetype = stg_lib["init_storagetype"]
-            c_config = c_char_p(self.name_json.encode("utf-8"))
-            c_credentials = c_char_p(self.key_json.encode("utf-8"))
-            result = init_storagetype(c_config, c_credentials)
-            logger.debug(" ... returns {}".format(result))
-        except RuntimeError as e:
-            logger.error("Error initializing storage, ignoring ... {}".format(e))
-
         try:
             await wallet.create_wallet(self.name_json, self.key_json)
             return True
