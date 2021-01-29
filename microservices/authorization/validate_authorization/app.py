@@ -10,7 +10,7 @@ from database import init_db
 loop = asyncio.get_event_loop()
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 
 wallet_handle = None
@@ -21,7 +21,7 @@ async def init_wallet():
     global wallet_handle
     logger.info("Open wallet")
     if wallet_handle is None:
-        x = Wallet()
+        x = Wallet.get_instance()
         wallet_handle = await x.open_wallet()
 
 
