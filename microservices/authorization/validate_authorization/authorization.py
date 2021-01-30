@@ -11,7 +11,7 @@ from sqlalchemy import or_
 from models.authorization import Unlock, Authorization
 from models.wallet import Wallet
 from device import DeviceClass
-from typing import Optional
+from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class AuthorizationClass:
                 logger.error(e)
                 raise KeyError
 
-    async def decrypt(self) -> bool:
+    async def decrypt(self) -> Tuple[bool, Optional[str]]:
         x = Wallet.get_instance()
         wallet_handle = x.get_wallet_handle()
         logger.info("Decrypt messages")
@@ -66,10 +66,15 @@ class AuthorizationClass:
                     wallet_handle, self.service_message.encode("utf-8")
                 )
             )
+            self.decrypted_user_mesage = json.loads(
+                self.decrypted_user_mesage["message"]
+            )
+            self.decrypted_service_mesage = json.loads(
+                self.decrypted_service_mesage["message"]
+            )
         except IndyError as e:
             logger.error(e)
-            return False
-
+            return False, None
         try:
             assert (
                 self.decrypted_user_mesage["uuid"]
@@ -83,24 +88,20 @@ class AuthorizationClass:
                 self.decrypted_user_mesage["timestamp"]
                 == self.decrypted_service_mesage["timestamp"]
             )
-            return True
+            return True, self.decrypted_user_mesage["uuid"]
         except AssertionError as e:
             logger.error(e)
-            return False
+            return False, None
 
-        return True
+        return False, None
 
     def validation(
-        self,
-        user_id: str,
-        connection: Session,
-        device: DeviceClass,
-        key: bytes
+        self, user_id: str, connection: Session, device: DeviceClass, key: bytes
     ) -> Optional[str]:
 
         try:
             item = (
-                connection.query(Authorization.id, Authorization.access_time)
+                connection.query(Authorization.id, Authorization.access_limit)
                 .filter(
                     or_(
                         Authorization.end_time >= self.unlock.timestamp,
@@ -110,7 +111,8 @@ class AuthorizationClass:
                 .filter(Authorization.start_time <= self.unlock.timestamp)
                 .filter(
                     or_(
-                        Authorization.access_time is None, Authorization.access_time > 0
+                        Authorization.access_limit is None,
+                        Authorization.access_limit > 0,
                     )
                 )
             )
