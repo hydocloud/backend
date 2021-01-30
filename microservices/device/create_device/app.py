@@ -32,7 +32,9 @@ def lambda_handler(event, context):
         payload = DevicesApiInput.parse_obj(payload)
     except ValidationError as err:
         logger.error(err)
-        return LambdaResponse(statusCode=400, body=Message(message="Bad request").json()).dict()
+        return LambdaResponse(
+            statusCode=400, body=Message(message="Bad request").json()
+        ).dict()
     response = create_device(user_id, payload, CONNECTION)
     logger.info(response)
     return response
