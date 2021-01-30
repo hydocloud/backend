@@ -6,6 +6,7 @@ from aws_cdk import (
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
+from aws_cdk.core import Duration
 
 LAMBDA_HANDLER = "app.lambda_handler"
 DEVICE_FOLDER = "/device"
@@ -161,6 +162,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         handler="lambda_handler",
         runtime=_lambda.Runtime.PYTHON_3_8,
         tracing=_lambda.Tracing.ACTIVE,
+        timeout=Duration.minutes(10),
         environment={
             "DB_PORT": self.rds.db_instance_endpoint_port,
             "DB_HOST": self.rds.db_instance_endpoint_address,
