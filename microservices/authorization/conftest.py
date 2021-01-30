@@ -11,20 +11,24 @@ faker = Faker()
 
 @pytest.fixture(scope="session")
 def engine():
-    return create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database")
+    return (
+        create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database"),
+        create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database"),
+    )
 
 
 @pytest.fixture(scope="session")
 def tables(engine):
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine[0])
+    Base.metadata.create_all(engine[1])
     yield
-    Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine[0])
+    Base.metadata.drop_all(engine[1])
 
 
 @pytest.fixture
-def session(engine, tables):
-    """Returns an sqlalchemy session, and after the test tears down everything properly."""
-    connection = engine.connect()
+def authorizations_session(engine, tables):
+    connection = engine[0].connect()
     # begin the nested transaction
     transaction = connection.begin()
     # use the connection with the already started transaction
@@ -42,7 +46,26 @@ def session(engine, tables):
 
 
 @pytest.fixture
-def populate_db(session):
+def devices_session(engine, tables):
+    connection = engine[1].connect()
+    # begin the nested transaction
+    transaction = connection.begin()
+    # use the connection with the already started transaction
+    session = Session(bind=connection)
+
+    session.commit()
+
+    yield session
+
+    session.close()
+    # roll back the broader transaction
+    transaction.rollback()
+    # put back the connection to the connection pool
+    connection.close()
+
+
+@pytest.fixture
+def populate_db(authorizations_session):
     authorizations = [
         Authorization(
             user_id=faker.uuid4(),
@@ -72,8 +95,8 @@ def populate_db(session):
             updated_at=faker.iso8601(),
         ),
     ]
-    session.bulk_save_objects(authorizations)
-    session.commit()
+    authorizations_session.bulk_save_objects(authorizations)
+    authorizations_session.commit()
 
     return authorizations
 

@@ -7,6 +7,5 @@ RUN pip install -r requirements.txt
 COPY lib/* /opt/lib/
 COPY validate_authorization/* ./
 COPY models/* models/
-COPY database.py ./
 
 CMD ["app.lambda_handler"]    

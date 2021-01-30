@@ -13,13 +13,15 @@ from models.wallet import Wallet
 from device import DeviceClass
 from typing import Optional, Tuple
 
+
 logger = logging.getLogger(__name__)
 
 
 class AuthorizationClass:
-    def __init__(self, obj: dict):
+    def __init__(self, obj: dict, connection: Session):
         try:
             self.unlock = Unlock.parse_obj(obj)
+            self.db_connection = connection
         except ValidationError as err:
             logger.error(err)
             raise ValidationError(errors="Validation error", model=Unlock)
@@ -96,12 +98,12 @@ class AuthorizationClass:
         return False, None
 
     def validation(
-        self, user_id: str, connection: Session, device: DeviceClass, key: bytes
+        self, user_id: str, device: DeviceClass, key: bytes
     ) -> Optional[str]:
 
         try:
             item = (
-                connection.query(Authorization.id, Authorization.access_limit)
+                self.db_connection.query(Authorization)
                 .filter(
                     or_(
                         Authorization.end_time >= self.unlock.timestamp,
@@ -115,18 +117,22 @@ class AuthorizationClass:
                         Authorization.access_limit > 0,
                     )
                 )
+                .filter(Authorization.device_id == device.device_id)
             )
+            logger.debug(item)
+            logger.debug(type(item))
+            logger.debug(item[0])
             if item:
-                device.get_hmac(key=key, connection=connection)
+                device.get_hmac(key=key)
                 digest = device.digest(self.unlock.deviceNonce)
-                if item.access_time:
+                if item.access_limit:
                     item.access_limit = item.access_limit - 1
-                    connection.commit()
+                    self.db_connection.commit()
                 return digest
             else:
                 return None
 
         except (SQLAlchemyError, Exception) as err:
             logger.error(err)
-            connection.rollback()
+            self.db_connection.rollback()
             return None

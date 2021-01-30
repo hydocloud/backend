@@ -51,95 +51,99 @@ def create_nonce(dynamodb):
 
 
 @pytest.fixture
-def create_device(session):
+def create_device(devices_session):
     iv = get_random_bytes(AES.block_size)
     cipher = AES.new(key=b"ciaociaociaociaociaociaociaociao", mode=AES.MODE_CBC, iv=iv)
-    data = b"ciaociao"
+    data = "ciaociao"
     device = Devices(
         name=faker.sentence(nb_words=1),
         serial=faker.sentence(nb_words=1),
         device_group_id=1,
-        hmac_key=(iv + cipher.encrypt(pad(data, AES.block_size))),
+        hmac_key=(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
-    session.add(device)
-    session.commit()
-    session.refresh(device)
+    devices_session.add(device)
+    devices_session.commit()
+    devices_session.refresh(device)
     return device
 
 
-def test_authorization_validation_ok(unlock):
+def test_authorization_validation_ok(unlock, authorizations_session):
     from validate_authorization.authorization import AuthorizationClass
 
-    x = AuthorizationClass(unlock)
+    x = AuthorizationClass(obj=unlock, connection=authorizations_session)
     assert x.unlock.deviceId == unlock["deviceId"]
     assert x.unlock.message == unlock["message"]
     assert x.unlock.deviceNonce == unlock["deviceNonce"]
+    assert x.db_connection == authorizations_session
 
 
-def test_authorization_validation_ko(unlock):
+def test_authorization_validation_ko(unlock, authorizations_session):
     from validate_authorization.authorization import AuthorizationClass
 
     del unlock["deviceId"]
     with pytest.raises(ValidationError):
-        assert AuthorizationClass(unlock)
+        assert AuthorizationClass(obj=unlock, connection=authorizations_session)
 
 
-def test_authorization_get_message(unlock, dynamodb, create_nonce, monkeypatch):
+def test_authorization_get_message(
+    unlock, dynamodb, create_nonce, monkeypatch, authorizations_session
+):
     from validate_authorization.authorization import AuthorizationClass
 
     monkeypatch.setenv("SERVICE_ID", "7bacf67c-4c3b-4e30-83fb-a96a93fd2c74")
     monkeypatch.setenv("NONCE_TABLE_NAME", "authorization_sessions")
     monkeypatch.setenv("DYNAMODB_ENDPOINT_OVERRIDE", "")
 
-    x = AuthorizationClass(unlock)
+    x = AuthorizationClass(obj=unlock, connection=authorizations_session)
     x.get_message(dynamodb=dynamodb)
 
     assert x.service_message == "test"
 
 
 class TestDeviceClass:
-    def test_device_init(self):
+    def test_device_init(self, devices_session):
         from validate_authorization.device import DeviceClass
 
-        x = DeviceClass(100)
+        x = DeviceClass(device_id=100, connection=devices_session)
         assert x.device_id == 100
+        assert x.db_connection == devices_session
 
-    def test_get_device(self, session, create_device):
+    def test_get_device(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
 
-        x = DeviceClass(create_device.id)
-        res = x.get_device(connection=session)
+        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        res = x.get_device()
 
         assert res.id == create_device.id
 
-    def test_get_hmac(self, session, create_device, monkeypatch):
+    def test_get_hmac(self, devices_session, create_device, monkeypatch):
         from validate_authorization.device import DeviceClass
 
         monkeypatch.setenv("SECRET_NAME", "DeviceSecret")
 
-        x = DeviceClass(create_device.id)
-        x.get_hmac(connection=session, key=b"ciaociaociaociaociaociaociaociao")
+        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        x.get_hmac(key=b"ciaociaociaociaociaociaociaociao")
 
         assert x.hmac_key == "ciaociao".encode("utf-8")
 
-    def test_digest(self, create_device, session):
+    def test_digest(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
 
-        x = DeviceClass(create_device.id)
+        x = DeviceClass(device_id=create_device.id, connection=devices_session)
         x.hmac_key = b"ciaociaociaociaociaociaociaociao"
         res = x.digest(message="ciao")
 
         assert res == "d5cfd1d870147b8f1cbced82e601233e74b671710fcf83aef82d2cbd0e7f4675"
 
-    def test_crypt_get_secret_ok(self, create_device, secret, monkeypatch):
+    def test_crypt_get_secret_ok(self, create_device, secret, monkeypatch, devices_session):
         from validate_authorization.device import DeviceClass
+
         monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
 
-        x = DeviceClass(create_device.id)
+        x = DeviceClass(device_id=create_device.id, connection=devices_session)
         res = x.get_secret_key()
 
         assert type(res) == bytes
         assert res.decode() == "ciaociaociaociaociaociaociaociao"
-    

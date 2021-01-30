@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import json
 from models.api_response import LambdaResponse, UnlockModel, Message  # type: ignore
 from models.wallet import Wallet  # type: ignore
 from authorization import AuthorizationClass
@@ -14,7 +15,8 @@ logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 
 wallet_handle = None
-CONNECTION = None
+AUTHORIZATIONS_CONNECTION = None
+DEVICES_CONNECTION = None
 
 
 async def init_wallet():
@@ -27,21 +29,26 @@ async def init_wallet():
 
 def lambda_handler(event, context) -> dict:
 
-    global CONNECTION
+    global AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION
 
     loop.run_until_complete(init_wallet())
     try:
-        user_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
-        authz = AuthorizationClass(event["body"])
-        device = DeviceClass(authz.unlock.deviceId)
+        logger.info(event)
+        authz = AuthorizationClass(
+            obj=json.loads(event["body"]), connection=AUTHORIZATIONS_CONNECTION
+        )
+        device = DeviceClass(
+            device_id=authz.unlock.deviceId, connection=DEVICES_CONNECTION
+        )
     except Exception as err:
         logger.error(err)
         return LambdaResponse(
             statusCode=400, body=Message(message="Bad request").json()
         ).dict()
 
-    if CONNECTION is None:
-        CONNECTION = init_db()
+    if AUTHORIZATIONS_CONNECTION is None or DEVICES_CONNECTION is None:
+        AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION = init_db()
+
     try:
         authz.get_message()
     except Exception as err:
@@ -51,14 +58,17 @@ def lambda_handler(event, context) -> dict:
         ).dict()
 
     try:
-        loop.run_until_complete(authz.decrypt())
-        key = device.get_secret_key()
-        digest = authz.validation(
-            user_id=user_id, connection=CONNECTION, device=device, key=key
-        )
-        if digest is None:
+        res, user_id = loop.run_until_complete(authz.decrypt())
+        if res:
+            key = device.get_secret_key()
+            digest = authz.validation(user_id=user_id, device=device, key=key)
+            if digest is None:
+                return LambdaResponse(
+                    statusCode=404, body=Message(message="Not found").json()
+                ).dict()
+        else:
             return LambdaResponse(
-                statusCode=404, body=Message(message="Not found").json()
+                statusCode=400, body=Message(message="Bad request").json()
             ).dict()
     except Exception as err:
         logger.error(err)

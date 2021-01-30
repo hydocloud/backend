@@ -16,25 +16,30 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceClass:
-    def __init__(self, device_id: int):
+    def __init__(self, device_id: int, connection: Session):
         self.device_id = device_id
+        self.db_connection = connection
 
-    def get_device(self, connection: Session) -> Optional[Devices]:
+    def get_device(self) -> Optional[Devices]:
         try:
-            res = connection.query(Devices).filter_by(id=self.device_id).first()
+            res = self.db_connection.query(Devices).filter_by(id=self.device_id).first()
             return res
         except SQLAlchemyError as err:
             logger.error(err)
         return None
 
-    def get_hmac(self, key: bytes, connection: Session) -> Optional[Devices]:
+    def get_hmac(self, key: bytes) -> Optional[Devices]:
         try:
-            res = connection.query(Devices.id, Devices.hmac_key).filter_by(
-                id=self.device_id
-            ).first()
-            iv = res.hmac_key[:AES.block_size]
+            res = (
+                self.db_connection.query(Devices.id, Devices.hmac_key)
+                .filter_by(id=self.device_id)
+                .first()
+            )
+            iv = res.hmac_key[: AES.block_size]
             cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
-            self.hmac_key = unpad(cipher.decrypt(res.hmac_key[AES.block_size:]), AES.block_size)
+            self.hmac_key = unpad(
+                cipher.decrypt(res.hmac_key[AES.block_size :]), AES.block_size
+            )
 
         except SQLAlchemyError as err:
             logger.error(err)
