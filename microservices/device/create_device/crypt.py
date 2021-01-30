@@ -6,7 +6,6 @@ from Crypto.Util.Padding import pad
 from Crypto.Random import get_random_bytes
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Tracer
-from base64 import b64encode
 
 
 tracer = Tracer(service="create_device")
@@ -33,4 +32,4 @@ def encrypt(data: str) -> bytes:
     key = get_key()
     iv = get_random_bytes(16)
     cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
-    return b64encode(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size)))
+    return iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))
