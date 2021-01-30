@@ -35,7 +35,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         code=_lambda.Code.asset(
             "{}/authorization/indysdk-postgres.zip".format(self.current_path)
         ),
-        compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
+        compatible_runtimes=[_lambda.Runtime.PYTHON_3_7, _lambda.Runtime.PYTHON_3_8],
     )
 
     create_authorization_lambda = lambda_python.PythonFunction(
@@ -200,6 +200,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         handler="lambda_handler",
         runtime=_lambda.Runtime.PYTHON_3_8,
         tracing=_lambda.Tracing.ACTIVE,
+        timeout=Duration.minutes(10),
         memory_size=512,
         environment={
             "AUTHORIZATION_ID": "bf7d5894-e852-4022-bbc0-abdb26fbc6d5",
@@ -219,14 +220,18 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         ],
     )
 
+    ecr_image = _lambda.EcrImageCode.from_asset_image(
+        directory=f"{PATH}{LAMBDAS_FOLDER}", file="Docker_validate_authorization"
+    )
+
     validate_authorization_lambda = _lambda.Function(
         self,
         "ValidateAuthorization",
-        runtime=_lambda.Runtime.PYTHON_3_8,
-        code=_lambda.Code.asset(f"{PATH}{LAMBDAS_FOLDER}/validate_authorization"),
-        handler=LAMBDA_HANDLER,
+        code=ecr_image,
+        handler=_lambda.Handler.FROM_IMAGE,
+        runtime=_lambda.Runtime.FROM_IMAGE,
         tracing=_lambda.Tracing.ACTIVE,
-        timeout=Duration.seconds(350),
+        timeout=Duration.minutes(10),
         memory_size=512,
         environment={
             "AUTHORIZATION_ID": "bf7d5894-e852-4022-bbc0-abdb26fbc6d5",
@@ -240,7 +245,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             "DB_INDY_PASSWORD": "ciaociao",
             "DB_PORT": self.rds.db_instance_endpoint_port,
             "DB_HOST": self.rds.db_instance_endpoint_address,
-            "DB_NAME": "authorizations",
+            "DB_NAME": "devices",
             "DB_ENGINE": "postgresql",
             "DB_USER": "loginService",
             "DB_PASSWORD": "ciaociao",
@@ -249,19 +254,6 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
             "SERVICE_ID": "bf7d5894-e852-4022-bbc0-abdb26fbc6d5",
             "DYNAMODB_ENDPOINT_OVERRIDE": "",
         },
-        layers=[
-            self.create_dependencies_layer(
-                "Depencendies",
-                "ValidateAuthorization",
-                f"{LAMBDAS_FOLDER}/validate_authorization",
-            ),
-            indy_sdk_postgres_layer,
-            self.create_model_layer(
-                "ModelLayer",
-                "ValidateAuthorization",
-                f"{LAMBDAS_FOLDER}",
-            ),
-        ],
     )
 
     self.http_api.add_routes(
