@@ -14,6 +14,7 @@ def init_db():
     db_user_devices = environ["DB_USER_DEVICES"]
     db_password_devices = environ["DB_PASSWORD_DEVICES"]
     db_engine = environ["DB_ENGINE"]
+
     devices_database_uri = "{}://{}:{}@{}:{}/{}".format(
         db_engine,
         db_user_devices,
