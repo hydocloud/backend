@@ -10,10 +10,178 @@ info:
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 
 servers:
-  - url: http://api.dev.hydo.cloud
+  - url: https://api.dev.hydo.cloud
     description: dev server
+  - url: https://api.dev.login.hydo.cloud
+    description: dev server for login
 
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
 paths:
+  /session:
+    servers:
+      - url: https://api.dev.login.hydo.cloud
+    get:
+      security: []
+      tags:
+        - Login
+      summary: "Get session"
+      description: ""
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    format: uuid
+                    description: ID of the created user.
+                  serviceId:
+                    type: string
+                    format: uuid
+                    description: ID of the created user.
+                  jwt:
+                    type: string
+                    description: ID of the created user.
+  /session/{id}:
+    servers:
+      - url: https://api.dev.login.hydo.cloud
+    get:
+      security: []
+      tags:
+        - Login
+      summary: "Get session status"
+      description: ""
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            format: jwt
+          required: true
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Your session is validated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                    description: ID of the created user.
+        "202":
+          description: Session id is in db
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: ID of the created user.
+        "404":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: ID of the created user.
+        "400":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: ID of the created user.
+        "500":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: ID of the created user.
+  /login/validate:
+    servers:
+      - url: https://api.dev.login.hydo.cloud
+    post:
+      security: []
+      tags:
+        - Login
+      summary: "Post nonce"
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            format: jwt
+          required: true
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Protected message from proof
+                uuid:
+                  type: string
+                  format: uuid
+                  description: userid
+                sessionId:
+                  type: string
+                  format: uuid
+                  description: session id
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "409":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
   /organizations:
     post:
       tags:
@@ -749,10 +917,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceGroups'
+              $ref: "#/components/schemas/DeviceGroups"
       responses:
-        '201':
-          description: 'Device group successfully created'
+        "201":
+          description: "Device group successfully created"
           content:
             application/json:
               schema:
@@ -761,25 +929,25 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/DeviceGroups'
-        '400':
-          description: 'invalid input, object invalid'
+                      $ref: "#/components/schemas/DeviceGroups"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     get:
       tags:
         - Devices
@@ -801,7 +969,7 @@ paths:
           required: true
 
       responses:
-        '201':
+        "201":
           description: List
           content:
             application/json:
@@ -811,7 +979,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/DeviceGroups'
+                      $ref: "#/components/schemas/DeviceGroups"
                   total:
                     type: integer
                     readOnly: true
@@ -824,32 +992,32 @@ paths:
                   totalPages:
                     type: integer
                     readOnly: true
-        '400':
-          description: 'invalid input, object invalid'
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Device groups not found'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device groups not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
-          description: 'error'
+                message: "Not found"
+        "500":
+          description: "error"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
   /devices/groups/{id}:
     get:
       tags:
@@ -865,8 +1033,8 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
-          description: 'Device group list'
+        "201":
+          description: "Device group list"
           content:
             application/json:
               schema:
@@ -875,33 +1043,33 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/DeviceGroups'
-        '400':
-          description: 'invalid input, object invalid'
+                      $ref: "#/components/schemas/DeviceGroups"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Device group not found'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device group not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
+                message: "Not found"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     put:
       tags:
         - "Devices"
@@ -919,10 +1087,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceGroupsSmall'
+              $ref: "#/components/schemas/DeviceGroupsSmall"
       responses:
-        '201':
-          description: 'Device group successfully edited'
+        "201":
+          description: "Device group successfully edited"
           content:
             application/json:
               schema:
@@ -931,33 +1099,33 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/DeviceGroups'
-        '400':
-          description: 'invalid input, object invalid'
+                      $ref: "#/components/schemas/DeviceGroups"
+        "400":
+          description: "invalid input, object invalid"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Bad request'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Device group not found'
+                message: "Bad request"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device group not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
-        '500':
+                message: "Not found"
+        "500":
           description: error processing operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Internal server error'
+                message: "Internal server error"
     delete:
       tags:
         - "Devices"
@@ -972,24 +1140,24 @@ paths:
             type: integer
             format: int64
       responses:
-        '201':
+        "201":
           description: response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleOK'
+                $ref: "#/components/schemas/SimpleOK"
               example:
-                message: 'Ok'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: 'Device not found'
+                message: "Ok"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: "Device not found"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Not found'
+                message: "Not found"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
