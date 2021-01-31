@@ -107,26 +107,27 @@ class AuthorizationClass:
                 .filter(
                     or_(
                         Authorization.end_time >= self.unlock.timestamp,
-                        Authorization.end_time is None,
+                        Authorization.end_time == None,
                     )
                 )
                 .filter(Authorization.start_time <= self.unlock.timestamp)
                 .filter(
                     or_(
-                        Authorization.access_limit is None,
+                        Authorization.access_limit == None,
                         Authorization.access_limit > 0,
                     )
                 )
                 .filter(Authorization.device_id == device.device_id)
+                .filter(Authorization.user_id == user_id)
+                .first()
             )
             logger.debug(item)
-            logger.debug(type(item))
-            logger.debug(item[0])
             if item:
                 device.get_hmac(key=key)
                 digest = device.digest(self.unlock.deviceNonce)
                 if item.access_limit:
                     item.access_limit = item.access_limit - 1
+                    logger.debug(item.access_limit)
                     self.db_connection.commit()
                 return digest
             else:
