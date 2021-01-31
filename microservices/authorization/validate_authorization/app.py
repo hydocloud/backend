@@ -32,6 +32,10 @@ def lambda_handler(event, context) -> dict:
     global AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION
 
     loop.run_until_complete(init_wallet())
+
+    if AUTHORIZATIONS_CONNECTION is None or DEVICES_CONNECTION is None:
+        AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION = init_db()
+
     try:
         logger.info(event)
         authz = AuthorizationClass(
@@ -45,9 +49,6 @@ def lambda_handler(event, context) -> dict:
         return LambdaResponse(
             statusCode=400, body=Message(message="Bad request").json()
         ).dict()
-
-    if AUTHORIZATIONS_CONNECTION is None or DEVICES_CONNECTION is None:
-        AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION = init_db()
 
     try:
         authz.get_message()
