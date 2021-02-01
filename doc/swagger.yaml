@@ -146,10 +146,6 @@ paths:
                 message:
                   type: string
                   description: Protected message from proof
-                uuid:
-                  type: string
-                  format: uuid
-                  description: userid
                 sessionId:
                   type: string
                   format: uuid
