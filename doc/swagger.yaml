@@ -120,8 +120,6 @@ paths:
     servers:
       - url: https://api.dev.login.hydo.cloud
     post:
-      security:
-        - bearerAuth: []
       tags:
         - Login
       summary: "Post nonce"
