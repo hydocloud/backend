@@ -13,6 +13,13 @@ logging.basicConfig(level=logging.DEBUG)
 dynamodb = boto3.resource("dynamodb")
 
 
+def remove_prefix(text: str, prefix: str) -> str:
+    """Remove prefix from string"""
+    if text.startswith(prefix):
+        return text[len(prefix) :]
+    return text  # or whatever
+
+
 def get_session(session_id, dynamodb=None):
     if dynamodb is None:
         dynamodb = boto3.resource("dynamodb")
@@ -86,7 +93,7 @@ def terminate_session(session_id, dynamodb=None):
 def validate_polling_jwt(polling_jwt, session_id):
     try:
         res = jwt.decode(polling_jwt, environ["JWT_SECRET"], algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
+    except (jwt.ExpiredSignatureError, jwt.DecodeError):
         logger.error("Failed decode jwt")
         return False
     if res["sub"] == session_id:
@@ -94,7 +101,7 @@ def validate_polling_jwt(polling_jwt, session_id):
     return False
 
 
-def generate_jwt(user_uuid):
+def generate_jwt(user_uuid: str) -> str:
     logger.debug("Generate auth token")
     secret = environ["JWT_SECRET"]
     encoded_jwt = jwt.encode(
@@ -105,13 +112,13 @@ def generate_jwt(user_uuid):
         },
         secret,
         algorithm="HS256",
-    ).decode()
+    )
     return encoded_jwt
 
 
 def lambda_handler(event, context):
     session_id = event["pathParameters"]["id"]
-    polling_jwt = event["headers"]["authorization"]
+    polling_jwt = remove_prefix(event["headers"]["authorization"], "Bearer ")
     res = validate_polling_jwt(polling_jwt, session_id)
     if res is True:
         session_status, user_uuid = get_session(session_id)

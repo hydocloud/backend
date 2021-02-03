@@ -36,7 +36,8 @@ def test_generate_jwt(monkeypatch):
     monkeypatch.setenv("JWT_SECRET", "secret")
 
     now = datetime.datetime.utcnow()
-    encoded_jwt = generate_jwt()
+    encoded_jwt = generate_jwt(session_id)
     res = jwt.decode(encoded_jwt, "secret", algorithms=["HS256"])
-    assert res["sub"] == "authHydoLogin"
+    assert res["name"] == "authHydoLogin"
+    assert res["sub"] == session_id
     assert res["exp"] > int(now.timestamp())

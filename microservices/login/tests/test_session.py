@@ -62,7 +62,7 @@ def test_store_get_session_not_found(monkeypatch):
     session_id = context.aws_request_id.__str__()
 
     res = generate_jwt_app.get_session(session_id, dynamodb)
-    assert res == 404
+    assert res == (404, None)
 
 
 @mock_dynamodb2
@@ -131,4 +131,4 @@ def test_terminate_session_wrong_setting(monkeypatch):
 
     session_id = "asdsa"
     res = generate_jwt_app.terminate_session(session_id)
-    assert res == 400
+    assert res == 404

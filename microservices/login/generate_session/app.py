@@ -64,7 +64,7 @@ def polling_jwt(session_id: str) -> str:
         },
         secret,
         algorithm="HS256",
-    ).decode()
+    )
     return encoded_jwt
 
 
