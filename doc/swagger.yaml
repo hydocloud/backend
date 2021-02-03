@@ -51,18 +51,13 @@ paths:
     servers:
       - url: https://api.dev.login.hydo.cloud
     get:
-      security: []
+      security:
+        - bearerAuth: []
       tags:
         - Login
       summary: "Get session status"
       description: ""
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-            format: jwt
-          required: true
         - name: id
           in: path
           description: User ID
@@ -125,17 +120,11 @@ paths:
     servers:
       - url: https://api.dev.login.hydo.cloud
     post:
-      security: []
+      security:
+        - bearerAuth: []
       tags:
         - Login
       summary: "Post nonce"
-      parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-            format: jwt
-          required: true
       description: ""
       requestBody:
         content:
