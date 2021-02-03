@@ -127,7 +127,7 @@ def lambda_handler(event, context):
         res_status_code = terminate_session(session_id)
         if res_status_code == 200:
             jwt = generate_jwt(user_uuid)
-            return {"statusCode": res_status_code, "body": json.dumps({"jwt": jwt})}
+            return {"statusCode": res_status_code, "body": json.dumps({"jwt": jwt.decode()})}
         elif res_status_code == 404:
             return {
                 "statusCode": res_status_code,
