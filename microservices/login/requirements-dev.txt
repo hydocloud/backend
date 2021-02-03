@@ -14,3 +14,4 @@ black
 vulture
 pylint
 urllib3
+pytest
