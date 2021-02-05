@@ -8,7 +8,7 @@ from typing import List
 from pydantic import parse_obj_as, ValidationError
 from botocore.exceptions import ClientError, ParamValidationError
 from models.devices import Devices, DevicesModelShort, DevicesApiInput
-from models.api_response import LambdaResponse, Message, DevicesDataModel, DevicesList
+from models.api_response import LambdaResponse, Message, DevicesDataModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -48,9 +48,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
         create_authorization(device_id=device.id, user_id=user_id)
 
         body = DevicesDataModel(
-            data=DevicesList(
-                devices=parse_obj_as(List[DevicesModelShort], [device])
-            )
+            data=parse_obj_as(List[DevicesModelShort], [device])
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

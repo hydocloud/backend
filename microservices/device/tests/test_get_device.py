@@ -126,7 +126,7 @@ def test_get_device_ok(devices, session):
 def test_get_devices_ok(devices, session):
     device1, device2, device3 = devices
     res = get_devices(device_group_id=device1.device_group_id, connection=session)
-    devices_res = (json.loads(res["body"]))["data"]["devices"]
+    devices_res = (json.loads(res["body"]))["data"]
     assert res["statusCode"] == 200
     assert len(devices_res) == 3
 
@@ -135,7 +135,7 @@ def test_get_devices_ok_page_size(devices, session):
     device1, device2, device3 = devices
     res = get_devices(device_group_id=device1.device_group_id, page_size=1, connection=session)
     body = (json.loads(res["body"]))
-    devices_res = body["data"]["devices"]
+    devices_res = body["data"]
     assert res["statusCode"] == 200
     assert len(devices_res) == 1
     assert body["total"] == 3
@@ -146,7 +146,7 @@ def test_get_devices_ok_page_size_next(devices, session):
     device1, device2, device3 = devices
     res = get_devices(device_group_id=device1.device_group_id, page_size=1, page_number=2, connection=session)
     body = (json.loads(res["body"]))
-    devices_res = body["data"]["devices"]
+    devices_res = body["data"]
     assert res["statusCode"] == 200
     assert len(devices_res) == 1
     assert body["total"] == 3

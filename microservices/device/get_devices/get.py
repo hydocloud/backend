@@ -6,7 +6,7 @@ You can select on single devices or multiple devices
 import logging
 from typing import List
 from models.devices import Devices, DevicesModelShort
-from models.api_response import LambdaResponse, DevicesList, DevicesDataModel, Message
+from models.api_response import LambdaResponse, DevicesDataModel, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
@@ -42,9 +42,9 @@ def get_devices(
         paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
 
-        m = DevicesList(devices=parse_obj_as(List[DevicesModelShort], page.object_list))
+        m = parse_obj_as(List[DevicesModelShort], page.object_list)
 
-        if len(m.devices) == 0:
+        if len(m) == 0:
             status_code = 404
             body = Message(message="Not found").json()
         else:

@@ -37,10 +37,10 @@ def test_database(setup_database):
     )
 
     body = json.loads(res["body"])
-    device_group_1_id = body["data"]["deviceGroups"][0]["id"]
+    device_group_1_id = body["data"][0]["id"]
     assert res["statusCode"] == 201
-    assert body["data"]["deviceGroups"][0]["name"] == "test1"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
     ids.append(device_group_1_id)
 
     # Right behavior
@@ -51,10 +51,10 @@ def test_database(setup_database):
     )
 
     body = json.loads(res["body"])
-    ids.append(body["data"]["deviceGroups"][0]["id"])
+    ids.append(body["data"][0]["id"])
     assert res["statusCode"] == 201
-    assert body["data"]["deviceGroups"][0]["name"] == "test1"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
 
     # Right behavior
     res = create_device_groups(
@@ -64,18 +64,18 @@ def test_database(setup_database):
     )
 
     body = json.loads(res["body"])
-    ids.append(body["data"]["deviceGroups"][0]["id"])
+    ids.append(body["data"][0]["id"])
     assert res["statusCode"] == 201
-    assert body["data"]["deviceGroups"][0]["name"] == "test1"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
 
     res = get_device_groups(
         connection=session, device_group_id=device_group_1_id, owner_id=owner_id
     )
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
-    assert body["data"]["deviceGroups"][0]["name"] == "test1"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
 
     res = edit_device_group(
         owner_id=owner_id,
@@ -86,21 +86,21 @@ def test_database(setup_database):
 
     body = json.loads(res["body"])
     assert res["statusCode"] == 201
-    assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "saeeqw"
+    assert body["data"][0]["organizationId"] == 1
 
     res = get_device_groups(
         connection=session, device_group_id=device_group_1_id, owner_id=owner_id
     )
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
-    assert body["data"]["deviceGroups"][0]["name"] == "saeeqw"
-    assert body["data"]["deviceGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "saeeqw"
+    assert body["data"][0]["organizationId"] == 1
 
     res = get_device_groups(connection=session, owner_id=owner_id)
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
-    assert len(body["data"]["deviceGroups"]) == 3
+    assert len(body["data"]) == 3
 
     res = delete_device_groups(
         owner_id=owner_id, connection=session, device_group_id=device_group_1_id

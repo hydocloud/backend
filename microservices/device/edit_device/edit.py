@@ -4,7 +4,7 @@ import logging
 from typing import List
 from pydantic import parse_obj_as
 from models.devices import Devices, DevicesEditInput, DevicesModelShort
-from models.api_response import LambdaResponse, Message, DevicesDataModel, DevicesList
+from models.api_response import LambdaResponse, Message, DevicesDataModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -37,9 +37,7 @@ def edit_device(device_id: str, payload: DevicesEditInput, connection: Session) 
         device.name = payload.name
         device.device_group_id = payload.deviceGroupId
         connection.commit()
-        m = DevicesList(
-            devices=parse_obj_as(List[DevicesModelShort], [device])
-        )
+        m = parse_obj_as(List[DevicesModelShort], [device])
 
         body = DevicesDataModel(
             data=m, total=None, totalPages=None, nextPage=None, previousPage=None

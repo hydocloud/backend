@@ -8,7 +8,7 @@ from models.devices import (
     DeviceGroupsApiInput,
     DeviceGroupsModelShort,
 )
-from models.api_response import LambdaResponse, DataModel, DeviceGroupsList, Message
+from models.api_response import LambdaResponse, DataModel, Message
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -38,9 +38,7 @@ def create_device_groups(
         connection.refresh(device_groups)
 
         body = DataModel(
-            data=DeviceGroupsList(
-                deviceGroups=parse_obj_as(List[DeviceGroupsModelShort], [device_groups])
-            )
+            data=parse_obj_as(List[DeviceGroupsModelShort], [device_groups])
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

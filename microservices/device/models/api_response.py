@@ -8,20 +8,12 @@ class LambdaResponse(BaseModel):
     body: str
 
 
-class DeviceGroupsList(BaseModel):
-    deviceGroups: List[DeviceGroupsModelShort]
-
-
-class DevicesList(BaseModel):
-    devices: List[DevicesModelShort]
-
-
 class Message(BaseModel):
     message: str
 
 
 class DataModel(BaseModel):
-    data: DeviceGroupsList
+    data: List[DeviceGroupsModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
@@ -29,7 +21,7 @@ class DataModel(BaseModel):
 
 
 class DevicesDataModel(BaseModel):
-    data: DevicesList
+    data: List[DevicesModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
