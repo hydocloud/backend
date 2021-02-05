@@ -420,22 +420,19 @@
                   type: object
                   properties:
                     data:
-                      type: object
-                      properties:
-                        userGroups:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: integer
-                              name:
-                                type: string
-                              organizationId:
-                                type: integer
-                              ownerId:
-                                type: string
-                                format: uuid
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          organizationId:
+                            type: integer
+                          ownerId:
+                            type: string
+                            format: uuid
           "400":
             description: Bad input
             content:
@@ -572,7 +569,12 @@
             content:
               application/json:
                 schema:
-                  $ref: "#/components/schemas/Organization"
+                  type: object
+                  properties:
+                    data: 
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Organization"
           "400":
             description: "invalid input, object invalid"
             content:
@@ -1230,20 +1232,17 @@
         type: object
         properties:
           data:
-            type: object
-            properties:
-              userGroups:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserGroup"
-              total:
-                type: number
-              nextPage:
-                type: number
-              previousPage:
-                type: number
-              totalpages:
-                type: number
+            type: array
+            items:
+              $ref: "#/components/schemas/UserGroup"
+          total:
+            type: number
+          nextPage:
+            type: number
+          previousPage:
+            type: number
+          totalpages:
+            type: number
       DevicesSmall:
         title: Devices
         type: object
