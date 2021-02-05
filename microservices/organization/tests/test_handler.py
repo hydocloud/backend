@@ -55,18 +55,18 @@ def test_database(setup_database):
     res = create_organization(
         owner_id=owner_id, payload={"name": "test1", "licenseId": 1}, connection=session
     )
-    org_1_id = res.body.data.organizations[0].id
+    org_1_id = res.body.data[0].id
     assert res.statusCode == 201
-    assert res.body.data.organizations[0].name == "test1"
-    assert res.body.data.organizations[0].licenseId == 1
+    assert res.body.data[0].name == "test1"
+    assert res.body.data[0].licenseId == 1
 
     res = get_organization(
         owner_id=owner_id, connection=session, organization_id=org_1_id
     )
     assert res.statusCode == 201
-    assert res.body.data.organizations[0].name == "test1"
-    assert res.body.data.organizations[0].licenseId == 1
-    assert res.body.data.organizations[0].id == org_1_id
+    assert res.body.data[0].name == "test1"
+    assert res.body.data[0].licenseId == 1
+    assert res.body.data[0].id == org_1_id
 
     res = edit_organization(
         owner_id=owner_id,
@@ -74,18 +74,18 @@ def test_database(setup_database):
         payload={"name": "edit", "licenseId": 2},
         connection=session,
     )
-    org_1_id = res.body.data.organizations[0].id
+    org_1_id = res.body.data[0].id
     assert res.statusCode == 201
-    assert res.body.data.organizations[0].name == "edit"
-    assert res.body.data.organizations[0].licenseId == 2
+    assert res.body.data[0].name == "edit"
+    assert res.body.data[0].licenseId == 2
 
     res = get_organization(
         owner_id=owner_id, connection=session, organization_id=org_1_id
     )
     assert res.statusCode == 201
-    assert res.body.data.organizations[0].name == "edit"
-    assert res.body.data.organizations[0].licenseId == 2
-    assert res.body.data.organizations[0].id == org_1_id
+    assert res.body.data[0].name == "edit"
+    assert res.body.data[0].licenseId == 2
+    assert res.body.data[0].id == org_1_id
 
     res = delete_organization(
         owner_id=owner_id, connection=session, organization_id=org_1_id
@@ -105,16 +105,16 @@ def test_database(setup_database):
             payload={"name": "test1", "licenseId": 1},
             connection=session,
         )
-        org_ids.append(tmp.body.data.organizations[0].id)
+        org_ids.append(tmp.body.data[0].id)
 
     res = get_organizations(owner_id=owner_id, connection=session)
     assert res.statusCode == 201
-    assert res.body.data.total == dataset_size
+    assert res.body.total == dataset_size
 
     res = get_organizations(owner_id=owner_id, page_size=10, connection=session)
     assert res.statusCode == 201
-    assert res.body.data.total == dataset_size
-    assert res.body.data.totalPages == dataset_size / page_size
+    assert res.body.total == dataset_size
+    assert res.body.totalPages == dataset_size / page_size
 
     res = get_organizations(
         owner_id=owner_id,
@@ -122,8 +122,8 @@ def test_database(setup_database):
         page_number=page_number,
         connection=session,
     )
-    assert res.body.data.nextPage == page_number + 1
-    assert res.body.data.previousPage == page_number - 1
+    assert res.body.nextPage == page_number + 1
+    assert res.body.previousPage == page_number - 1
 
     res = get_organizations(
         owner_id=owner_id,
@@ -131,14 +131,14 @@ def test_database(setup_database):
         page_number=dataset_size / page_size,
         connection=session,
     )
-    assert res.body.data.nextPage is None
-    assert res.body.data.previousPage == page_number
+    assert res.body.nextPage is None
+    assert res.body.previousPage == page_number
 
     res = get_organizations(
         owner_id=owner_id, page_size=page_size, page_number=1, connection=session
     )
-    assert res.body.data.nextPage == page_number
-    assert res.body.data.previousPage is None
+    assert res.body.nextPage == page_number
+    assert res.body.previousPage is None
 
     for i in range(dataset_size):
         delete_organization(

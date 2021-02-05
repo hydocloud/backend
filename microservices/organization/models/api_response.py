@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Optional, List
 from pydantic import BaseModel
-from models.organizations import OrganizationsList
+from models.organizations import ResponseModel
 
 
 class Message(BaseModel):
@@ -8,7 +8,11 @@ class Message(BaseModel):
 
 
 class Data(BaseModel):
-    data: OrganizationsList
+    data: List[ResponseModel]
+    total: Optional[int]
+    nextPage: Optional[int]
+    previousPage: Optional[int]
+    totalPages: Optional[int]
 
 
 class LambdaSuccessResponse(BaseModel):

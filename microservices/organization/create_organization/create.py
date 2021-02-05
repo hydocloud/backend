@@ -4,7 +4,7 @@ import os
 import boto3
 import json
 from botocore.exceptions import ClientError
-from models.organizations import Organization, OrganizationsList, ResponseModel
+from models.organizations import Organization, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
     LambdaSuccessResponse,
@@ -71,16 +71,14 @@ def create_organization(owner_id, payload, connection: Session):
         return LambdaSuccessResponse(
             statusCode=201,
             body=Data(
-                data=OrganizationsList(
-                    organizations=[
-                        ResponseModel(
-                            id=org.id,
-                            ownerId=org.owner_id,
-                            name=org.name,
-                            licenseId=org.license_id,
-                        )
-                    ]
-                )
+                data=[
+                    ResponseModel(
+                        id=org.id,
+                        ownerId=org.owner_id,
+                        name=org.name,
+                        licenseId=org.license_id,
+                    )
+                ]
             ),
         )
     except SQLAlchemyError as e:

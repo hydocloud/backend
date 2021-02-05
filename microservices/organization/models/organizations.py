@@ -45,15 +45,6 @@ class ResponseModel(BaseModel):
     licenseId: int
     ownerId: uuid.UUID
 
-
-class OrganizationsList(BaseModel):
-    organizations: List[ResponseModel]
-    total: Optional[int]
-    nextPage: Optional[int]
-    previousPage: Optional[int]
-    totalPages: Optional[int]
-
-
 class OrganizationsUpdate(BaseModel):
     name: Optional[str] = None
     licenseId: Optional[int] = None

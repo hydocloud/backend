@@ -1,5 +1,5 @@
 import logging
-from models.organizations import Organization, OrganizationsList, ResponseModel
+from models.organizations import Organization, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
     LambdaSuccessResponse,
@@ -44,15 +44,13 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
             return LambdaSuccessResponse(
                 statusCode=201,
                 body=Data(
-                    data=OrganizationsList(
-                        organizations=[
-                            ResponseModel(
-                                id=org.id,
-                                ownerId=org.owner_id,
-                                name=org.name,
-                                licenseId=org.license_id,
-                            )
-                        ]
-                    )
+                    data=[
+                        ResponseModel(
+                            id=org.id,
+                            ownerId=org.owner_id,
+                            name=org.name,
+                            licenseId=org.license_id,
+                        )
+                    ]
                 ),
             )

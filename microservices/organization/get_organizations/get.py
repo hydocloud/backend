@@ -4,7 +4,7 @@ You can select on single organization or multiple organization
 """
 
 import logging
-from models.organizations import Organization, OrganizationsList, ResponseModel
+from models.organizations import Organization, ResponseModel
 from models.api_response import (
     LambdaErrorResponse,
     LambdaSuccessResponse,
@@ -41,16 +41,14 @@ def get_organization(connection: Session, owner_id: str, organization_id: str):
         return LambdaSuccessResponse(
             statusCode=201,
             body=Data(
-                data=OrganizationsList(
-                    organizations=[
-                        ResponseModel(
-                            id=org.id,
-                            ownerId=org.owner_id,
-                            name=org.name,
-                            licenseId=org.license_id,
-                        )
-                    ]
-                )
+                data=[
+                    ResponseModel(
+                        id=org.id,
+                        ownerId=org.owner_id,
+                        name=org.name,
+                        licenseId=org.license_id,
+                    )
+                ]
             ),
         )
     except SQLAlchemyError as err:
@@ -62,7 +60,10 @@ def get_organization(connection: Session, owner_id: str, organization_id: str):
 
 @tracer.capture_method
 def get_organizations(
-    connection: Session, owner_id: str, page_number: int = 1, page_size: int = 5,
+    connection: Session,
+    owner_id: str,
+    page_number: int = 1,
+    page_size: int = 5,
 ):
     """ Return all organizations that belong to user"""
 
@@ -85,18 +86,16 @@ def get_organizations(
         response = LambdaSuccessResponse(
             statusCode=201,
             body=Data(
-                data=OrganizationsList(
-                    organizations=orgs,
-                    total=page.paginator.count,
-                    totalPages=page.paginator.total_pages,
-                )
+                data=orgs,
+                total=page.paginator.count,
+                totalPages=page.paginator.total_pages,
             ),
         )
 
         if page.has_next():
-            response.body.data.nextPage = page.next_page_number
+            response.body.nextPage = page.next_page_number
         if page.has_previous():
-            response.body.data.previousPage = page.previous_page_number
+            response.body.previousPage = page.previous_page_number
 
         return response
 
