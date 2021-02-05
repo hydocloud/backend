@@ -9,7 +9,7 @@ from models.users import (
     UserGroupsApiInput,
     UserGroupsModelShort,
 )
-from models.api_response import LambdaResponse, DataModel, UserGroupsList, Message
+from models.api_response import LambdaResponse, DataModel, Message
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -48,9 +48,7 @@ def create_user_groups(
         connection.add(user_group_belong_users)
         connection.commit()
         body = DataModel(
-            data=UserGroupsList(
-                userGroups=parse_obj_as(List[UserGroupsModelShort], [user_groups])
-            )
+            data=parse_obj_as(List[UserGroupsModelShort], [user_groups])
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

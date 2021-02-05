@@ -8,16 +8,12 @@ class LambdaResponse(BaseModel):
     body: str
 
 
-class UserGroupsList(BaseModel):
-    userGroups: List[UserGroupsModelShort]
-
-
 class Message(BaseModel):
     message: str
 
 
 class DataModel(BaseModel):
-    data: UserGroupsList
+    data: List[UserGroupsModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]

@@ -36,10 +36,10 @@ def test_database(setup_database):
     )
 
     body = json.loads(res["body"])
-    user_group_1_id = body["data"]["userGroups"][0]["id"]
+    user_group_1_id = body["data"][0]["id"]
     assert res["statusCode"] == 201
-    assert body["data"]["userGroups"][0]["name"] == "test1"
-    assert body["data"]["userGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
 
     res = edit_user_group(
         owner_id=owner_id,
@@ -50,22 +50,22 @@ def test_database(setup_database):
 
     body = json.loads(res["body"])
     assert res["statusCode"] == 201
-    assert body["data"]["userGroups"][0]["name"] == "saeeqw"
-    assert body["data"]["userGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "saeeqw"
+    assert body["data"][0]["organizationId"] == 1
 
     res = get_user_groups(
         connection=session, user_group_id=user_group_1_id, owner_id=owner_id
     )
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
-    assert body["data"]["userGroups"][0]["name"] == "saeeqw"
-    assert body["data"]["userGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "saeeqw"
+    assert body["data"][0]["organizationId"] == 1
 
     res = get_user_groups(connection=session, owner_id=owner_id)
     body = json.loads(res["body"])
     assert res["statusCode"] == 200
-    assert body["data"]["userGroups"][0]["name"] == "saeeqw"
-    assert body["data"]["userGroups"][0]["organizationId"] == 1
+    assert body["data"][0]["name"] == "saeeqw"
+    assert body["data"][0]["organizationId"] == 1
 
     res = delete_user_groups(
         owner_id=owner_id, connection=session, user_group_id=user_group_1_id

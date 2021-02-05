@@ -6,7 +6,7 @@ You can select on single user_group or multiple user_group
 import logging
 from typing import List
 from models.users import UserGroups, UserBelongUserGroups, UserGroupsModelShort
-from models.api_response import LambdaResponse, UserGroupsList, DataModel, Message
+from models.api_response import LambdaResponse, DataModel, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
@@ -49,11 +49,9 @@ def get_user_groups(
         paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
 
-        m = UserGroupsList(
-            userGroups=parse_obj_as(List[UserGroupsModelShort], page.object_list)
-        )
+        m = parse_obj_as(List[UserGroupsModelShort], page.object_list)
 
-        if len(m.userGroups) == 0:
+        if len(m) == 0:
             status_code = 404
             body = Message(message="Not found").json()
         else:
