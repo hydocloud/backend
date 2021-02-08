@@ -108,7 +108,7 @@ def get_organizations(
     except exceptions.EmptyPage as err:
         logger.error(err)
         return LambdaSuccessResponse(
-            statusCode=201, body=Data(data=OrganizationsList(organizations=[]))
+            statusCode=201, body=Data(data=[])
         )
 
     except exceptions.InvalidPage as err:
