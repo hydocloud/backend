@@ -70,7 +70,7 @@ def populate_db(authorizations_session):
         Authorization(
             user_id=faker.uuid4(),
             device_id=faker.random_int(),
-            access_time=faker.random_int(),
+            access_limit=faker.random_int(),
             start_time=faker.iso8601(),
             end_time=faker.iso8601(),
             created_at=faker.iso8601(),
@@ -79,7 +79,7 @@ def populate_db(authorizations_session):
         Authorization(
             user_id=faker.uuid4(),
             device_id=faker.random_int(),
-            access_time=faker.random_int(),
+            access_limit=faker.random_int(),
             start_time=faker.iso8601(),
             end_time=faker.iso8601(),
             created_at=faker.iso8601(),
@@ -88,7 +88,7 @@ def populate_db(authorizations_session):
         Authorization(
             user_id=faker.uuid4(),
             device_id=faker.random_int(),
-            access_time=faker.random_int(),
+            access_limit=faker.random_int(),
             start_time=faker.iso8601(),
             end_time=faker.iso8601(),
             created_at=faker.iso8601(),
