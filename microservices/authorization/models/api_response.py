@@ -8,16 +8,12 @@ class LambdaResponse(BaseModel):
     body: str
 
 
-class AuthorizationList(BaseModel):
-    authorizations: List[AuthorizationModelShort]
-
-
 class Message(BaseModel):
     message: str
 
 
 class DataModel(BaseModel):
-    data: AuthorizationList
+    data: List[AuthorizationModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]

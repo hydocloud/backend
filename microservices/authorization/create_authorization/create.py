@@ -11,7 +11,6 @@ from models.authorization import (
 from models.api_response import (
     LambdaResponse,
     DataModel,
-    AuthorizationList,
     Message,
 )
 from pydantic import ValidationError, parse_obj_as
@@ -47,11 +46,7 @@ def create_authorization(
         connection.refresh(authorization)
 
         body = DataModel(
-            data=AuthorizationList(
-                authorizations=parse_obj_as(
-                    List[AuthorizationModelShort], [authorization]
-                )
-            )
+            data=parse_obj_as(List[AuthorizationModelShort], [authorization])
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

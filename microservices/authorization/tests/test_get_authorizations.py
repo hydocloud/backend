@@ -1,3 +1,4 @@
+from inspect import BoundArguments
 import pytest
 import json
 from faker import Faker
@@ -96,9 +97,9 @@ def apigw_event():
     }
 
 
-def test_class_authorization_filter_all(session):
+def test_class_authorization_filter_all(authorizations_session):
     x = AuthorizationFilter(
-        query=session.query(Authorization),
+        query=authorizations_session.query(Authorization),
         user_id=faker.uuid4(),
         device_id=faker.random_int(),
         authorization_id=faker.random_int(),
@@ -112,9 +113,9 @@ def test_class_authorization_filter_all(session):
     assert type(res) == Query
 
 
-def test_class_authorization_filter_no_user_id(session):
+def test_class_authorization_filter_no_user_id(authorizations_session):
     x = AuthorizationFilter(
-        query=session.query(Authorization),
+        query=authorizations_session.query(Authorization),
         device_id=faker.random_int(),
         authorization_id=faker.random_int(),
     )
@@ -127,9 +128,9 @@ def test_class_authorization_filter_no_user_id(session):
     assert type(res) == Query
 
 
-def test_class_authorization_filter_no_device_id(session):
+def test_class_authorization_filter_no_device_id(authorizations_session):
     x = AuthorizationFilter(
-        query=session.query(Authorization),
+        query=authorizations_session.query(Authorization),
         user_id=faker.uuid4(),
         authorization_id=faker.random_int(),
     )
@@ -142,37 +143,46 @@ def test_class_authorization_filter_no_device_id(session):
     assert type(res) == Query
 
 
-def test_get_authorizations_single_id(session, populate_db):
-    res = get_authorizations(connection=session, authorization_id=1)
+def test_get_authorizations_single_id(authorizations_session, populate_db):
+    res = get_authorizations(connection=authorizations_session, authorization_id=1)
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 200
-    assert len(body["data"]["authorizations"]) == 1
-    assert body["data"]["authorizations"][0]["id"] == 1
+    assert len(body["data"]) == 1
+    assert body["data"][0]["id"] == 1
 
 
-def test_get_authorizations_single_id_not_found(session, populate_db):
-    res = get_authorizations(connection=session, authorization_id=1000)
+def test_get_authorizations_single_id_not_found(authorizations_session, populate_db):
+    res = get_authorizations(connection=authorizations_session, authorization_id=1000)
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 200
+    assert len(body["data"]) == 0
 
-    assert res["statusCode"] == 404
 
-
-def test_get_authorizations_single_id_not_found_wrong_page(session, populate_db):
-    res = get_authorizations(connection=session, authorization_id=1000, page_number=100)
+def test_get_authorizations_single_id_not_found_wrong_page(
+    authorizations_session, populate_db
+):
+    res = get_authorizations(
+        connection=authorizations_session, authorization_id=1000, page_number=100
+    )
 
     assert res["statusCode"] == 400
 
 
-def test_lambda_handler_authorization_id(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_lambda_handler_authorization_id(
+    authorizations_session, populate_db, apigw_event
+):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {"id": 1}
     res = lambda_handler(apigw_event, None)
 
     assert res["statusCode"] == 200
 
 
-def test_lambda_handler_authorization_id_device_id(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_lambda_handler_authorization_id_device_id(
+    authorizations_session, populate_db, apigw_event
+):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {"id": 1}
     apigw_event["queryStringParameters"] = {"deviceId": 1}
     res = lambda_handler(apigw_event, None)
@@ -181,9 +191,9 @@ def test_lambda_handler_authorization_id_device_id(session, populate_db, apigw_e
 
 
 def test_lambda_handler_authorization_id_device_id_user_id(
-    session, populate_db, apigw_event
+    authorizations_session, populate_db, apigw_event
 ):
-    app.CONNECTION = session
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {"id": 1}
     apigw_event["queryStringParameters"] = {"deviceId": 1, "userId": faker.uuid4()}
     res = lambda_handler(apigw_event, None)
@@ -191,17 +201,21 @@ def test_lambda_handler_authorization_id_device_id_user_id(
     assert res["statusCode"] == 400
 
 
-def test_lambda_handler_device_id_user_id(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_lambda_handler_device_id_user_id(
+    authorizations_session, populate_db, apigw_event
+):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {}
     apigw_event["queryStringParameters"] = {"deviceId": 1, "userId": faker.uuid4()}
     res = lambda_handler(apigw_event, None)
+    body = json.loads(res["body"])
 
-    assert res["statusCode"] == 404
+    assert res["statusCode"] == 200
+    assert len(body["data"]) == 0
 
 
-def test_lambda_handler_device_id(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_lambda_handler_device_id(authorizations_session, populate_db, apigw_event):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {}
     apigw_event["queryStringParameters"] = {"deviceId": populate_db[0].device_id}
     res = lambda_handler(apigw_event, None)
@@ -209,8 +223,8 @@ def test_lambda_handler_device_id(session, populate_db, apigw_event):
     assert res["statusCode"] == 200
 
 
-def test_lambda_handler_user_id(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_lambda_handler_user_id(authorizations_session, populate_db, apigw_event):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {}
     apigw_event["queryStringParameters"] = {"userId": populate_db[0].user_id}
     res = lambda_handler(apigw_event, None)
@@ -219,9 +233,9 @@ def test_lambda_handler_user_id(session, populate_db, apigw_event):
 
 
 def test_lambda_handler_device_id_user_id_validation_error(
-    session, populate_db, apigw_event
+    authorizations_session, populate_db, apigw_event
 ):
-    app.CONNECTION = session
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {}
     apigw_event["queryStringParameters"] = {}
     res = lambda_handler(apigw_event, None)
