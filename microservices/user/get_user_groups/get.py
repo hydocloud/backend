@@ -51,20 +51,16 @@ def get_user_groups(
 
         m = parse_obj_as(List[UserGroupsModelShort], page.object_list)
 
-        if len(m) == 0:
-            status_code = 404
-            body = Message(message="Not found").json()
-        else:
-            status_code = 200
-            body = DataModel(
-                data=m,
-                total=page.paginator.count,
-                totalPages=page.paginator.total_pages,
-                nextPage=(page.next_page_number if page.has_next() else None),
-                previousPage=(
-                    page.previous_page_number if page.has_previous() else None
-                ),
-            ).json(by_alias=True)
+        status_code = 200
+        body = DataModel(
+            data=m,
+            total=page.paginator.count,
+            totalPages=page.paginator.total_pages,
+            nextPage=(page.next_page_number if page.has_next() else None),
+            previousPage=(
+                page.previous_page_number if page.has_previous() else None
+            ),
+        ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body).dict()
 
