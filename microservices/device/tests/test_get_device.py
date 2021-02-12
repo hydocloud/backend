@@ -156,7 +156,9 @@ def test_get_devices_ok_page_size_next(devices, session):
 
 def test_edit_device_not_found(session):
     res = get_devices(device_id=0, connection=session)
-    assert res["statusCode"] == 404
+    body = json.loads(res["body"])
+    assert len(body["data"]) == 0
+    assert res["statusCode"] == 200
 
 
 def test_handler_ok(apigw_event, session):
@@ -170,7 +172,9 @@ def test_handler_not_found(apigw_event, session):
     apigw_event["pathParameters"]["id"] = 0
     apigw_event["queryStringParameters"]["deviceGroupId"] = 1
     res = app.lambda_handler(apigw_event, None)
-    assert res["statusCode"] == 404
+    body = json.loads(res["body"])
+    assert len(body["data"]) == 0
+    assert res["statusCode"] == 200
 
 
 def test_handler_no_id(apigw_event, session):
