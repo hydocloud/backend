@@ -5,8 +5,6 @@ import subprocess
 from aws_cdk import (
     core,
     aws_lambda as _lambda,
-    aws_apigatewayv2 as apigw2,
-    aws_apigatewayv2_integrations as apigw2_integrations,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_route53 as route53,
@@ -15,6 +13,7 @@ from aws_cdk import (
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_dynamodb import BillingMode
+from models.apigateway import Apigateway
 
 from utils.prefix import env_specific, domain_specific
 
@@ -207,56 +206,40 @@ class LoginStack(core.Stack):
             env_specific("login-api"), domain_specific("api", "login")
         )
 
-        self.api_domain_name = apigw2.DomainName(
-            self,
-            "http-api-domain-name",
-            domain_name="{}.{}".format(
-                domain_specific("api", "login"), dns_stack.get_domain_name()
-            ),
+        apigateway = Apigateway(object_name="login-api-2", api_name="api-login")
+
+        apigateway.set_domain_name(
+            prefix="api",
+            logical_name="login",
+            domain_name=dns_stack.get_domain_name(),
             certificate=certificate,
+            mapping=True,
         )
 
-        self.http_api = apigw2.HttpApi(
-            self, "login-api-2", api_name=env_specific("api-login")
-        )
-
-        apigw2.HttpApiMapping(
-            self, "ApiMapping", api=self.http_api, domain_name=self.api_domain_name
-        )
-
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/session",
-            methods=[HttpMethod.GET],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=generate_session_lambda
-            ),
+            method=HttpMethod.GET,
+            lambda_handler=generate_session_lambda,
         )
-
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/session/{id}",
-            methods=[HttpMethod.GET],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=generate_jwt_lambda
-            ),
+            method=HttpMethod.GET,
+            lambda_handler=generate_jwt_lambda,
         )
 
-        self.http_api.add_routes(
-            path="/login",
-            methods=[HttpMethod.POST],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=login_service_lambda
-            ),
+        apigateway.add_route(
+            path="/login", method=HttpMethod.POST, lambda_handler=login_service_lambda
         )
 
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/login/validate",
-            methods=[HttpMethod.POST],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=validate_nonce_lambda
-            ),
+            method=HttpMethod.POST,
+            lambda_handler=validate_nonce_lambda,
         )
 
-        dns_stack.add_api_gateway_v2_record("api.dev.login", self.api_domain_name)
+        dns_stack.add_api_gateway_v2_record(
+            "api.dev.login", apigateway.get_domain_name()
+        )
 
     def create_dependencies_layer(
         self, project_name, function_name, folder_name: str

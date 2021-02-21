@@ -2,8 +2,6 @@ from aws_cdk import (
     core,
     aws_lambda as _lambda,
     aws_rds as rds,
-    aws_apigatewayv2 as apigw2,
-    aws_apigatewayv2_integrations as apigw2_integrations,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
@@ -11,6 +9,7 @@ from aws_cdk import (
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
+from models.apigateway import Apigateway
 import os
 import pathlib
 import subprocess
@@ -196,81 +195,58 @@ class OrganizationeStack(core.Stack):
             env_specific("api"), domain_specific("api")
         )
 
-        self.dn = apigw2.DomainName(
-            self,
-            "http-api-domain-name",
-            domain_name="{}.{}".format(
-                domain_specific("api"), route53.get_domain_name()
-            ),
+        apigateway = Apigateway(object_name="hydo-api", api_name="api-hydo")
+        apigateway.set_domain_name(
+            prefix="api",
+            domain_name=route53.get_domain_name(),
             certificate=certificate,
+            mapping=True,
         )
 
-        self.http_api = apigw2.HttpApi(
-            self, "hydo-api", api_name=env_specific("api-hydo")
-        )
-
-        apigw2.HttpApiMapping(
-            self, "ApiMapping", api=self.http_api, domain_name=self.dn
-        )
-
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/organizations",
-            methods=[HttpMethod.POST],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=create_organization_lambda
-            ),
+            method=HttpMethod.POST,
+            lambda_handler=create_organization_lambda,
         )
 
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/organizations/{id}",
-            methods=[HttpMethod.PUT],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=edit_organization_lambda
-            ),
+            method=HttpMethod.PUT,
+            lambda_handler=edit_organization_lambda,
         )
 
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/organizations/{id}",
-            methods=[HttpMethod.DELETE],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=delete_organization_lambda
-            ),
+            method=HttpMethod.DELETE,
+            lambda_handler=delete_organization_lambda,
         )
 
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/organizations",
-            methods=[HttpMethod.GET],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=get_organizations_lambda
-            ),
+            method=HttpMethod.GET,
+            lambda_handler=get_organizations_lambda,
         )
 
-        self.http_api.add_routes(
+        apigateway.add_route(
             path="/organizations/{id}",
-            methods=[HttpMethod.GET],
-            integration=apigw2_integrations.LambdaProxyIntegration(
-                handler=get_organizations_lambda
-            ),
+            method=HttpMethod.GET,
+            lambda_handler=get_organizations_lambda,
         )
 
-        api_authz = apigw2.CfnAuthorizer(
-            self,
-            "LambdaAuthorizer",
-            api_id=self.http_api.http_api_id,
-            authorizer_type="REQUEST",
-            identity_source=["$request.header.Authorization"],
-            name=env_specific("LambdaAuthorizer"),
-            authorizer_payload_format_version="2.0",
-            authorizer_uri="arn:aws:apigateway:{}:lambda:path/2015-03-31/functions/{}/invocations".format(
-                self.region, authorizer_lambda.function_arn
-            ),
+        apigateway.set_lambda_authorizer(
+            type="REQUEST",
+            identity_source="$request.header.Authorization",
+            object_name="LambdaAuthorizer",
+            authorizer_name="LambdaAuthorizer",
+            lambda_arn=authorizer_lambda.function_arn,
+            region=self.region,
         )
 
         authorizer_lambda.add_permission(
             "ApiGWPermission",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=api_authz.authorizer_credentials_arn,
+            source_arn=apigateway.get_lambda_authorizer().authorizer_credentials_arn,
         )
 
         route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
