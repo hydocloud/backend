@@ -1,6 +1,5 @@
 from aws_cdk import (
     aws_lambda as _lambda,
-    aws_apigatewayv2_integrations as apigw2_integrations,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
@@ -106,42 +105,32 @@ def lambdas(self):
         ],
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/users/groups",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=create_user_groups_lambda
-        ),
+        method=HttpMethod.POST,
+        lambda_handler=create_user_groups_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/users/groups/{id}",
-        methods=[HttpMethod.PUT],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=edit_user_groups_lambda
-        ),
+        method=HttpMethod.PUT,
+        lambda_handler=edit_user_groups_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/users/groups/{id}",
-        methods=[HttpMethod.DELETE],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=delete_user_groups_lambda
-        ),
+        method=HttpMethod.DELETE,
+        lambda_handler=delete_user_groups_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/users/groups",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_user_groups_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_user_groups_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/users/groups/{id}",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_user_groups_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_user_groups_lambda,
     )

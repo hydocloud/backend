@@ -1,7 +1,6 @@
 from aws_cdk import (
     aws_lambda as _lambda,
     aws_lambda_python as lambda_python,
-    aws_apigatewayv2_integrations as apigw2_integrations,
     aws_secretsmanager as secret_manager,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
@@ -114,44 +113,34 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         ],
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/devices/groups",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=create_device_group_lambda
-        ),
+        method=HttpMethod.POST,
+        lambda_handler=create_device_group_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/devices/groups/{id}",
-        methods=[HttpMethod.PUT],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=edit_device_group_lambda
-        ),
+        method=HttpMethod.PUT,
+        lambda_handler=edit_device_group_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/devices/groups/{id}",
-        methods=[HttpMethod.DELETE],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=delete_device_group_lambda
-        ),
+        method=HttpMethod.DELETE,
+        lambda_handler=delete_device_group_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/devices/groups",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_device_groups_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_device_groups_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/devices/groups/{id}",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_device_groups_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_device_groups_lambda,
     )
 
     create_device_lambda = lambda_python.PythonFunction(
@@ -251,42 +240,24 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         ],
     )
 
-    self.http_api.add_routes(
-        path="/devices",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=create_device_lambda
-        ),
+    self.apigateway.add_route(
+        path="/devices", method=HttpMethod.POST, lambda_handler=create_device_lambda
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
+        path="/devices/{id}", method=HttpMethod.PUT, lambda_handler=edit_device_lambda
+    )
+
+    self.apigateway.add_route(
         path="/devices/{id}",
-        methods=[HttpMethod.PUT],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=edit_device_lambda
-        ),
+        method=HttpMethod.DELETE,
+        lambda_handler=delete_device_lambda,
     )
 
-    self.http_api.add_routes(
-        path="/devices/{id}",
-        methods=[HttpMethod.DELETE],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=delete_device_lambda
-        ),
+    self.apigateway.add_route(
+        path="/devices", method=HttpMethod.GET, lambda_handler=get_devices_lambda
     )
 
-    self.http_api.add_routes(
-        path="/devices",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_devices_lambda
-        ),
-    )
-
-    self.http_api.add_routes(
-        path="/devices/{id}",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_devices_lambda
-        ),
+    self.apigateway.add_route(
+        path="/devices/{id}", method=HttpMethod.GET, lambda_handler=get_devices_lambda
     )
