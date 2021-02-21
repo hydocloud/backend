@@ -12,13 +12,13 @@ from utils.prefix import env_specific, domain_specific
 class Apigateway:
     def __init__(
         self,
+        current_stack,
         object_name: str,
         api_name: str,
     ):
-        self.api_name = api_name
-        self.object_name = object_name
+        self.current_stack = current_stack
         self.http_api = aws_apigatewayv2.HttpApi(
-            self, id=object_name, api_name=env_specific(self.api_name)
+            current_stack, id=object_name, api_name=env_specific(api_name)
         )
 
     def set_domain_name(
@@ -30,7 +30,7 @@ class Apigateway:
         logical_name: Optional[str] = "",
     ):
         self.domain_name = aws_apigatewayv2.DomainName(
-            self,
+            self.current_stack,
             "http-api-domain-name",
             domain_name="{}.{}".format(
                 domain_specific(prefix=prefix, logical_name=logical_name), domain_name
@@ -45,7 +45,7 @@ class Apigateway:
 
     def __set_mapping(self):
         aws_apigatewayv2.HttpApiMapping(
-            self, "ApiMapping", api=self.http_api, domain_name=self.domain_name
+            self.current_stack, "ApiMapping", api=self.http_api, domain_name=self.domain_name
         )
 
     def add_route(
@@ -72,7 +72,7 @@ class Apigateway:
             region, lambda_arn
         )
         self.authorizer = aws_apigatewayv2.CfnAuthorizer(
-            self,
+            self.current_stack,
             object_name,
             api_id=self.http_api.http_api_id,
             authorizer_type=type,

@@ -206,7 +206,9 @@ class LoginStack(core.Stack):
             env_specific("login-api"), domain_specific("api", "login")
         )
 
-        apigateway = Apigateway(object_name="login-api-2", api_name="api-login")
+        apigateway = Apigateway(
+            current_stack=self, object_name="login-api-2", api_name="api-login"
+        )
 
         apigateway.set_domain_name(
             prefix="api",

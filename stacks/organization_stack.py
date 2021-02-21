@@ -195,45 +195,47 @@ class OrganizationeStack(core.Stack):
             env_specific("api"), domain_specific("api")
         )
 
-        apigateway = Apigateway(object_name="hydo-api", api_name="api-hydo")
-        apigateway.set_domain_name(
+        self.apigateway = Apigateway(
+            current_stack=self, object_name="hydo-api", api_name="api-hydo"
+        )
+        self.apigateway.set_domain_name(
             prefix="api",
             domain_name=route53.get_domain_name(),
             certificate=certificate,
             mapping=True,
         )
 
-        apigateway.add_route(
+        self.apigateway.add_route(
             path="/organizations",
             method=HttpMethod.POST,
             lambda_handler=create_organization_lambda,
         )
 
-        apigateway.add_route(
+        self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.PUT,
             lambda_handler=edit_organization_lambda,
         )
 
-        apigateway.add_route(
+        self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.DELETE,
             lambda_handler=delete_organization_lambda,
         )
 
-        apigateway.add_route(
+        self.apigateway.add_route(
             path="/organizations",
             method=HttpMethod.GET,
             lambda_handler=get_organizations_lambda,
         )
 
-        apigateway.add_route(
+        self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.GET,
             lambda_handler=get_organizations_lambda,
         )
 
-        apigateway.set_lambda_authorizer(
+        self.apigateway.set_lambda_authorizer(
             type="REQUEST",
             identity_source="$request.header.Authorization",
             object_name="LambdaAuthorizer",
@@ -246,10 +248,12 @@ class OrganizationeStack(core.Stack):
             "ApiGWPermission",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=apigateway.get_lambda_authorizer().authorizer_credentials_arn,
+            source_arn=self.apigateway.get_lambda_authorizer().authorizer_credentials_arn,
         )
 
-        route53.add_api_gateway_v2_record(domain_specific("api"), self.dn)
+        route53.add_api_gateway_v2_record(
+            domain_specific("api"), self.apigateway.get_domain_name()
+        )
 
         user_group.lambdas(self)
         device_secret_key = secrets.device_symmetric_key(self)
