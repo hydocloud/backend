@@ -34,7 +34,7 @@ class Lambda:
     def set_function(self, name: str):
         self.name = name
         self._lambda = aws_lambda.Function(
-            self,
+            self.current_stack,
             "GetOrganizations",
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             code=aws_lambda.Code.asset(self.code_path),
