@@ -182,7 +182,7 @@ def test_handler_no_id(apigw_event, session):
     apigw_event["pathParameters"] = None
     apigw_event["queryStringParameters"]["deviceGroupId"] = 1
     res = app.lambda_handler(apigw_event, None)
-    assert res["statusCode"] == 400
+    assert res["statusCode"] == 200
 
 
 def test_handler_ok_with_page_and_page_size(apigw_event, session):
@@ -207,7 +207,7 @@ def test_handler_ok_with_wrong_page(apigw_event, session):
     apigw_event["pathParameters"] = None
     apigw_event["queryStringParameters"]["page"] = 2
     res = app.lambda_handler(apigw_event, None)
-    assert res["statusCode"] == 400
+    assert res["statusCode"] == 200
 
 
 def test_handler_ok_with_page(apigw_event, session):
