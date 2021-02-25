@@ -10,6 +10,7 @@ from aws_cdk import (
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
 from models.apigateway import Apigateway
+from models._lambda import Lambda
 import os
 import pathlib
 import subprocess
@@ -47,41 +48,53 @@ class OrganizationeStack(core.Stack):
             "CreateAuthorizationDeviceQueue",
             queue_name="create-authorization-device",
         )
-
+        organzations_db_name = "organizations"
+        organzations_db_user = "loginService"
+        organzations_db_password = "ciaociao"
         # The code that defines your stack goes here
-        create_organization_lambda = _lambda.Function(
-            self,
-            "CreateOrganization",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset(
-                "{}/organization/create_organization".format(self.current_path)
-            ),
-            handler=LAMBDA_HANDLER,
-            tracing=_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
-                "DB_NAME": "organizations",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-                "QUEUE_URLS": f'["{self.create_user_group_queue.queue_url}","{self.create_device_group_queue.queue_url}"]',
-            },
-            layers=[
-                self.create_dependencies_layer(
-                    "test", "CreateOrganization", "/organization/create_organization"
-                ),
-                self.create_model_layer("test2", "CreateOrganization", "/organization"),
-            ],
+        create_organization_lambda = Lambda(
+            current_stack=self,
+            db_name=organzations_db_name,
+            db_user=organzations_db_user,
+            db_password=organzations_db_password,
+            db_host=rds.db_instance_endpoint_address,
+            code_path=f"{self.current_path}/organization/create_organization",
         )
+        create_organization_lambda.set_function(name="CreateOrganization")
 
-        self.create_user_group_queue.grant_send_messages(
-            grantee=create_organization_lambda
-        )
+        # create_organization_lambda = _lambda.Function(
+        #     self,
+        #     "CreateOrganization",
+        #     runtime=_lambda.Runtime.PYTHON_3_8,
+        #     code=_lambda.Code.asset(
+        #         "{}/organization/create_organization".format(self.current_path)
+        #     ),
+        #     handler=LAMBDA_HANDLER,
+        #     tracing=_lambda.Tracing.ACTIVE,
+        #     environment={
+        #         "DB_PORT": rds.db_instance_endpoint_port,
+        #         "DB_HOST": rds.db_instance_endpoint_address,
+        #         "DB_NAME": "organizations",
+        #         "DB_ENGINE": "postgresql",
+        #         "DB_USER": "loginService",
+        #         "DB_PASSWORD": "ciaociao",
+        #         "QUEUE_URLS": f'["{self.create_user_group_queue.queue_url}","{self.create_device_group_queue.queue_url}"]',
+        #     },
+        #     layers=[
+        #         self.create_dependencies_layer(
+        #             "test", "CreateOrganization", "/organization/create_organization"
+        #         ),
+        #         self.create_model_layer("test2", "CreateOrganization", "/organization"),
+        #     ],
+        # )
 
-        self.create_device_group_queue.grant_send_messages(
-            grantee=create_organization_lambda
-        )
+        # self.create_user_group_queue.grant_send_messages(
+        #     grantee=create_organization_lambda
+        # )
+
+        # self.create_device_group_queue.grant_send_messages(
+        #     grantee=create_organization_lambda
+        # )
 
         edit_organization_lambda = _lambda.Function(
             self,
