@@ -25,7 +25,6 @@ def lambda_handler(event, context):
     """
 
     global CONNECTION
-    owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
 
     if CONNECTION is None:
         CONNECTION = init_db()
