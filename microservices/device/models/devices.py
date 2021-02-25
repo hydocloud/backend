@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinar
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import Optional
 
 Base = declarative_base()
@@ -105,3 +105,21 @@ class DevicesApiInput(BaseModel):
 class DevicesEditInput(BaseModel):
     name: Optional[str]
     deviceGroupId: Optional[int]
+
+
+class DevicesModelParameters(BaseModel):
+    deviceGroupId: Optional[int]
+    organizationId: Optional[int]
+    pageNumber: Optional[int] = Field(default=1)
+    pageSize: Optional[int] = Field(default=5)
+
+    @root_validator(pre=True)
+    def organization_id_device_group_id(cls, values):
+        if (
+            values.get("deviceGroupId") is not None
+            and values.get("organizationId") is not None
+        ):
+            raise ValueError("incompatible input")
+        if values.get("organizationId") is None and values.get("deviceGroupId") is None:
+            raise ValueError("incompatible input")
+        return values
