@@ -25,6 +25,7 @@ def get_devices(
     connection: Session,
     device_id: str = None,
     device_group_id: int = None,
+    organization_id: int = None,
     page_number: int = 1,
     page_size: int = 5,
 ) -> dict:
