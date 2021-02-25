@@ -1,7 +1,6 @@
 from aws_cdk import (
     aws_lambda as _lambda,
     aws_lambda_python as lambda_python,
-    aws_apigatewayv2_integrations as apigw2_integrations,
     aws_dynamodb as dynamodb,
     aws_secretsmanager as secret_manager,
 )
@@ -132,44 +131,34 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         ],
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authorizations",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=create_authorization_lambda
-        ),
+        method=HttpMethod.POST,
+        lambda_handler=create_authorization_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authorizations/{id}",
-        methods=[HttpMethod.PUT],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=edit_authorization_lambda
-        ),
+        method=HttpMethod.PUT,
+        lambda_handler=edit_authorization_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authorizations/{id}",
-        methods=[HttpMethod.DELETE],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=delete_authorization_lambda
-        ),
+        method=HttpMethod.DELETE,
+        lambda_handler=delete_authorization_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authorizations",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_authorizations_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_authorizations_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authorizations/{id}",
-        methods=[HttpMethod.GET],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=get_authorizations_lambda
-        ),
+        method=HttpMethod.GET,
+        lambda_handler=get_authorizations_lambda,
     )
 
     authorization_service_lambda = lambda_python.PythonFunction(
@@ -259,20 +248,16 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         },
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authz",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=authorization_service_lambda
-        ),
+        method=HttpMethod.POST,
+        lambda_handler=authorization_service_lambda,
     )
 
-    self.http_api.add_routes(
+    self.apigateway.add_route(
         path="/authz/validate",
-        methods=[HttpMethod.POST],
-        integration=apigw2_integrations.LambdaProxyIntegration(
-            handler=validate_authorization_lambda
-        ),
+        method=HttpMethod.POST,
+        lambda_handler=validate_authorization_lambda,
     )
 
     device_secret_key.grant_read(grantee=validate_authorization_lambda)
