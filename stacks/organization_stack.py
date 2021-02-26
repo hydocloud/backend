@@ -1,23 +1,21 @@
+import pathlib
+import subprocess
+import os
+from shutil import copytree, copyfile
 from aws_cdk import (
     core,
-    aws_lambda as _lambda,
     aws_rds as rds,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
     aws_sqs as sqs,
+    aws_lambda as _lambda,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
 from models.apigateway import Apigateway
 from models._lambda import Lambda
-import os
-import pathlib
-import subprocess
-from shutil import copyfile, copytree
 from hydo import user_group, devices, secrets, authorizations
-
-LAMBDA_HANDLER = "app.lambda_handler"
 
 
 class OrganizationeStack(core.Stack):
@@ -54,153 +52,76 @@ class OrganizationeStack(core.Stack):
         # The code that defines your stack goes here
         create_organization_lambda = Lambda(
             current_stack=self,
-            db_name=organzations_db_name,
+            code_path=f"{self.current_path}/organization/create_organization",
+            name="CreateOrganization",
+        )
+        create_organization_lambda.set_function()
+        create_organization_lambda.add_layer(requirements=True, models=True)
+        create_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
-            db_host=rds.db_instance_endpoint_address,
-            code_path=f"{self.current_path}/organization/create_organization",
-        )
-        create_organization_lambda.set_function(name="CreateOrganization")
-
-        # create_organization_lambda = _lambda.Function(
-        #     self,
-        #     "CreateOrganization",
-        #     runtime=_lambda.Runtime.PYTHON_3_8,
-        #     code=_lambda.Code.asset(
-        #         "{}/organization/create_organization".format(self.current_path)
-        #     ),
-        #     handler=LAMBDA_HANDLER,
-        #     tracing=_lambda.Tracing.ACTIVE,
-        #     environment={
-        #         "DB_PORT": rds.db_instance_endpoint_port,
-        #         "DB_HOST": rds.db_instance_endpoint_address,
-        #         "DB_NAME": "organizations",
-        #         "DB_ENGINE": "postgresql",
-        #         "DB_USER": "loginService",
-        #         "DB_PASSWORD": "ciaociao",
-        #         "QUEUE_URLS": f'["{self.create_user_group_queue.queue_url}","{self.create_device_group_queue.queue_url}"]',
-        #     },
-        #     layers=[
-        #         self.create_dependencies_layer(
-        #             "test", "CreateOrganization", "/organization/create_organization"
-        #         ),
-        #         self.create_model_layer("test2", "CreateOrganization", "/organization"),
-        #     ],
-        # )
-
-        # self.create_user_group_queue.grant_send_messages(
-        #     grantee=create_organization_lambda
-        # )
-
-        # self.create_device_group_queue.grant_send_messages(
-        #     grantee=create_organization_lambda
-        # )
-
-        edit_organization_lambda = _lambda.Function(
-            self,
-            "EditOrganization",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset(
-                "{}/organization/edit_organization".format(self.current_path)
-            ),
-            handler=LAMBDA_HANDLER,
-            tracing=_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
-                "DB_NAME": "organizations",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-            },
-            layers=[
-                self.create_dependencies_layer(
-                    "EditOrganizationLibraries",
-                    "EditOrganization",
-                    "/organization/edit_organization",
-                ),
-                self.create_model_layer(
-                    "EditOrganizationModels", "EditOrganization", "/organization"
-                ),
-            ],
+            db_name=organzations_db_name,
+            db_host=self.rds.db_instance_endpoint_address,
         )
 
-        delete_organization_lambda = _lambda.Function(
-            self,
-            "DeleteOrganization",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset(
-                "{}/organization/delete_organization".format(self.current_path)
-            ),
-            handler=LAMBDA_HANDLER,
-            tracing=_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
-                "DB_NAME": "organizations",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-            },
-            layers=[
-                self.create_dependencies_layer(
-                    "DeleteOrganizationLibraries",
-                    "DeleteOrganization",
-                    "/organization/delete_organization",
-                ),
-                self.create_model_layer(
-                    "DeleteOrganizationModels",
-                    "DeleteOrganization",
-                    "/organization",
-                ),
-            ],
+        self.create_user_group_queue.grant_send_messages(
+            grantee=create_organization_lambda._lambda
         )
 
-        get_organizations_lambda = _lambda.Function(
-            self,
-            "GetOrganizations",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset(
-                "{}/organization/get_organizations".format(self.current_path)
-            ),
-            handler=LAMBDA_HANDLER,
-            tracing=_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": rds.db_instance_endpoint_port,
-                "DB_HOST": rds.db_instance_endpoint_address,
-                "DB_NAME": "organizations",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-            },
-            layers=[
-                self.create_dependencies_layer(
-                    "GetOrganizationsLibraries",
-                    "GetOrganizations",
-                    "/organization/get_organizations",
-                ),
-                self.create_model_layer(
-                    "GetOrganizationsModels", "GetOrganizations", "/organization"
-                ),
-            ],
+        self.create_device_group_queue.grant_send_messages(
+            grantee=create_organization_lambda._lambda
         )
 
-        authorizer_lambda = _lambda.Function(
-            self,
-            "Authorizer",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset(
-                "{}/authorizer/authorizer".format(self.current_path)
-            ),
-            handler=LAMBDA_HANDLER,
-            tracing=_lambda.Tracing.ACTIVE,
-            environment={"JWT_SECRET": "secret"},
-            layers=[
-                self.create_dependencies_layer(
-                    "Authorizer", "Authorizer", "/authorizer/authorizer"
-                )
-            ],
+        edit_organization_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/organization/edit_organization",
+            name="EditOrganization",
         )
+        edit_organization_lambda.set_function()
+        edit_organization_lambda.add_layer(requirements=True, models=True)
+        edit_organization_lambda.add_db_environment(
+            db_user=organzations_db_user,
+            db_password=organzations_db_password,
+            db_name=organzations_db_name,
+            db_host=self.rds.db_instance_endpoint_address,
+        )
+
+        delete_organization_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/organization/delete_organization",
+            name="DeleteOrganization",
+        )
+        delete_organization_lambda.set_function()
+        delete_organization_lambda.add_layer(requirements=True, models=True)
+        delete_organization_lambda.add_db_environment(
+            db_user=organzations_db_user,
+            db_password=organzations_db_password,
+            db_name=organzations_db_name,
+            db_host=self.rds.db_instance_endpoint_address,
+        )
+
+        get_organizations_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/organization/get_organizations",
+            name="GetOrganizations",
+        )
+        get_organizations_lambda.set_function()
+        get_organizations_lambda.add_layer(requirements=True, models=True)
+        get_organizations_lambda.add_db_environment(
+            db_user=organzations_db_user,
+            db_password=organzations_db_password,
+            db_name=organzations_db_name,
+            db_host=self.rds.db_instance_endpoint_address,
+        )
+
+        authorizer_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/authorizer/authorizer",
+            name="Authorizer",
+        )
+        authorizer_lambda.set_function()
+        authorizer_lambda.add_layer(requirements=True)
+        authorizer_lambda.add_environment(key="JWT_SECRET", value="secret")
 
         #  Api gateway
 
@@ -221,31 +142,31 @@ class OrganizationeStack(core.Stack):
         self.apigateway.add_route(
             path="/organizations",
             method=HttpMethod.POST,
-            lambda_handler=create_organization_lambda,
+            lambda_handler=create_organization_lambda._lambda,
         )
 
         self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.PUT,
-            lambda_handler=edit_organization_lambda,
+            lambda_handler=edit_organization_lambda._lambda,
         )
 
         self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.DELETE,
-            lambda_handler=delete_organization_lambda,
+            lambda_handler=delete_organization_lambda._lambda,
         )
 
         self.apigateway.add_route(
             path="/organizations",
             method=HttpMethod.GET,
-            lambda_handler=get_organizations_lambda,
+            lambda_handler=get_organizations_lambda._lambda,
         )
 
         self.apigateway.add_route(
             path="/organizations/{id}",
             method=HttpMethod.GET,
-            lambda_handler=get_organizations_lambda,
+            lambda_handler=get_organizations_lambda._lambda,
         )
 
         self.apigateway.set_lambda_authorizer(
@@ -253,11 +174,11 @@ class OrganizationeStack(core.Stack):
             identity_source="$request.header.Authorization",
             object_name="LambdaAuthorizer",
             authorizer_name="LambdaAuthorizer",
-            lambda_arn=authorizer_lambda.function_arn,
+            lambda_arn=authorizer_lambda.get_function_arn(),
             region=self.region,
         )
 
-        authorizer_lambda.add_permission(
+        authorizer_lambda._lambda.add_permission(
             "ApiGWPermission",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
