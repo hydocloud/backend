@@ -161,6 +161,12 @@ def test_edit_device_not_found(session):
     assert res["statusCode"] == 200
 
 
+def test_get_device_organizations_id(devices, session):
+    device1, _, _ = devices
+    res = get_devices(organization_id=1, connection=session)
+    assert res["statusCode"] == 200
+
+
 def test_handler_ok(apigw_event, session):
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)
@@ -183,6 +189,14 @@ def test_handler_no_id(apigw_event, session):
     apigw_event["queryStringParameters"]["deviceGroupId"] = 1
     res = app.lambda_handler(apigw_event, None)
     assert res["statusCode"] == 200
+
+
+def test_handler_organizations_id_device_group_id(apigw_event, session):
+    app.CONNECTION = session
+    apigw_event["pathParameters"] = None
+    apigw_event["queryStringParameters"]["organizationId"] = 1
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 400
 
 
 def test_handler_ok_with_page_and_page_size(apigw_event, session):
@@ -222,3 +236,12 @@ def test_get_device_invalidate_session(devices, session):
     session.invalidate()
     res = get_devices(device_id=1, connection=session)
     assert res["statusCode"] == 500
+
+
+def test_handler_a(apigw_event, session):
+    app.CONNECTION = session
+    apigw_event["pathParameters"] = None
+    apigw_event["queryStringParameters"]["deviceGroupId"] = None
+    apigw_event["queryStringParameters"]["organizationId"] = 1
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 200
