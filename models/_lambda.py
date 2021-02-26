@@ -4,6 +4,7 @@ import subprocess
 from aws_cdk import aws_lambda_python
 from aws_cdk import aws_lambda
 from shutil import copytree, copyfile
+from typing import Optional
 
 DB_PORT = 5432
 DB_ENGINE = "postgresql"
@@ -14,25 +15,13 @@ class Lambda:
     INDEX = "app.py"
     HANDLER = "lambda_handler"
 
-    def __init__(
-        self,
-        current_stack,
-        db_name: str,
-        db_user: str,
-        db_password: str,
-        db_host: str,
-        code_path: str,
-    ):
+    def __init__(self, current_stack, code_path: str, name: str):
         self.current_stack = current_stack
-        self.db_name = db_name
-        self.db_password = db_password
-        self.db_host = db_host
-        self.db_user = db_user
         self.code_path = code_path
-        self.base_path = code_path.rsplit("/", 1)
-
-    def set_function(self, name: str):
+        self.base_path = code_path.rsplit("/", 1)[0]
         self.name = name
+
+    def set_function(self):
         self._lambda = aws_lambda.Function(
             self.current_stack,
             self.name,
@@ -40,14 +29,6 @@ class Lambda:
             code=aws_lambda.Code.asset(self.code_path),
             handler=Lambda.HANDLER,
             tracing=aws_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": str(DB_PORT),
-                "DB_HOST": self.db_host,
-                "DB_NAME": self.db_name,
-                "DB_ENGINE": DB_ENGINE,
-                "DB_USER": self.db_user,
-                "DB_PASSWORD": self.db_password,
-            },
         )
 
     def get_function(self):
@@ -59,13 +40,14 @@ class Lambda:
     def get_function_name(self):
         return self._lambda.function_name
 
-    def add_layer(self, requirements: bool, models: bool):
+    def add_layer(self, requirements: bool = False, models: bool = False):
         layers = []
         if requirements:
             layers.append(self.__create_dependencies_layer())
         if models:
             layers.append(self.__create_model_layer())
-        self._lambda.add_layers(layers)
+
+        [self._lambda.add_layers(layer) for layer in layers]
 
     def __create_dependencies_layer(self):
         requirements_file = f"{self.code_path}/requirements.txt"
@@ -75,10 +57,10 @@ class Lambda:
             subprocess.check_call(
                 f"pip install -r {requirements_file} -t {output_dir}/python".split()
             )
-        return self._lambda.LayerVersion(
+        return aws_lambda.LayerVersion(
             self.current_stack,
             f"{self.name}-dependencies",
-            code=self._lambda.Code.from_asset(output_dir),
+            code=aws_lambda.Code.from_asset(output_dir),
         )
 
     def __create_model_layer(self):
@@ -99,18 +81,29 @@ class Lambda:
             dirs_exist_ok=True,
         )
 
-        return self._lambda.LayerVersion(
+        return aws_lambda.LayerVersion(
             self.current_stack,
-            f"{self.name}-dependencies",
-            code=self._lambda.Code.from_asset(output_dir),
+            f"{self.name}-model-dependencies",
+            code=aws_lambda.Code.from_asset(output_dir),
         )
+
+    def add_environment(self, key: str, value: str):
+        self._lambda.add_environment(key=key, value=value)
+
+    def add_db_environment(self, db_host: str, db_name: str, db_user: str, db_password: str):
+        self._lambda.add_environment(key="DB_PORT", value=str(DB_PORT))
+        self._lambda.add_environment(key="DB_HOST", value=db_host)
+        self._lambda.add_environment(key="DB_NAME", value=db_name)
+        self._lambda.add_environment(key="DB_ENGINE", value=DB_ENGINE)
+        self._lambda.add_environment(key="DB_USER", value=db_user)
+        self._lambda.add_environment(key="DB_PASSWORD", value=db_password)
 
 
 class LambdaPython(Lambda):
-    def set_function(self, name: str):
+    def set_function(self):
         self._lambda = aws_lambda_python.PythonFunction(
             self.current_stack,
-            name,
+            self.name,
             runtime=Lambda.RUNTIME,
             entry=self.code_path,
             index=Lambda.INDEX,
