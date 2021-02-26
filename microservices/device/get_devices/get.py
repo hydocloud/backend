@@ -5,7 +5,7 @@ You can select on single devices or multiple devices
 
 import logging
 from typing import List
-from models.devices import Devices, DevicesModelShort
+from models.devices import Devices, DevicesModelShort,DeviceGroups
 from models.api_response import LambdaResponse, DevicesDataModel, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -25,15 +25,26 @@ def get_devices(
     connection: Session,
     device_id: str = None,
     device_group_id: int = None,
+    organization_id: int = None,
     page_number: int = 1,
     page_size: int = 5,
 ) -> dict:
     """ Get data about one device group or multiple"""
     try:
         if device_id is None:
-            res = connection.query(Devices).filter(
-                Devices.device_group_id == device_group_id
-            )
+            if organization_id:
+                subquery = (
+                    connection.query(DeviceGroups.id)
+                    .filter(DeviceGroups.organization_id == organization_id)
+                    .subquery()
+                )
+                res = connection.query(Devices).filter(
+                    Devices.device_group_id.in_(subquery)
+                )
+            if device_group_id:
+                res = connection.query(Devices).filter(
+                    Devices.device_group_id == device_group_id
+                )
         else:
             res = connection.query(Devices).filter(
                 Devices.device_group_id == device_group_id, Devices.id == device_id

@@ -703,6 +703,13 @@
             schema:
               type: number
             required: true
+            description: Chose between organizationId or deviceGroupId
+          - in: query
+            name: organizationId
+            schema:
+              type: number
+            required: true
+            description: Chose between organizationId or deviceGroupId
 
         responses:
           "201":

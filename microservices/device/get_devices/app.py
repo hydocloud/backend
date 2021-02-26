@@ -5,6 +5,8 @@ import json
 from aws_lambda_powertools import Tracer
 from get import get_devices
 from database import init_db
+from models.devices import DevicesModelParameters
+from models.api_response import LambdaResponse, Message
 
 tracer = Tracer(service="get_devices")
 
@@ -25,60 +27,28 @@ def lambda_handler(event, context):
     """
 
     global CONNECTION
-    owner_id = event["requestContext"]["authorizer"]["lambda"]["sub"]
 
     if CONNECTION is None:
         CONNECTION = init_db()
 
-    if (
-        "pathParameters" in event
-        and event["pathParameters"] is not None
-        and "id" in event["pathParameters"]
-    ):
-        device_id = event["pathParameters"]["id"]
-        device_group_id = event["queryStringParameters"]["deviceGroupId"]
-        response = get_devices(
-            connection=CONNECTION, device_group_id=device_group_id, device_id=device_id
-        )
-    elif (
-        "queryStringParameters" in event and event["queryStringParameters"] is not None
-    ):
-        if (
-            "pageSize" in event["queryStringParameters"]
-            and "page" in event["queryStringParameters"]
-            and "deviceGroupId" in event["queryStringParameters"]
-        ):
-            print(event["queryStringParameters"])
-            page_number = int(event["queryStringParameters"]["page"])
-            page_size = int(event["queryStringParameters"]["pageSize"])
-            device_group_id = int(event["queryStringParameters"]["deviceGroupId"])
-            response = get_devices(
-                connection=CONNECTION,
-                device_group_id=device_group_id,
-                page_number=page_number,
-                page_size=page_size,
-            )
-        elif (
-            "pageSize" in event["queryStringParameters"]
-            and "deviceGroupId" in event["queryStringParameters"]
-        ):
-            page_size = event["queryStringParameters"]["pageSize"]
-            device_group_id = int(event["queryStringParameters"]["deviceGroupId"])
-            response = get_devices(
-                connection=CONNECTION,
-                device_group_id=device_group_id,
-                page_size=int(page_size),
-            )
-        elif (
-            "page" in event["queryStringParameters"]
-            and "deviceGroupId" in event["queryStringParameters"]
-        ):
-            page_number = int(event["queryStringParameters"]["page"])
-            device_group_id = int(event["queryStringParameters"]["deviceGroupId"])
-            response = get_devices(
-                connection=CONNECTION,
-                device_group_id=device_group_id,
-                page_number=int(page_number),
-            )
+    try:
+        parameters = DevicesModelParameters.parse_obj(event["queryStringParameters"])
+        if event["pathParameters"] is not None and "deviceId" in event["pathParameters"]:
+            parameters.deviceId = event["pathParameters"]["deviceId"]
+    except Exception as err:
+        print(err)
+        logger.error(err)
+        return LambdaResponse(
+            statusCode=400, body=Message(message="Bad request").json()
+        ).dict()
+
+    response = get_devices(
+        connection=CONNECTION,
+        device_id=parameters.deviceId,
+        device_group_id=parameters.deviceGroupId,
+        organization_id=parameters.organizationId,
+        page_number=parameters.pageNumber,
+        page_size=parameters.pageSize,
+    )
 
     return response
