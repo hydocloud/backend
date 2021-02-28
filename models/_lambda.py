@@ -4,7 +4,7 @@ import subprocess
 from aws_cdk import aws_lambda_python
 from aws_cdk import aws_lambda
 from shutil import copytree, copyfile
-from typing import Optional
+from utils.prefix import env_specific
 
 DB_PORT = 5432
 DB_ENGINE = "postgresql"
@@ -40,13 +40,14 @@ class Lambda:
     def get_function_name(self):
         return self._lambda.function_name
 
-    def add_layer(self, requirements: bool = False, models: bool = False):
+    def add_layer(self, requirements: bool = False, models: bool = False, indy: bool = False):
         layers = []
         if requirements:
             layers.append(self.__create_dependencies_layer())
         if models:
             layers.append(self.__create_model_layer())
-
+        if indy:
+            layers.append(self.__indy_layer())
         [self._lambda.add_layers(layer) for layer in layers]
 
     def __create_dependencies_layer(self):
@@ -85,6 +86,16 @@ class Lambda:
             self.current_stack,
             f"{self.name}-model-dependencies",
             code=aws_lambda.Code.from_asset(output_dir),
+        )
+
+    def __indy_layer(self):
+        return aws_lambda.LayerVersion(
+            self,
+            env_specific("indy-sdk-postgres"),
+            code=aws_lambda.Code.asset(
+                "{}/indysdk-postgres.zip".format(self.base_path)
+            ),
+            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_8],
         )
 
     def add_environment(self, key: str, value: str):
