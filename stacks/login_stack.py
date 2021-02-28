@@ -1,16 +1,12 @@
 """ Stack to deploy login service """
-import os
 import pathlib
-import subprocess
 from aws_cdk import (
     core,
-    aws_lambda as _lambda,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_route53 as route53,
     aws_certificatemanager as certificate_manager,
 )
-from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_dynamodb import BillingMode
 from models.apigateway import Apigateway
