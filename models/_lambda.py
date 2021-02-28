@@ -42,10 +42,10 @@ class Lambda:
 
     def add_layer(
         self,
+        layer_version: Optional[aws_lambda.LayerVersion] = None,
         requirements: bool = False,
         models: bool = False,
         indy: bool = False,
-        layer_version: aws_lambda.LayerVersion = Optional[None],
     ):
         layers = []
         if requirements:
@@ -54,7 +54,7 @@ class Lambda:
             layers.append(self.__create_model_layer())
         if indy:
             layers.append(self.__indy_layer())
-        if layer_version:
+        if layer_version is not None:
             layers.append(layer_version)
         [self._lambda.add_layers(layer) for layer in layers]
 
@@ -76,11 +76,11 @@ class Lambda:
         output_dir = f".lambda_dependencies/{self.name}/commodities"
         os.makedirs(output_dir + "/python", exist_ok=True)
         copyfile(
-            "{}/database.py".format(self.base_path),
+            f"{self.base_path}/database.py",
             f"{output_dir}/python/database.py",
         )
         copytree(
-            "{}/models".format(self.base_path),
+            f"{self.base_path}/models",
             f"{output_dir}/python/models/",
             dirs_exist_ok=True,
         )
@@ -120,12 +120,4 @@ class LambdaPython(Lambda):
             index=Lambda.INDEX,
             handler=Lambda.HANDLER,
             tracing=aws_lambda.Tracing.ACTIVE,
-            environment={
-                "DB_PORT": DB_PORT,
-                "DB_HOST": self.db_host,
-                "DB_NAME": self.db_name,
-                "DB_ENGINE": DB_ENGINE,
-                "DB_USER": self.db_user,
-                "DB_PASSWORD": self.db_password,
-            },
         )
