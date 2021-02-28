@@ -1,7 +1,4 @@
 import pathlib
-import subprocess
-import os
-from shutil import copytree, copyfile
 from aws_cdk import (
     core,
     aws_rds as rds,
@@ -9,12 +6,11 @@ from aws_cdk import (
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
     aws_sqs as sqs,
-    aws_lambda as _lambda,
 )
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
 from models.apigateway import Apigateway
-from models._lambda import Lambda
+from models._lambda import LambdaPython
 from hydo import user_group, devices, secrets, authorizations
 
 
@@ -50,13 +46,13 @@ class OrganizationeStack(core.Stack):
         organzations_db_user = "loginService"
         organzations_db_password = "ciaociao"
         # The code that defines your stack goes here
-        create_organization_lambda = Lambda(
+        create_organization_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/organization/create_organization",
             name="CreateOrganization",
         )
         create_organization_lambda.set_function()
-        create_organization_lambda.add_layer(requirements=True, models=True)
+        create_organization_lambda.add_layer(models=True)
         create_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -72,13 +68,13 @@ class OrganizationeStack(core.Stack):
             grantee=create_organization_lambda._lambda
         )
 
-        edit_organization_lambda = Lambda(
+        edit_organization_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/organization/edit_organization",
             name="EditOrganization",
         )
         edit_organization_lambda.set_function()
-        edit_organization_lambda.add_layer(requirements=True, models=True)
+        edit_organization_lambda.add_layer(models=True)
         edit_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -86,13 +82,13 @@ class OrganizationeStack(core.Stack):
             db_host=self.rds.db_instance_endpoint_address,
         )
 
-        delete_organization_lambda = Lambda(
+        delete_organization_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/organization/delete_organization",
             name="DeleteOrganization",
         )
         delete_organization_lambda.set_function()
-        delete_organization_lambda.add_layer(requirements=True, models=True)
+        delete_organization_lambda.add_layer(models=True)
         delete_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -100,13 +96,13 @@ class OrganizationeStack(core.Stack):
             db_host=self.rds.db_instance_endpoint_address,
         )
 
-        get_organizations_lambda = Lambda(
+        get_organizations_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/organization/get_organizations",
             name="GetOrganizations",
         )
         get_organizations_lambda.set_function()
-        get_organizations_lambda.add_layer(requirements=True, models=True)
+        get_organizations_lambda.add_layer(models=True)
         get_organizations_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -114,7 +110,7 @@ class OrganizationeStack(core.Stack):
             db_host=self.rds.db_instance_endpoint_address,
         )
 
-        authorizer_lambda = Lambda(
+        authorizer_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/authorizer/authorizer",
             name="Authorizer",
@@ -193,49 +189,3 @@ class OrganizationeStack(core.Stack):
         device_secret_key = secrets.device_symmetric_key(self)
         devices.lambdas(self, device_secret_key)
         authorizations.lambdas(self, device_secret_key)
-
-    def create_dependencies_layer(
-        self, project_name, function_name, folder_name: str
-    ) -> _lambda.LayerVersion:
-        requirements_file = "{}{}/requirements.txt".format(
-            self.current_path, folder_name
-        )
-        output_dir = ".lambda_dependencies/" + function_name
-        # Install requirements for layer in the output_dir
-        if not os.environ.get("SKIP_PIP"):
-            # Note: Pip will create the output dir if it does not exist
-            subprocess.check_call(
-                f"pip install -r {requirements_file} -t {output_dir}/python".split()
-            )
-        return _lambda.LayerVersion(
-            self,
-            project_name + "-" + function_name + "-dependencies",
-            code=_lambda.Code.from_asset(output_dir),
-        )
-
-    def create_model_layer(
-        self, project_name, function_name, folder_name: str
-    ) -> _lambda.LayerVersion:
-        base_path = self.current_path + folder_name
-        output_dir = ".lambda_dependencies/" + function_name + "/commodities"
-        os.makedirs(output_dir + "/python", exist_ok=True)
-        copyfile(
-            "{}/database.py".format(base_path),
-            f"{output_dir}/python/database.py",
-        )
-        copytree(
-            "{}/models".format(base_path),
-            f"{output_dir}/python/models/",
-            dirs_exist_ok=True,
-        )
-        copytree(
-            "{}/microservices/psycopg2".format(str(pathlib.Path().absolute())),
-            f"{output_dir}/python/psycopg2/",
-            dirs_exist_ok=True,
-        )
-
-        return _lambda.LayerVersion(
-            self,
-            project_name + "-" + function_name + "-dependencies",
-            code=_lambda.Code.from_asset(output_dir),
-        )
