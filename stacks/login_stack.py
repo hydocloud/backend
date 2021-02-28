@@ -2,6 +2,7 @@
 import pathlib
 from aws_cdk import (
     core,
+    aws_lambda,
     aws_dynamodb as dynamodb,
     aws_rds as rds,
     aws_route53 as route53,
@@ -10,7 +11,7 @@ from aws_cdk import (
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_dynamodb import BillingMode
 from models.apigateway import Apigateway
-from models._lambda import Lambda
+from models._lambda import LambdaPython
 
 from utils.prefix import env_specific, domain_specific
 
@@ -18,7 +19,7 @@ from utils.prefix import env_specific, domain_specific
 class LoginStack(core.Stack):
     """
     Class that deploy all services for login:
-    Lambdas,
+    LambdaPythons,
     Http api,
     Certificate
     Database
@@ -36,6 +37,8 @@ class LoginStack(core.Stack):
         super().__init__(scope, id, **kwargs)
 
         self.current_path = str(pathlib.Path().absolute()) + "/microservices/login"
+
+        indy_layer = self.__indy_layer()
 
         session_table = dynamodb.Table(
             self,
@@ -60,49 +63,49 @@ class LoginStack(core.Stack):
         )
 
         # The code that defines your stack goes here
-        generate_session_lambda = Lambda(
+        generate_session_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/generate_session",
             name="GenerateSession",
         )
         generate_session_lambda.set_function()
-        generate_session_lambda.add_layer(requirements=True)
         generate_session_lambda.add_environment(
-            key="SESSION_TABLE_NAME", name=session_table.table_name
+            key="SESSION_TABLE_NAME", value=session_table.table_name
         )
         generate_session_lambda.add_environment(
-            key="LOGIN_ID", name="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
+            key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
         )
-        generate_session_lambda.add_environment(key="JWT_SECRET", name="secret")
+        generate_session_lambda.add_environment(key="JWT_SECRET", value="secret")
         generate_session_lambda.add_environment(
-            key="DYNAMODB_ENDPOINT_OVERRIDE", name=""
+            key="DYNAMODB_ENDPOINT_OVERRIDE", value=""
         )
 
-        generate_jwt_lambda = Lambda(
+        generate_jwt_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/generate_jwt",
             name="GenerateJWT",
         )
         generate_jwt_lambda.set_function()
-        generate_jwt_lambda.add_layer(requirements=True)
         generate_jwt_lambda.add_environment(
-            key="SESSION_TABLE_NAME", name=session_table.table_name
+            key="SESSION_TABLE_NAME", value=session_table.table_name
         )
-        generate_jwt_lambda.add_environment(key="JWT_SECRET", name="secret")
-        generate_jwt_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", name="")
+        generate_jwt_lambda.add_environment(key="JWT_SECRET", value="secret")
+        generate_jwt_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", value="")
 
-        validate_nonce_lambda = Lambda(
+        validate_nonce_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/validate_nonce",
             name="ValidateNonce",
         )
         validate_nonce_lambda.set_function()
-        validate_nonce_lambda.add_layer(requirements=True, indy=True)
+        validate_nonce_lambda.add_layer(layer_version=indy_layer)
         validate_nonce_lambda.add_environment(
-            key="SESSION_TABLE_NAME", name=session_table.table_name
+            key="SESSION_TABLE_NAME", value=session_table.table_name
         )
-        validate_nonce_lambda.add_environment(key="JWT_SECRET", name="secret")
-        validate_nonce_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", name="")
+        validate_nonce_lambda.add_environment(key="JWT_SECRET", value="secret")
+        validate_nonce_lambda.add_environment(
+            key="DYNAMODB_ENDPOINT_OVERRIDE", value=""
+        )
         validate_nonce_lambda.add_environment(
             key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
         )
@@ -119,13 +122,13 @@ class LoginStack(core.Stack):
             db_password="ciaociao",
         )
 
-        login_service_lambda = Lambda(
+        login_service_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/login_service",
             name="LoginService",
         )
         login_service_lambda.set_function()
-        login_service_lambda.add_layer(requirements=True, indy=True)
+        login_service_lambda.add_layer(layer_version=indy_layer)
         login_service_lambda.add_environment(
             key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
         )
@@ -146,13 +149,13 @@ class LoginStack(core.Stack):
             db_password="ciaociao",
         )
 
-        onboarding_lambda = Lambda(
+        onboarding_lambda = LambdaPython(
             current_stack=self,
             code_path=f"{self.current_path}/onboarding",
             name="Onboarding",
         )
         onboarding_lambda.set_function()
-        onboarding_lambda.add_layer(requirements=True, indy=True)
+        onboarding_lambda.add_layer(layer_version=indy_layer)
         onboarding_lambda.add_environment(
             key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
         )
@@ -171,7 +174,7 @@ class LoginStack(core.Stack):
             db_password="ciaociao",
         )
 
-        # Lambda - DynamoDB permissions
+        # LambdaPython - DynamoDB permissions
         session_table.grant_write_data(generate_session_lambda._lambda)
         session_table.grant_read_write_data(generate_jwt_lambda._lambda)
         session_table.grant_read_write_data(validate_nonce_lambda._lambda)
@@ -221,4 +224,14 @@ class LoginStack(core.Stack):
 
         dns_stack.add_api_gateway_v2_record(
             "api.dev.login", apigateway.get_domain_name()
+        )
+
+    def __indy_layer(self):
+        return aws_lambda.LayerVersion(
+            self,
+            env_specific("indy-sdk-postgres"),
+            code=aws_lambda.Code.asset(
+                f"{str(pathlib.Path().absolute())}/microservices/indysdk-postgres.zip"
+            ),
+            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_8],
         )
