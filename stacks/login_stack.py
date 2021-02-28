@@ -14,6 +14,7 @@ from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from aws_cdk.aws_dynamodb import BillingMode
 from models.apigateway import Apigateway
+from models._lambda import Lambda
 
 from utils.prefix import env_specific, domain_specific
 
@@ -62,143 +63,124 @@ class LoginStack(core.Stack):
             billing_mode=BillingMode.PAY_PER_REQUEST,
         )
 
-        # Lambda layer
-        indy_sdk_postgres_layer = _lambda.LayerVersion(
-            self,
-            env_specific("indy-sdk-postgres"),
-            code=_lambda.Code.asset(
-                "{}/indysdk-postgres.zip".format(self.current_path)
-            ),
-            compatible_runtimes=[_lambda.Runtime.PYTHON_3_8],
-        )
-
         # The code that defines your stack goes here
-        generate_session_lambda = _lambda.Function(
-            self,
-            "GenerateSession",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/generate_session".format(self.current_path)),
-            handler="app.lambda_handler",
-            environment={
-                "SESSION_TABLE_NAME": session_table.table_name,
-                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
-                "JWT_SECRET": "secret",
-                "DYNAMODB_ENDPOINT_OVERRIDE": "",
-            },
-            tracing=_lambda.Tracing.ACTIVE,
-            layers=[
-                self.create_dependencies_layer(
-                    "test", "GenerateSession", "generate_session"
-                )
-            ],
+        generate_session_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/generate_session",
+            name="GenerateSession",
         )
-        generate_jwt_lambda = _lambda.Function(
-            self,
-            "GenerateJWT",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/generate_jwt".format(self.current_path)),
-            handler="app.lambda_handler",
-            environment={
-                "SESSION_TABLE_NAME": session_table.table_name,
-                "JWT_SECRET": "secret",
-                "DYNAMODB_ENDPOINT_OVERRIDE": "",
-            },
-            tracing=_lambda.Tracing.ACTIVE,
-            layers=[
-                self.create_dependencies_layer("test", "GenerateJWT", "generate_jwt")
-            ],
+        generate_session_lambda.set_function()
+        generate_session_lambda.add_layer(requirements=True)
+        generate_session_lambda.add_environment(
+            key="SESSION_TABLE_NAME", name=session_table.table_name
         )
-        validate_nonce_lambda = _lambda.Function(
-            self,
-            "ValidateNonce",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/validate_nonce".format(self.current_path)),
-            handler="app.lambda_handler",
-            timeout=Duration.seconds(350),
-            memory_size=512,
-            environment={
-                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
-                "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": rds_stack.db_instance_endpoint_port,
-                "DB_HOST": rds_stack.db_instance_endpoint_address,
-                "DB_NAME": "wallets",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-                "NONCE_TABLE_NAME": nonce_table.table_name,
-                "SESSION_TABLE_NAME": session_table.table_name,
-                "DYNAMODB_ENDPOINT_OVERRIDE": "",
-            },
-            tracing=_lambda.Tracing.ACTIVE,
-            layers=[
-                indy_sdk_postgres_layer,
-                self.create_dependencies_layer(
-                    "test", "ValidateNonce", "validate_nonce"
-                ),
-            ],
+        generate_session_lambda.add_environment(
+            key="LOGIN_ID", name="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
         )
-        login_service_lambda = _lambda.Function(
-            self,
-            "LoginService",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/login_service".format(self.current_path)),
-            handler="app.lambda_handler",
-            timeout=Duration.seconds(350),
-            memory_size=512,
-            environment={
-                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
-                "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
-                "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": rds_stack.db_instance_endpoint_port,
-                "DB_HOST": rds_stack.db_instance_endpoint_address,
-                "DB_NAME": "wallets",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-                "NONCE_TABLE_NAME": nonce_table.table_name,
-                "DYNAMODB_ENDPOINT_OVERRIDE": "",
-            },
-            tracing=_lambda.Tracing.ACTIVE,
-            layers=[
-                indy_sdk_postgres_layer,
-                self.create_dependencies_layer("test", "LoginService", "login_service"),
-            ],
+        generate_session_lambda.add_environment(key="JWT_SECRET", name="secret")
+        generate_session_lambda.add_environment(
+            key="DYNAMODB_ENDPOINT_OVERRIDE", name=""
         )
 
-        _lambda.Function(
-            self,
-            "Onboarding",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset("{}/onboarding".format(self.current_path)),
-            handler="app.lambda_handler",
-            timeout=Duration.seconds(350),
-            memory_size=512,
-            environment={
-                "LOGIN_ID": "0b4ea276-62f8-4e2c-8dd5-e8318b6366dc",
-                "ONBOARDING_PATH": "http://test.hydo.cloud:60050/onboarding",
-                "LOGIN_SERVICE_PASSWORD": "secret",
-                "DB_PORT": rds_stack.db_instance_endpoint_port,
-                "DB_HOST": rds_stack.db_instance_endpoint_address,
-                "DB_NAME": "wallets",
-                "DB_ENGINE": "postgresql",
-                "DB_USER": "loginService",
-                "DB_PASSWORD": "ciaociao",
-                "NONCE_TABLE_NAME": nonce_table.table_name,
-                "DYNAMODB_ENDPOINT_OVERRIDE": "",
-            },
-            tracing=_lambda.Tracing.ACTIVE,
-            layers=[
-                indy_sdk_postgres_layer,
-                self.create_dependencies_layer("test", "Onboarding", "onboarding"),
-            ],
+        generate_jwt_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/generate_jwt",
+            name="GenerateJWT",
+        )
+        generate_jwt_lambda.set_function()
+        generate_jwt_lambda.add_layer(requirements=True)
+        generate_jwt_lambda.add_environment(
+            key="SESSION_TABLE_NAME", name=session_table.table_name
+        )
+        generate_jwt_lambda.add_environment(key="JWT_SECRET", name="secret")
+        generate_jwt_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", name="")
+
+        validate_nonce_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/validate_nonce",
+            name="ValidateNonce",
+        )
+        validate_nonce_lambda.set_function()
+        validate_nonce_lambda.add_layer(requirements=True, indy=True)
+        validate_nonce_lambda.add_environment(
+            key="SESSION_TABLE_NAME", name=session_table.table_name
+        )
+        validate_nonce_lambda.add_environment(key="JWT_SECRET", name="secret")
+        validate_nonce_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", name="")
+        validate_nonce_lambda.add_environment(
+            key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
+        )
+        validate_nonce_lambda.add_environment(
+            key="LOGIN_SERVICE_PASSWORD", value="secret"
+        )
+        validate_nonce_lambda.add_environment(
+            key="NONCE_TABLE_NAME", value=nonce_table.table_name
+        )
+        validate_nonce_lambda.add_db_environment(
+            db_host=rds_stack.db_instance_endpoint_address,
+            db_name="wallets",
+            db_user="loginService",
+            db_password="ciaociao",
+        )
+
+        login_service_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/login_service",
+            name="LoginService",
+        )
+        login_service_lambda.set_function()
+        login_service_lambda.add_layer(requirements=True, indy=True)
+        login_service_lambda.add_environment(
+            key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
+        )
+        login_service_lambda.add_environment(
+            key="ONBOARDING_PATH", value="http://test.hydo.cloud:60050/onboarding"
+        )
+        login_service_lambda.add_environment(
+            key="LOGIN_SERVICE_PASSWORD", value="secret"
+        )
+        login_service_lambda.add_environment(
+            key="NONCE_TABLE_NAME", value=nonce_table.table_name
+        )
+        login_service_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", value="")
+        login_service_lambda.add_db_environment(
+            db_host=rds_stack.db_instance_endpoint_address,
+            db_name="wallets",
+            db_user="loginService",
+            db_password="ciaociao",
+        )
+
+        onboarding_lambda = Lambda(
+            current_stack=self,
+            code_path=f"{self.current_path}/onboarding",
+            name="Onboarding",
+        )
+        onboarding_lambda.set_function()
+        onboarding_lambda.add_layer(requirements=True, indy=True)
+        onboarding_lambda.add_environment(
+            key="LOGIN_ID", value="0b4ea276-62f8-4e2c-8dd5-e8318b6366dc"
+        )
+        onboarding_lambda.add_environment(
+            key="ONBOARDING_PATH", value="http://test.hydo.cloud:60050/onboarding"
+        )
+        onboarding_lambda.add_environment(key="LOGIN_SERVICE_PASSWORD", value="secret")
+        onboarding_lambda.add_environment(
+            key="NONCE_TABLE_NAME", value=nonce_table.table_name
+        )
+        onboarding_lambda.add_environment(key="DYNAMODB_ENDPOINT_OVERRIDE", value="")
+        onboarding_lambda.add_db_environment(
+            db_host=rds_stack.db_instance_endpoint_address,
+            db_name="wallets",
+            db_user="loginService",
+            db_password="ciaociao",
         )
 
         # Lambda - DynamoDB permissions
-        session_table.grant_write_data(generate_session_lambda)
-        session_table.grant_read_write_data(generate_jwt_lambda)
-        session_table.grant_read_write_data(validate_nonce_lambda)
-        nonce_table.grant_read_data(validate_nonce_lambda)
-        nonce_table.grant_write_data(login_service_lambda)
+        session_table.grant_write_data(generate_session_lambda._lambda)
+        session_table.grant_read_write_data(generate_jwt_lambda._lambda)
+        session_table.grant_read_write_data(validate_nonce_lambda._lambda)
+        nonce_table.grant_read_data(validate_nonce_lambda._lambda)
+        nonce_table.grant_write_data(login_service_lambda._lambda)
 
         #  Api gateway
 
@@ -221,45 +203,26 @@ class LoginStack(core.Stack):
         apigateway.add_route(
             path="/session",
             method=HttpMethod.GET,
-            lambda_handler=generate_session_lambda,
+            lambda_handler=generate_session_lambda._lambda,
         )
         apigateway.add_route(
             path="/session/{id}",
             method=HttpMethod.GET,
-            lambda_handler=generate_jwt_lambda,
+            lambda_handler=generate_jwt_lambda._lambda,
         )
 
         apigateway.add_route(
-            path="/login", method=HttpMethod.POST, lambda_handler=login_service_lambda
+            path="/login",
+            method=HttpMethod.POST,
+            lambda_handler=login_service_lambda._lambda,
         )
 
         apigateway.add_route(
             path="/login/validate",
             method=HttpMethod.POST,
-            lambda_handler=validate_nonce_lambda,
+            lambda_handler=validate_nonce_lambda._lambda,
         )
 
         dns_stack.add_api_gateway_v2_record(
             "api.dev.login", apigateway.get_domain_name()
-        )
-
-    def create_dependencies_layer(
-        self, project_name, function_name, folder_name: str
-    ) -> _lambda.LayerVersion:
-        """ Install dependencies on lambda and return layer """
-        requirements_file = "{}/{}/requirements.txt".format(
-            self.current_path, folder_name
-        )
-        output_dir = ".lambda_dependencies/" + function_name
-
-        # Install requirements for layer in the output_dir
-        if not os.environ.get("SKIP_PIP"):
-            # Note: Pip will create the output dir if it does not exist
-            subprocess.check_call(
-                f"pip install -r {requirements_file} -t {output_dir}/python".split()
-            )
-        return _lambda.LayerVersion(
-            self,
-            project_name + "-" + function_name + "-dependencies",
-            code=_lambda.Code.from_asset(output_dir),
         )
