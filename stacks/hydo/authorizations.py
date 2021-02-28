@@ -18,7 +18,7 @@ LAMBDAS_FOLDER = "/authorization"
 def lambdas(self, device_secret_key: secret_manager.Secret):
     PATH = self.current_path
 
-    indy_layer = self.__indy_layer()
+    indy_layer = indy_lambda_layer(self)
 
     nonce_table = dynamodb.Table(
         self,
@@ -79,8 +79,8 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     get_authorizations_lambda = LambdaPython(
         self,
-        code_path=f"{PATH}{LAMBDAS_FOLDER}/edit_authorization",
-        name="EditAuthorization",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/get_authorizations",
+        name="GetAuthorizations",
     )
     get_authorizations_lambda.set_function()
     get_authorizations_lambda.add_db_environment(
@@ -222,7 +222,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     nonce_table.grant_read_data(grantee=validate_authorization_lambda)
 
 
-def __indy_layer(self):
+def indy_lambda_layer(self):
     return _lambda.LayerVersion(
         self,
         env_specific("indy-sdk-postgres"),
