@@ -4,7 +4,7 @@ import subprocess
 from aws_cdk import aws_lambda_python
 from aws_cdk import aws_lambda
 from shutil import copytree, copyfile
-from utils.prefix import env_specific
+from typing import Optional
 
 DB_PORT = 5432
 DB_ENGINE = "postgresql"
@@ -40,7 +40,13 @@ class Lambda:
     def get_function_name(self):
         return self._lambda.function_name
 
-    def add_layer(self, requirements: bool = False, models: bool = False, indy: bool = False):
+    def add_layer(
+        self,
+        requirements: bool = False,
+        models: bool = False,
+        indy: bool = False,
+        layer_version: aws_lambda.LayerVersion = Optional[None],
+    ):
         layers = []
         if requirements:
             layers.append(self.__create_dependencies_layer())
@@ -48,6 +54,8 @@ class Lambda:
             layers.append(self.__create_model_layer())
         if indy:
             layers.append(self.__indy_layer())
+        if layer_version:
+            layers.append(layer_version)
         [self._lambda.add_layers(layer) for layer in layers]
 
     def __create_dependencies_layer(self):
@@ -88,20 +96,12 @@ class Lambda:
             code=aws_lambda.Code.from_asset(output_dir),
         )
 
-    def __indy_layer(self):
-        return aws_lambda.LayerVersion(
-            self,
-            env_specific("indy-sdk-postgres"),
-            code=aws_lambda.Code.asset(
-                "{}/indysdk-postgres.zip".format(self.base_path)
-            ),
-            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_8],
-        )
-
     def add_environment(self, key: str, value: str):
         self._lambda.add_environment(key=key, value=value)
 
-    def add_db_environment(self, db_host: str, db_name: str, db_user: str, db_password: str):
+    def add_db_environment(
+        self, db_host: str, db_name: str, db_user: str, db_password: str
+    ):
         self._lambda.add_environment(key="DB_PORT", value=str(DB_PORT))
         self._lambda.add_environment(key="DB_HOST", value=db_host)
         self._lambda.add_environment(key="DB_NAME", value=db_name)
