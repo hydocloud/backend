@@ -245,3 +245,14 @@ def test_handler_a(apigw_event, session):
     apigw_event["queryStringParameters"]["organizationId"] = 1
     res = app.lambda_handler(apigw_event, None)
     assert res["statusCode"] == 200
+
+
+def test_handler_emanuele(apigw_event, session):
+    app.CONNECTION = session
+    del apigw_event["pathParameters"]
+    apigw_event["queryStringParameters"]["page"] = 1
+    apigw_event["queryStringParameters"]["pageSize"] = 10
+    apigw_event["queryStringParameters"]["organizationId"] = 1
+    del apigw_event["queryStringParameters"]["deviceGroupId"]
+    res = app.lambda_handler(apigw_event, None)
+    assert res["statusCode"] == 200
