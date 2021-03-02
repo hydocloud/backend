@@ -109,8 +109,8 @@ class DevicesEditInput(BaseModel):
 
 class DevicesModelParameters(BaseModel):
     deviceId: Optional[int]
-    deviceGroupId: Optional[int]
-    organizationId: Optional[int]
+    deviceGroupId: Optional[int] = None
+    organizationId: Optional[int] = None
     pageNumber: Optional[int] = Field(default=1)
     pageSize: Optional[int] = Field(default=5)
 
