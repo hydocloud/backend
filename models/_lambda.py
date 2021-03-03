@@ -132,4 +132,6 @@ class LambdaPython(Lambda):
             index=Lambda.INDEX,
             handler=Lambda.HANDLER,
             tracing=aws_lambda.Tracing.ACTIVE,
+            memory_size=self.memory_size,
+            timeout=self.timeout,
         )
