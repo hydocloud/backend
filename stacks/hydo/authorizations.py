@@ -142,6 +142,8 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         current_stack=self,
         code_path=f"{PATH}{LAMBDAS_FOLDER}/onboarding",
         name="Onboarding",
+        memory_size=512,
+        timeout_seconds=300,
     )
     onboarding_lambda.set_function()
     onboarding_lambda.add_layer(models=True, layer_version=indy_layer)
