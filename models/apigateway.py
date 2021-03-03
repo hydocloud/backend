@@ -26,8 +26,8 @@ class Apigateway:
         domain_name: str,
         certificate: aws_certificatemanager.Certificate,
         mapping: bool = False,
-        prefix: Optional[str] = "",
-        logical_name: Optional[str] = "",
+        prefix: Optional[str] = None,
+        logical_name: Optional[str] = None,
     ):
         self.domain_name = aws_apigatewayv2.DomainName(
             self.current_stack,
