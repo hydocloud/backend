@@ -3,6 +3,7 @@ import pathlib
 import subprocess
 from aws_cdk import aws_lambda_python
 from aws_cdk import aws_lambda
+from aws_cdk.core import Duration
 from shutil import copytree, copyfile
 from typing import Optional
 
@@ -15,11 +16,20 @@ class Lambda:
     INDEX = "app.py"
     HANDLER = "lambda_handler"
 
-    def __init__(self, current_stack, code_path: str, name: str):
+    def __init__(
+        self,
+        current_stack,
+        code_path: str,
+        name: str,
+        memory_size: int = 128,
+        timeout_seconds: int = 30,
+    ):
         self.current_stack = current_stack
         self.code_path = code_path
         self.base_path = code_path.rsplit("/", 1)[0]
         self.name = name
+        self.memory_size = memory_size
+        self.timeout = Duration.seconds(timeout_seconds)
 
     def set_function(self):
         self._lambda = aws_lambda.Function(
@@ -29,6 +39,8 @@ class Lambda:
             code=aws_lambda.Code.asset(self.code_path),
             handler=Lambda.HANDLER,
             tracing=aws_lambda.Tracing.ACTIVE,
+            memory_size=self.memory_size,
+            timeout=self.timeout,
         )
 
     def get_function(self):
