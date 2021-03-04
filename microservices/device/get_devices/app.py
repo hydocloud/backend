@@ -25,6 +25,7 @@ def lambda_handler(event, context):
     Based on both path parameters or query parameters chose if
     device require info about one device group or multiple
     """
+    logger.info(event)
 
     global CONNECTION
 
@@ -32,9 +33,16 @@ def lambda_handler(event, context):
         CONNECTION = init_db()
 
     try:
+        if (
+            "pathParameters" in event
+            and "deviceId" in event["pathParameters"]
+        ):
+            event["queryStringParameters"]["deviceId"] = event["pathParameters"][
+                "deviceId"
+            ]
         parameters = DevicesModelParameters.parse_obj(event["queryStringParameters"])
-        if event["pathParameters"] is not None and "deviceId" in event["pathParameters"]:
-            parameters.deviceId = event["pathParameters"]["deviceId"]
+        print(parameters)
+
     except Exception as err:
         print(err)
         logger.error(err)
