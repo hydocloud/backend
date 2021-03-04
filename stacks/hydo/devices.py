@@ -11,8 +11,7 @@ DEVICE_FOLDER = "/device"
 
 def lambdas(self, device_secret_key: secret_manager.Secret):
     PATH = self.current_path
-    device_db_name = "devices"
-    device_groups_db_name = "device_groups"
+    db_name = "devices"
     db_user = "loginService"
     db_password = "ciaociao"
     db_host = self.rds.db_instance_endpoint_address
@@ -26,7 +25,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     create_device_group_lambda.add_layer(models=True)
     create_device_group_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_groups_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -44,7 +43,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     delete_device_group_lambda.add_layer(models=True)
     delete_device_group_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_groups_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -58,7 +57,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     edit_device_group_lambda.add_layer(models=True)
     edit_device_group_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_groups_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -72,7 +71,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     get_device_groups_lambda.add_layer(models=True)
     get_device_groups_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_groups_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -116,7 +115,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     create_device_lambda.add_layer(models=True)
     create_device_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -146,7 +145,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     delete_device_lambda.add_layer(models=True)
     delete_device_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -160,7 +159,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     edit_device_lambda.add_layer(models=True)
     edit_device_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
@@ -174,7 +173,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     get_devices_lambda.add_layer(models=True)
     get_devices_lambda.add_db_environment(
         db_host=db_host,
-        db_name=device_db_name,
+        db_name=db_name,
         db_user=db_user,
         db_password=db_password,
     )
