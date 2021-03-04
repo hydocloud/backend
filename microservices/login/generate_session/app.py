@@ -79,7 +79,7 @@ def lambda_handler(event, context) -> dict:
         return {
             "statusCode": 200,
             "body": json.dumps(
-                {"sessionId": str(session_id), "serviceId": str(service_id), "jwt": jwt.decode()}
+                {"sessionId": str(session_id), "serviceId": str(service_id), "jwt": jwt}
             ),
         }
 
