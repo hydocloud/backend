@@ -96,6 +96,8 @@ class LoginStack(core.Stack):
             current_stack=self,
             code_path=f"{self.current_path}/validate_nonce",
             name="ValidateNonce",
+            memory_size=512,
+            timeout_seconds=300,
         )
         validate_nonce_lambda.set_function()
         validate_nonce_lambda.add_layer(layer_version=indy_layer)
@@ -126,6 +128,8 @@ class LoginStack(core.Stack):
             current_stack=self,
             code_path=f"{self.current_path}/login_service",
             name="LoginService",
+            memory_size=512,
+            timeout_seconds=300,
         )
         login_service_lambda.set_function()
         login_service_lambda.add_layer(layer_version=indy_layer)
@@ -154,7 +158,7 @@ class LoginStack(core.Stack):
             code_path=f"{self.current_path}/onboarding",
             name="Onboarding",
             memory_size=512,
-            timeout_seconds=300
+            timeout_seconds=300,
         )
         onboarding_lambda.set_function()
         onboarding_lambda.add_layer(layer_version=indy_layer)
