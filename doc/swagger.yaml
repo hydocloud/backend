@@ -1261,6 +1261,8 @@
             type: string
           deviceGroupId:
             type: integer
+          hmacKey:
+            type: string
           createdAt:
             type: string
             format: date-time
