@@ -59,6 +59,10 @@ class OrganizationeStack(core.Stack):
             db_name=organzations_db_name,
             db_host=self.rds.db_instance_endpoint_address,
         )
+        create_organization_lambda.add_environment(
+            key="QUEUE_URLS",
+            value=f'["{self.create_user_group_queue.queue_url}","{self.create_device_group_queue.queue_url}"]',
+        )
 
         self.create_user_group_queue.grant_send_messages(
             grantee=create_organization_lambda._lambda
