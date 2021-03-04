@@ -17,7 +17,7 @@ import asyncio
 loop = asyncio.get_event_loop()
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logging.basicConfig(level=logging.DEBUG)
 wallet_handle = None
 
