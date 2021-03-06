@@ -44,7 +44,7 @@ class Apigateway:
         return self.domain_name
 
     def __set_mapping(self):
-        aws_apigatewayv2.HttpApiMapping(
+        aws_apigatewayv2.ApiMapping(
             self.current_stack, "ApiMapping", api=self.http_api, domain_name=self.domain_name
         )
 
