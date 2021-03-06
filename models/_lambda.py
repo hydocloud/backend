@@ -3,7 +3,7 @@ import pathlib
 import subprocess
 from aws_cdk import aws_lambda_python
 from aws_cdk import aws_lambda
-from aws_cdk.core import Duration
+from aws_cdk.core import Duration, AssetHashType
 from shutil import copytree, copyfile
 from typing import Optional
 
@@ -134,4 +134,5 @@ class LambdaPython(Lambda):
             tracing=aws_lambda.Tracing.ACTIVE,
             memory_size=self.memory_size,
             timeout=self.timeout,
+            asset_hash_type=AssetHashType.SOURCE
         )
