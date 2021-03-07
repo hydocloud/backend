@@ -11,8 +11,7 @@ from models.api_response import LambdaResponse, Message
 tracer = Tracer(service="create_device")
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logging.basicConfig(level=logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ CONNECTION = None
 @tracer.capture_lambda_handler(capture_response=False)
 def lambda_handler(event, context):
     global CONNECTION
+    logger.debug(event)
 
     if CONNECTION is None:
         CONNECTION = init_db()
