@@ -1,5 +1,7 @@
+import uuid
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, LargeBinary
+from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel, Field
 from models.authorization import Base
 
@@ -8,7 +10,7 @@ class Devices(Base):
     __tablename__ = "devices"
 
     id = Column(Integer, primary_key=True)
-    serial = Column(String, unique=True)
+    serial = Column(UUID(as_uuid=True))
     name = Column(String)
     device_group_id = Column(Integer)
     hmac_key = Column(LargeBinary)
@@ -19,7 +21,7 @@ class Devices(Base):
 class DevicesModel(BaseModel):
     id: int
     name: str
-    serial: str
+    serial: uuid.UUID
     device_group_id: int = Field(..., alias="deviceGroupId")
     hmac_key: str = Field(..., alias="hmacKey")
     created_at: datetime = Field(default_factory=datetime.utcnow)

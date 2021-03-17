@@ -85,7 +85,7 @@ class AuthorizationModelParameters(BaseModel):
 
 class Unlock(BaseModel):
     userId: Optional[uuid.UUID]
-    deviceId: int
+    deviceSerial: uuid.UUID
     message: str
     deviceNonce: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
