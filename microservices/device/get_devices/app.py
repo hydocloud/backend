@@ -35,6 +35,7 @@ def lambda_handler(event, context):
     try:
         if (
             "pathParameters" in event
+            and event["pathParameters"] is not None
             and "deviceId" in event["pathParameters"]
         ):
             event["queryStringParameters"]["deviceId"] = event["pathParameters"][
