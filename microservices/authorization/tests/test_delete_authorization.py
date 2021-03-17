@@ -88,31 +88,31 @@ def apigw_event():
     }
 
 
-def test_delete_authorization_ok(session):
-    res = delete_authorization(authorization_id=3, connection=session)
+def test_delete_authorization_ok(authorizations_session):
+    res = delete_authorization(authorization_id=3, connection=authorizations_session)
     assert res["statusCode"] == 201
 
 
-def test_delete_authorization_not_found(session):
-    res = delete_authorization(authorization_id=15, connection=session)
+def test_delete_authorization_not_found(authorizations_session):
+    res = delete_authorization(authorization_id=15, connection=authorizations_session)
     assert res["statusCode"] == 404
 
 
-def test_delete_handler_ok(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_delete_handler_ok(authorizations_session, populate_db, apigw_event):
+    app.CONNECTION = authorizations_session
     res = lambda_handler(apigw_event, None)
     assert res["statusCode"] == 201
 
 
-def test_delete_handler_not_found(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_delete_handler_not_found(authorizations_session, populate_db, apigw_event):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"]["id"] = 200
     res = lambda_handler(apigw_event, None)
     assert res["statusCode"] == 404
 
 
-def test_delete_handler_bad_input(session, populate_db, apigw_event):
-    app.CONNECTION = session
+def test_delete_handler_bad_input(authorizations_session, populate_db, apigw_event):
+    app.CONNECTION = authorizations_session
     apigw_event["pathParameters"] = {"asd": 200}
     res = lambda_handler(apigw_event, None)
     assert res["statusCode"] == 400

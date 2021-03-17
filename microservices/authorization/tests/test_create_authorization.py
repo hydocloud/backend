@@ -127,16 +127,16 @@ def apigw_event(authorization_input):
     }
 
 
-def test_create_authorization_ok(session, authorization_input):
+def test_create_authorization_ok(authorizations_session, authorization_input):
     print(authorization_input)
-    res = create_authorization(authorization_input, session)
+    res = create_authorization(authorization_input, authorizations_session)
 
     assert res["statusCode"] == 201
 
 
-def test_create_authorization_wrong_input(session, authorization_input):
+def test_create_authorization_wrong_input(authorizations_session, authorization_input):
     authorization_input.__delattr__("deviceId")
-    res = create_authorization(authorization_input, session)
+    res = create_authorization(authorization_input, authorizations_session)
 
     assert res["statusCode"] == 400
 
@@ -169,22 +169,22 @@ def test_parse_input_apigw_wrong(apigw_event):
     assert res is None
 
 
-def test_handler_payload_apigw(session, apigw_event):
-    app.CONNECTION = session
+def test_handler_payload_apigw(authorizations_session, apigw_event):
+    app.CONNECTION = authorizations_session
     res = app.lambda_handler(apigw_event, None)
 
     assert res["statusCode"] == 201
 
 
-def test_handler_payload_sqs(session, sqs_event):
-    app.CONNECTION = session
+def test_handler_payload_sqs(authorizations_session, sqs_event):
+    app.CONNECTION = authorizations_session
     res = app.lambda_handler(sqs_event, None)
 
     assert res["statusCode"] == 201
 
 
-def test_handler_payload_none(session, apigw_event):
-    app.CONNECTION = session
+def test_handler_payload_none(authorizations_session, apigw_event):
+    app.CONNECTION = authorizations_session
     apigw_event["body"] = json.dumps({"test": "test"})
     res = app.lambda_handler(apigw_event, None)
     assert res is None
