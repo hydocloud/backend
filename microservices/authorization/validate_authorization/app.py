@@ -42,7 +42,7 @@ def lambda_handler(event, context) -> dict:
             obj=json.loads(event["body"]), connection=AUTHORIZATIONS_CONNECTION
         )
         device = DeviceClass(
-            device_id=authz.unlock.deviceId, connection=DEVICES_CONNECTION
+            device_serial=authz.unlock.deviceSerial, connection=DEVICES_CONNECTION
         )
     except Exception as err:
         logger.error(err)

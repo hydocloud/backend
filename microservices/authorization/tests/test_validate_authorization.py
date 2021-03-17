@@ -1,5 +1,6 @@
 import pytest
 import boto3
+import uuid
 from datetime import datetime, timedelta
 from faker import Faker
 from moto import mock_secretsmanager
@@ -30,7 +31,7 @@ def secret():
 def unlock() -> dict:
     return Unlock(
         message="test",
-        deviceId=faker.random_int(),
+        deviceSerial=uuid.uuid4().__str__(),
         deviceNonce=faker.sentence(nb_words=1),
     ).dict()
 
@@ -57,7 +58,7 @@ def create_device(devices_session):
     data = "ciaociao"
     device = Devices(
         name=faker.sentence(nb_words=1),
-        serial=faker.sentence(nb_words=1),
+        serial=uuid.uuid4().__str__(),
         device_group_id=1,
         hmac_key=(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))),
         created_at=datetime.utcnow(),
@@ -73,7 +74,7 @@ def test_authorization_validation_ok(unlock, authorizations_session):
     from validate_authorization.authorization import AuthorizationClass
 
     x = AuthorizationClass(obj=unlock, connection=authorizations_session)
-    assert x.unlock.deviceId == unlock["deviceId"]
+    assert x.unlock.deviceSerial == unlock["deviceSerial"]
     assert x.unlock.message == unlock["message"]
     assert x.unlock.deviceNonce == unlock["deviceNonce"]
     assert x.db_connection == authorizations_session
@@ -82,7 +83,7 @@ def test_authorization_validation_ok(unlock, authorizations_session):
 def test_authorization_validation_ko(unlock, authorizations_session):
     from validate_authorization.authorization import AuthorizationClass
 
-    del unlock["deviceId"]
+    del unlock["deviceSerial"]
     with pytest.raises(ValidationError):
         assert AuthorizationClass(obj=unlock, connection=authorizations_session)
 
@@ -103,17 +104,11 @@ def test_authorization_get_message(
 
 
 class TestDeviceClass:
-    def test_device_init(self, devices_session):
-        from validate_authorization.device import DeviceClass
-
-        x = DeviceClass(device_id=100, connection=devices_session)
-        assert x.device_id == 100
-        assert x.db_connection == devices_session
 
     def test_get_device(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
 
-        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
         res = x.get_device()
 
         assert res.id == create_device.id
@@ -123,7 +118,7 @@ class TestDeviceClass:
 
         monkeypatch.setenv("SECRET_NAME", "DeviceSecret")
 
-        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
         x.get_hmac(key=b"ciaociaociaociaociaociaociaociao")
 
         assert x.hmac_key == "ciaociao".encode("utf-8")
@@ -131,7 +126,7 @@ class TestDeviceClass:
     def test_digest(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
 
-        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
         x.hmac_key = b"ciaociaociaociaociaociaociaociao"
         res = x.digest(message="ciao")
 
@@ -142,7 +137,7 @@ class TestDeviceClass:
 
         monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
 
-        x = DeviceClass(device_id=create_device.id, connection=devices_session)
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
         res = x.get_secret_key()
 
         assert type(res) == bytes
