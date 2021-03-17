@@ -1376,8 +1376,9 @@
           userId:
             type: string
             format: uuid
-          deviceId:
-            type: integer
+          deviceSerial:
+            type: string
+            format: uuid
           message:
             type: string
           deviceNonce:
