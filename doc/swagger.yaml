@@ -1152,6 +1152,50 @@
                   $ref: "#/components/schemas/Error"
                 example:
                   message: "Not found"
+    /authz/validate:
+      post:
+        tags:
+          - "authz"
+        security: []
+        summary: Unlock devices
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnlockRequest"
+        responses:
+          "200":
+            description: Success unlock
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/UnlockResponse"
+          "400":
+            description: "invalid input, object invalid"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+                example:
+                  message: "Bad request"             
+          "404":
+            description: "Not found"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+                example:
+                  message: "Not found"                       
+          "500":
+            description: error processing operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+                example:
+                  message: "Internal server error"                  
+
+      
   components:
     securitySchemes:
       bearerAuth: # arbitrary name for the security scheme
@@ -1325,6 +1369,32 @@
           message:
             type: string
             description: error message
-
+      UnlockRequest:
+        title: Unlock request
+        type: object
+        properties:
+          userId:
+            type: string
+            format: uuid
+          deviceId:
+            type: integer
+          message:
+            type: string
+          deviceNonce:
+            type: string
+        required:
+          - "deviceId"
+          - "message"
+          - "deviceNonce"
+      UnlockResponse:
+        title: Unlock response
+        type: object
+        properties:
+          message:
+            type: string
+          success:
+            type: boolean
+          digest:
+            type: string
   security:
     - bearerAuth: []
