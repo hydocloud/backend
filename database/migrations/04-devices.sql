@@ -14,7 +14,7 @@ CREATE TABLE "devices"
 (
   "id" SERIAL PRIMARY KEY,
   "name" varchar NOT NULL,
-  "serial" varchar NOT NULL,
+  "serial" uuid NOT NULL,
   "device_group_id" int NOT NULL,
   "hmac_key" bytea NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
