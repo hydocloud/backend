@@ -1,6 +1,7 @@
 import pytest
 import datetime
 import json
+import uuid
 from get_devices.get import get_devices
 from get_devices import app
 from models.devices import Devices
@@ -93,21 +94,21 @@ def apigw_event(devices):
 def devices(setup_device_group_id, session):
     device = Devices(
         name="a",
-        serial="asd",
+        serial=uuid.uuid4().__str__(),
         device_group_id=setup_device_group_id,
         created_at=datetime.datetime.utcnow(),
         updated_at=datetime.datetime.utcnow(),
     )
     device2 = Devices(
         name="a",
-        serial="asd2",
+        serial=uuid.uuid4().__str__(),
         device_group_id=setup_device_group_id,
         created_at=datetime.datetime.utcnow(),
         updated_at=datetime.datetime.utcnow(),
     )
     device3 = Devices(
         name="a",
-        serial="asd3",
+        serial=uuid.uuid4().__str__(),
         device_group_id=setup_device_group_id,
         created_at=datetime.datetime.utcnow(),
         updated_at=datetime.datetime.utcnow(),
