@@ -16,13 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceClass:
-    def __init__(self, device_id: int, connection: Session):
-        self.device_id = device_id
+    def __init__(self, device_serial: str, connection: Session):
+        self.device_serial = device_serial
         self.db_connection = connection
+        self.get_device()
 
     def get_device(self) -> Optional[Devices]:
         try:
-            res = self.db_connection.query(Devices).filter_by(id=self.device_id).first()
+            res = self.db_connection.query(Devices).filter_by(serial=self.device_serial).first()
+            self.device_id = res.id
             return res
         except SQLAlchemyError as err:
             logger.error(err)
@@ -31,8 +33,8 @@ class DeviceClass:
     def get_hmac(self, key: bytes) -> Optional[Devices]:
         try:
             res = (
-                self.db_connection.query(Devices.id, Devices.hmac_key)
-                .filter_by(id=self.device_id)
+                self.db_connection.query(Devices.serial, Devices.hmac_key)
+                .filter_by(serial=self.device_serial)
                 .first()
             )
             iv = res.hmac_key[: AES.block_size]
