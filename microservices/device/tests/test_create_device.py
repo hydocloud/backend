@@ -158,7 +158,7 @@ def setup_device_group_id(session):
 def device(setup_device_group_id):
     return DevicesApiInput(
         name="test",
-        serial="12315",
+        serial=uuid.uuid4().__str__(),
         deviceGroupId=setup_device_group_id,
         hmacKey="testest",
     )

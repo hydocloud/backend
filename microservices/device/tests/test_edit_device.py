@@ -114,7 +114,7 @@ def device_edit(new_group_id, session):
 @pytest.fixture
 def device(setup_device_group_id, session):
     device = Devices(
-        serial="asd",
+        serial=uuid.uuid4().__str__(),
         device_group_id=setup_device_group_id,
         created_at=datetime.datetime.utcnow(),
         updated_at=datetime.datetime.utcnow(),
