@@ -104,7 +104,6 @@ def test_authorization_get_message(
 
 
 class TestDeviceClass:
-
     def test_get_device(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
 
@@ -127,12 +126,13 @@ class TestDeviceClass:
         from validate_authorization.device import DeviceClass
 
         x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
-        x.hmac_key = b"ciaociaociaociaociaociaociaociao"
-        res = x.digest(message="ciao")
+        x.hmac_key = b"0102030405060708010203040506070801020304050607080102030405060708"
+        res = x.digest(message="SAG7KstDgi6PkXoE4ByID7PDuGxHuJdq3s80vbJNQZ4=")
+        assert res == "JNiHGNjZqBpW7XsXJ6ptFFkUAFqiBttn2WMMFm4X7a8="
 
-        assert res == "d5cfd1d870147b8f1cbced82e601233e74b671710fcf83aef82d2cbd0e7f4675"
-
-    def test_crypt_get_secret_ok(self, create_device, secret, monkeypatch, devices_session):
+    def test_crypt_get_secret_ok(
+        self, create_device, secret, monkeypatch, devices_session
+    ):
         from validate_authorization.device import DeviceClass
 
         monkeypatch.setenv("SECRET_NAME", "java-util-test-password")

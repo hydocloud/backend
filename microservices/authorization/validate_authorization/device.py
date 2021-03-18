@@ -1,6 +1,7 @@
 import logging
 import boto3
 import hmac
+import base64
 from hashlib import sha256
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
@@ -23,7 +24,11 @@ class DeviceClass:
 
     def get_device(self) -> Optional[Devices]:
         try:
-            res = self.db_connection.query(Devices).filter_by(serial=self.device_serial).first()
+            res = (
+                self.db_connection.query(Devices)
+                .filter_by(serial=self.device_serial)
+                .first()
+            )
             self.device_id = res.id
             return res
         except SQLAlchemyError as err:
@@ -49,9 +54,15 @@ class DeviceClass:
         return None
 
     def digest(self, message: str) -> str:
-        signature = hmac.new(self.hmac_key, msg=message.encode(), digestmod=sha256)
-        logger.debug(f"message: {message}, digest: {signature}, digest_hex: {signature.hexdigest()}")
-        return signature.hexdigest()
+        signature = hmac.new(
+            key=bytes.fromhex(self.hmac_key.decode()),
+            msg=base64.b64decode(message),
+            digestmod=sha256,
+        ).digest()
+        logger.debug(
+            f"message: {message}, digest: {signature}, digest_base64: {base64.b64encode(signature)}"
+        )
+        return base64.b64encode(signature).decode()
 
     def get_secret_key(self, secret_manager=None) -> bytes:
         secret_name = environ["SECRET_NAME"]
