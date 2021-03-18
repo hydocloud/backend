@@ -22,6 +22,7 @@ def get_key(secret_manager=None) -> bytes:
         get_secret_value_response = secret_manager.get_secret_value(
             SecretId=secret_name
         )
+        logger.debug(f"key: {get_secret_value_response["SecretString"]}")
         return get_secret_value_response["SecretString"].encode()
     except ClientError as err:
         logger.error(err)
@@ -32,4 +33,5 @@ def encrypt(data: str) -> bytes:
     key = get_key()
     iv = get_random_bytes(16)
     cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
+    logger.debug(f"hmac_key: {data}")
     return iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))
