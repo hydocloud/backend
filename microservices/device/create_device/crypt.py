@@ -22,7 +22,7 @@ def get_key(secret_manager=None) -> bytes:
         get_secret_value_response = secret_manager.get_secret_value(
             SecretId=secret_name
         )
-        logger.debug(f"key: {get_secret_value_response["SecretString"]}")
+        logger.debug(f'key: {get_secret_value_response["SecretString"]}')
         return get_secret_value_response["SecretString"].encode()
     except ClientError as err:
         logger.error(err)
