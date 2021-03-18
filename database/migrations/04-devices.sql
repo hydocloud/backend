@@ -19,7 +19,7 @@ CREATE TABLE "devices"
   "hmac_key" bytea NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
   "updated_at" timestamp NOT NULL DEFAULT (now()),
-  UNIQUE("device_id", "device_group_id")
+  UNIQUE("device_serial")
 );
 
 ALTER TABLE "devices" ADD FOREIGN KEY ("device_group_id") REFERENCES "device_groups" ("id") ON DELETE CASCADE;
