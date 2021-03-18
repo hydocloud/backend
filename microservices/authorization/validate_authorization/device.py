@@ -42,6 +42,7 @@ class DeviceClass:
             self.hmac_key = unpad(
                 cipher.decrypt(res.hmac_key[AES.block_size :]), AES.block_size
             )
+            logger.debug(f"hmac_key: {self.hmac_key}")
 
         except SQLAlchemyError as err:
             logger.error(err)
@@ -49,6 +50,7 @@ class DeviceClass:
 
     def digest(self, message: str) -> str:
         signature = hmac.new(self.hmac_key, msg=message.encode(), digestmod=sha256)
+        logger.debug(f"message: {message}, digest: {signature}, digest_hex: {signature.hexdigest()}")
         return signature.hexdigest()
 
     def get_secret_key(self, secret_manager=None) -> bytes:
