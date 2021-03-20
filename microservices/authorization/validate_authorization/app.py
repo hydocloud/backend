@@ -7,6 +7,8 @@ from authorization import AuthorizationClass
 from device import DeviceClass
 from database import init_db
 from aws_lambda_powertools import Tracer
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from typing import Dict, Any
 
 tracer = Tracer(service="validate-authorization")
 
@@ -30,7 +32,7 @@ async def init_wallet():
 
 
 @tracer.capture_lambda_handler
-def lambda_handler(event, context) -> dict:
+def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> dict:
 
     global AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION
 
