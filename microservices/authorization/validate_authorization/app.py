@@ -6,7 +6,9 @@ from models.wallet import Wallet  # type: ignore
 from authorization import AuthorizationClass
 from device import DeviceClass
 from database import init_db
+from aws_lambda_powertools import Tracer
 
+tracer = Tracer(service="validate-authorization")
 
 loop = asyncio.get_event_loop()
 
@@ -27,6 +29,7 @@ async def init_wallet():
         wallet_handle = await x.open_wallet()
 
 
+@tracer.capture_lambda_handler
 def lambda_handler(event, context) -> dict:
 
     global AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION

@@ -11,8 +11,10 @@ from botocore.exceptions import ClientError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from models.devices import Devices
+from aws_lambda_powertools import Tracer
 
 
+tracer = Tracer(service="validate-authorization")
 logger = logging.getLogger(__name__)
 
 
@@ -22,6 +24,7 @@ class DeviceClass:
         self.db_connection = connection
         self.get_device()
 
+    @tracer.capture_method
     def get_device(self) -> Optional[Devices]:
         try:
             res = (
@@ -35,6 +38,7 @@ class DeviceClass:
             logger.error(err)
         return None
 
+    @tracer.capture_method
     def get_hmac(self, key: bytes) -> Optional[Devices]:
         try:
             res = (
@@ -53,6 +57,7 @@ class DeviceClass:
             logger.error(err)
         return None
 
+    @tracer.capture_method
     def digest(self, message: str) -> str:
         signature = hmac.new(
             key=bytes.fromhex(self.hmac_key.decode()),
@@ -64,6 +69,7 @@ class DeviceClass:
         )
         return base64.b64encode(signature).decode()
 
+    @tracer.capture_method
     def get_secret_key(self, secret_manager=None) -> bytes:
         secret_name = environ["SECRET_NAME"]
         if secret_manager is None:

@@ -12,8 +12,10 @@ from models.authorization import Unlock, Authorization
 from models.wallet import Wallet
 from device import DeviceClass
 from typing import Optional, Tuple
+from aws_lambda_powertools import Tracer
 
 
+tracer = Tracer(service="validate-authorization")
 logger = logging.getLogger(__name__)
 
 
@@ -26,6 +28,7 @@ class AuthorizationClass:
             logger.error(err)
             raise ValidationError(errors="Validation error", model=Unlock)
 
+    @tracer.capture_method
     def get_message(self, dynamodb=None):
         if dynamodb is None:
             dynamodb = boto3.resource("dynamodb")
@@ -53,6 +56,7 @@ class AuthorizationClass:
                 logger.error(e)
                 raise KeyError
 
+    @tracer.capture_method
     async def decrypt(self) -> Tuple[bool, Optional[str]]:
         x = Wallet.get_instance()
         wallet_handle = x.get_wallet_handle()
@@ -97,6 +101,7 @@ class AuthorizationClass:
 
         return False, None
 
+    @tracer.capture_method
     def validation(
         self, user_id: str, device: DeviceClass, key: bytes
     ) -> Optional[str]:
