@@ -32,7 +32,7 @@ async def init_wallet():
 
 
 @tracer.capture_lambda_handler
-def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> dict:
+def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
 
     global AUTHORIZATIONS_CONNECTION, DEVICES_CONNECTION
 
