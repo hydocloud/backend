@@ -12,6 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from models.devices import Devices
 from aws_lambda_powertools import Tracer
+from aws_lambda_powertools.utilities import parameters
 
 
 tracer = Tracer(service="validate-authorization")
@@ -71,16 +72,12 @@ class DeviceClass:
 
     @tracer.capture_method
     def get_secret_key(self, secret_manager=None) -> bytes:
-        secret_name = environ["SECRET_NAME"]
-        if secret_manager is None:
-            session = boto3.session.Session()
-            secret_manager = session.client(service_name="secretsmanager")
-
         try:
-            get_secret_value_response = secret_manager.get_secret_value(
-                SecretId=secret_name
-            )
-            return get_secret_value_response["SecretString"].encode()
-        except ClientError as err:
+            secret = parameters.get_secret(environ["SECRET_NAME"])
+            return secret.encode()
+        except (
+            parameters.GetParameterError,
+            parameters.TransformParameterError,
+        ) as err:
             logger.error(err)
             raise err
