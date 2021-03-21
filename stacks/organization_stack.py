@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_sqs as sqs,
 )
+from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
 from utils.prefix import domain_specific, env_specific
 from models.apigateway import Apigateway
@@ -30,17 +31,24 @@ class OrganizationeStack(core.Stack):
         self.rds = rds
 
         self.create_user_group_queue = sqs.Queue(
-            self, "CreateUserGroupQueue", queue_name="create-user-group"
+            self,
+            "CreateUserGroupQueue",
+            queue_name="create-user-group",
+            receive_message_wait_time=Duration.seconds(20),
         )
 
         self.create_device_group_queue = sqs.Queue(
-            self, "CreateDeviceGroupQueue", queue_name="create-device-group"
+            self,
+            "CreateDeviceGroupQueue",
+            queue_name="create-device-group",
+            receive_message_wait_time=Duration.seconds(20),
         )
 
         self.create_authorization_device_queue = sqs.Queue(
             self,
             "CreateAuthorizationDeviceQueue",
             queue_name="create-authorization-device",
+            receive_message_wait_time=Duration.seconds(20),
         )
         organzations_db_name = "organizations"
         organzations_db_user = "loginService"
