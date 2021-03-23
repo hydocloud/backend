@@ -9,7 +9,7 @@ from typing import Optional
 
 DB_PORT = 5432
 DB_ENGINE = "postgresql"
-LAMBDA_POWER_TOOLS_LAYER_ARN = "arn:aws:serverlessrepo:eu-west-1:057560766410:applications/aws-lambda-powertools-python-layer"
+LAMBDA_POWER_TOOLS_LAYER_ARN = "arn:aws:lambda:eu-west-1:457469494885:layer:aws-lambda-powertools-python-layer:1"
 
 
 class Lambda:
