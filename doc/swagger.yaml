@@ -157,7 +157,7 @@
                     success:
                       type: boolean
           "409":
-            description: Created
+            description: Conflict
             content:
               application/json:
                 schema:
@@ -676,6 +676,14 @@
                   message: "Bad request"
           "401":
             $ref: "#/components/responses/UnauthorizedError"
+          "409":
+            description: "Insert multiple devices with same serial"
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+                example:
+                  message: "Conflict"
           "500":
             description: error processing operation
             content:
