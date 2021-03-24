@@ -27,7 +27,7 @@ class Devices(Base):
     __tablename__ = "devices"
 
     id = Column(Integer, primary_key=True)
-    serial = Column(UUID(as_uuid=True))
+    serial = Column(UUID(as_uuid=True), unique=True)
     name = Column(String)
     device_group_id = Column(
         Integer,

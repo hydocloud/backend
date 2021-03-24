@@ -179,21 +179,42 @@ def test_create_authorization(monkeypatch):
     assert len(sqs_authorization_messages["Messages"]) == 1
 
 
-@mock_secretsmanager
-def test_create_device_ok(device, session, monkeypatch):
+@mock_sqs
+def test_create_device_ok(device, session, secret, monkeypatch):
+
+    sqs = boto3.client("sqs", region_name="eu-west-1")
+    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
 
     monkeypatch.setattr(crypt, "encrypt", encrypt)
 
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
     print(res)
-    body = (json.loads(res["body"]))["data"]["devices"][0]
+    body = (json.loads(res["body"]))["data"][0]
 
     assert res["statusCode"] == 201
     assert body["serial"] == device.serial
     assert body["deviceGroupId"] == device.deviceGroupId
     assert body["name"] == device.name
+
+
+@mock_sqs
+def test_create_device_double(device, session, secret, monkeypatch):
+
+    sqs = boto3.client("sqs", region_name="eu-west-1")
+    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
+
+    monkeypatch.setattr(crypt, "encrypt", encrypt)
+
+    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
+    user_id = "asddss"
+    res = create_device(user_id=user_id, payload=device, connection=session)
+    res2 = create_device(user_id=user_id, payload=device, connection=session)
+    assert res["statusCode"] == 201
+    assert res2["statusCode"] == 409
 
 
 @mock_sqs
@@ -243,8 +264,10 @@ def test_crypt_encrypt_ok(secret, monkeypatch):
     res = crypt.encrypt(data)
 
     raw = b64decode(res)
-    cipher = AES.new(b"ciaociaociaociaociaociaociaociao", AES.MODE_CBC, raw[:AES.block_size])
-    plaintext = unpad(cipher.decrypt(raw[AES.block_size:]), AES.block_size)
+    cipher = AES.new(
+        b"ciaociaociaociaociaociaociaociao", AES.MODE_CBC, raw[: AES.block_size]
+    )
+    plaintext = unpad(cipher.decrypt(raw[AES.block_size :]), AES.block_size)
 
     assert type(res) == bytes
     assert plaintext.decode() == data

@@ -9,7 +9,7 @@ from pydantic import parse_obj_as, ValidationError
 from botocore.exceptions import ClientError, ParamValidationError
 from models.devices import Devices, DevicesModelShort, DevicesApiInput
 from models.api_response import LambdaResponse, Message, DevicesDataModel
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
 
@@ -52,6 +52,12 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()
+    except (IntegrityError) as err:
+        logger.error(err)
+        connection.rollback()
+        return LambdaResponse(
+            statusCode=409, body=Message(message="Conflict").json()
+        ).dict()
     except (SQLAlchemyError) as err:
         logger.error(err)
         connection.rollback()
