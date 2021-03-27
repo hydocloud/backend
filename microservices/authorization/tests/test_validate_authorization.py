@@ -103,6 +103,21 @@ def test_authorization_get_message(
     assert x.service_message == "test"
 
 
+def test_authorization_get_message_local(
+    unlock, dynamodb, create_nonce, monkeypatch, authorizations_session
+):
+    from validate_authorization.authorization import AuthorizationClass
+
+    monkeypatch.setenv("SERVICE_ID", "7bacf67c-4c3b-4e30-83fb-a96a93fd2c74")
+    monkeypatch.setenv("NONCE_TABLE_NAME", "authorization_sessions")
+    monkeypatch.setenv("DYNAMODB_ENDPOINT_OVERRIDE", "http://MacBook-Pro-di-Riccardo.local:8000")
+
+    x = AuthorizationClass(obj=unlock, connection=authorizations_session)
+    x.get_message(dynamodb=dynamodb)
+
+    assert x.service_message == "test"
+
+
 class TestDeviceClass:
     def test_get_device(self, create_device, devices_session):
         from validate_authorization.device import DeviceClass
