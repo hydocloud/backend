@@ -1,5 +1,4 @@
 import logging
-import boto3
 import json
 from os import environ
 from botocore.exceptions import ClientError
@@ -13,6 +12,7 @@ from models.wallet import Wallet
 from device import DeviceClass
 from typing import Optional, Tuple
 from aws_lambda_powertools import Tracer
+from aws_lambda_powertools.utilities import parameters
 
 
 tracer = Tracer(service="validate-authorization")
@@ -30,28 +30,35 @@ class AuthorizationClass:
 
     @tracer.capture_method
     def get_message(self, dynamodb=None):
-        if dynamodb is None:
-            dynamodb = boto3.resource("dynamodb")
-
         service_id = environ["SERVICE_ID"]
-        if not dynamodb:
-            dynamodb = boto3.resource(
-                "dynamodb", endpoint_url=environ["DYNAMODB_ENDPOINT_OVERRIDE"]
-            )
 
-        table = dynamodb.Table(environ["NONCE_TABLE_NAME"])
+        dynamodb_provider = parameters.DynamoDBProvider(
+            table_name=environ["NONCE_TABLE_NAME"],
+            key_attr="service_id",
+            sort_attr="message",
+            value_attr="message",
+        )
+
+        if environ["DYNAMODB_ENDPOINT_OVERRIDE"] != "":
+            dynamodb_provider = parameters.DynamoDBProvider(
+                table_name=environ["NONCE_TABLE_NAME"],
+                key_attr="service_id",
+                sort_attr="message",
+                value_attr="message",
+            )
 
         try:
-            response = table.get_item(
-                Key={"service_id": service_id, "message": self.unlock.message},
-                ProjectionExpression="message",
-            )
+            res = dynamodb_provider.get_multiple(service_id)
+            for k, v in res.items():
+                if v == self.unlock.message:
+                    response = v
+                    break
         except ClientError as e:
             logger.error(e.response["Error"]["Message"])
             raise ClientError
         else:
             try:
-                self.service_message = response["Item"]["message"]
+                self.service_message = response
             except KeyError as e:
                 logger.error(e)
                 raise KeyError
