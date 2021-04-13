@@ -8,3 +8,6 @@ psycopg2-binary==2.8.5
 python-dotenv
 pydantic==1.6.1
 python-dotenv
+aws-lambda-powertools
+sqlalchemy_paginator
+moto
