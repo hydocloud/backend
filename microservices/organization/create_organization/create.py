@@ -5,12 +5,7 @@ import boto3
 import json
 from botocore.exceptions import ClientError
 from models.organizations import Organization, ResponseModel
-from models.api_response import (
-    LambdaErrorResponse,
-    LambdaSuccessResponse,
-    Message,
-    Data,
-)
+from models.api_response import LambdaResponse, Message, DataNoList
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer  # type: ignore
@@ -49,10 +44,9 @@ def create_organization(owner_id, payload, connection: Session):
         license_id = payload["licenseId"]
     except KeyError as e:
         logger.error(e)
-        return LambdaErrorResponse(
-            body=(Message(message="Bad request")), statusCode=400
-        )
-
+        return LambdaResponse(
+            statusCode=400, body=Message(message="Bad request").json()
+        ).dict()
     try:
         org = Organization(
             owner_id=owner_id,
@@ -68,22 +62,20 @@ def create_organization(owner_id, payload, connection: Session):
         # Call user group
         create_user_device_default_group(organization_id=org.id, owner_id=owner_id)
 
-        return LambdaSuccessResponse(
+        return LambdaResponse(
             statusCode=201,
-            body=Data(
-                data=[
-                    ResponseModel(
-                        id=org.id,
-                        ownerId=org.owner_id,
-                        name=org.name,
-                        licenseId=org.license_id,
-                    )
-                ]
-            ),
+            body=DataNoList(
+                data=ResponseModel(
+                    id=org.id,
+                    ownerId=org.owner_id,
+                    name=org.name,
+                    licenseId=org.license_id,
+                )
+            ).json(),
         )
     except SQLAlchemyError as e:
         logger.error(e)
         connection.rollback()
-        return LambdaErrorResponse(
-            body=(Message(message="Bad request")), statusCode=500
-        )
+        return LambdaResponse(
+            statusCode=500, body=Message(message="Internal server error").json()
+        ).dict()

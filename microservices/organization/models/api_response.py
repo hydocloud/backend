@@ -3,8 +3,13 @@ from pydantic import BaseModel
 from models.organizations import ResponseModel
 
 
+class LambdaResponse(BaseModel):
+    statusCode: int
+    body: str
+
+
 class Message(BaseModel):
-    message: Any
+    message: str
 
 
 class Data(BaseModel):
@@ -13,6 +18,9 @@ class Data(BaseModel):
     nextPage: Optional[int]
     previousPage: Optional[int]
     totalPages: Optional[int]
+
+class DataNoList(BaseModel):
+    data: ResponseModel
 
 
 class LambdaSuccessResponse(BaseModel):
