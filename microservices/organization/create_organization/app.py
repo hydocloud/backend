@@ -29,4 +29,4 @@ def lambda_handler(event, context):
     OrganizationBase.parse_obj(payload)
     response = create_organization(owner_id, payload, CONNECTION)
 
-    return {"statusCode": response.statusCode, "body": response.body.json()}
+    return response
