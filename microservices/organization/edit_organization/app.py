@@ -29,4 +29,4 @@ def lambda_handler(event, context):
     OrganizationsUpdate.parse_obj(payload)
     response = edit_organization(owner_id, organization_id, payload, CONNECTION)
 
-    return {"statusCode": response.statusCode, "body": response.body.json()}
+    return response

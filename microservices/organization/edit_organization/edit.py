@@ -1,10 +1,9 @@
 import logging
 from models.organizations import Organization, ResponseModel
 from models.api_response import (
-    LambdaErrorResponse,
-    LambdaSuccessResponse,
+    LambdaResponse,
     Message,
-    Data,
+    DataNoList,
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -28,12 +27,14 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
     except (SQLAlchemyError, AttributeError) as e:
         logger.error(e)
         connection.rollback()
-        return LambdaErrorResponse(
-            body=(Message(message="Internal server error")), statusCode=500
-        )
+        return LambdaResponse(
+            body=(Message(message="Internal server error")).json(), statusCode=500
+        ).dict()
 
     if org is None:
-        return LambdaErrorResponse(statusCode=403, body=(Message(message="Forbidden")))
+        return LambdaResponse(
+            statusCode=403, body=(Message(message="Forbidden")).json()
+        ).dict()
     else:
         if "name" in payload:
             org.name = payload["name"]
@@ -41,16 +42,14 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
             org.license_id = payload["licenseId"]
             connection.commit()
             # Call user group
-            return LambdaSuccessResponse(
+            return LambdaResponse(
                 statusCode=201,
-                body=Data(
-                    data=[
-                        ResponseModel(
-                            id=org.id,
-                            ownerId=org.owner_id,
-                            name=org.name,
-                            licenseId=org.license_id,
-                        )
-                    ]
-                ),
+                body=DataNoList(
+                    data=ResponseModel(
+                        id=org.id,
+                        ownerId=org.owner_id,
+                        name=org.name,
+                        licenseId=org.license_id,
+                    )
+                ).json(),
             )
