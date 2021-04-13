@@ -24,6 +24,7 @@ class AuthorizationClass:
         try:
             self.unlock = Unlock.parse_obj(obj)
             self.db_connection = connection
+            logger.debug(f"Unlock: {self.unlock }")
         except ValidationError as err:
             logger.error(err)
             raise ValidationError(errors="Validation error", model=Unlock)
@@ -49,8 +50,10 @@ class AuthorizationClass:
 
         try:
             res = dynamodb_provider.get_multiple(service_id)
+            logger.debug(f"Responses: \n{res}")
             for k, v in res.items():
                 if v == self.unlock.message:
+                    logger.debug(f"Message {v}")
                     response = v
                     break
         except ClientError as e:
@@ -133,7 +136,7 @@ class AuthorizationClass:
                 .filter(Authorization.user_id == user_id)
                 .first()
             )
-            logger.debug(item)
+            logger.debug(f"ITEM: {item}")
             if item:
                 device.get_hmac(key=key)
                 digest = device.digest(self.unlock.deviceNonce)
