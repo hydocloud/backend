@@ -11,3 +11,4 @@ python-dotenv
 aws-lambda-powertools
 sqlalchemy_paginator
 moto
+black
