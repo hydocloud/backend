@@ -2,7 +2,7 @@
 
 import logging
 from aws_lambda_powertools import Tracer  # type: ignore
-from get import get_organization, get_organizations
+from get import get_organizations
 from database import init_db
 
 tracer = Tracer(service="get_organization")
@@ -33,13 +33,12 @@ def lambda_handler(event, context):
         and "id" in event["pathParameters"]
     ):
         organization_id = event["pathParameters"]["id"]
-        response = get_organization(
+        response = get_organizations(
             connection=CONNECTION, owner_id=owner_id, organization_id=organization_id
         )
     elif (
         "queryStringParameters" in event and event["queryStringParameters"] is not None
     ):
-
         if (
             "pageSize" in event["queryStringParameters"]
             and "page" in event["queryStringParameters"]
@@ -65,4 +64,4 @@ def lambda_handler(event, context):
     else:
         response = get_organizations(connection=CONNECTION, owner_id=owner_id)
 
-    return {"statusCode": response.statusCode, "body": response.body.json()}
+    return response
