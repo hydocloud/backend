@@ -6,8 +6,7 @@ You can select on single organization or multiple organization
 import logging
 from models.organizations import Organization, ResponseModel
 from models.api_response import (
-    LambdaErrorResponse,
-    LambdaSuccessResponse,
+    LambdaResponse,
     Message,
     Data,
 )
@@ -16,46 +15,13 @@ from sqlalchemy.orm.session import Session
 
 from aws_lambda_powertools import Tracer  # type: ignore
 from sqlalchemy_paginator import Paginator, exceptions  # type: ignore
+from pydantic import parse_obj_as
+from typing import List
+
 
 tracer = Tracer(service="get_organization")
 
 logger = logging.getLogger(__name__)
-
-
-@tracer.capture_method
-def get_organization(connection: Session, owner_id: str, organization_id: str):
-    """ Get data about one organization"""
-
-    try:
-        org = (
-            connection.query(Organization)
-            .filter_by(owner_id=owner_id, id=organization_id)
-            .first()
-        )
-        logger.info(org)
-        if org is None:
-            return LambdaErrorResponse(
-                statusCode=404, body=(Message(message="Not found"))
-            )
-        # Call user group
-        return LambdaSuccessResponse(
-            statusCode=201,
-            body=Data(
-                data=[
-                    ResponseModel(
-                        id=org.id,
-                        ownerId=org.owner_id,
-                        name=org.name,
-                        licenseId=org.license_id,
-                    )
-                ]
-            ),
-        )
-    except SQLAlchemyError as err:
-        logger.error(err)
-        return LambdaErrorResponse(
-            body=(Message(message="Internal Server Error")), statusCode=500
-        )
 
 
 @tracer.capture_method
@@ -64,6 +30,7 @@ def get_organizations(
     owner_id: str,
     page_number: int = 1,
     page_size: int = 5,
+    organization_id: int = None
 ):
     """ Return all organizations that belong to user"""
 
@@ -71,48 +38,30 @@ def get_organizations(
         res = connection.query(Organization).filter_by(owner_id=owner_id)
         paginator = Paginator(res, page_size)
         page = paginator.page(page_number)
-        orgs = []
+        m = parse_obj_as(List[ResponseModel], page.object_list)
 
-        for org in page.object_list:
-            orgs.append(
-                ResponseModel(
-                    id=org.id,
-                    ownerId=org.owner_id,
-                    name=org.name,
-                    licenseId=org.license_id,
-                )
-            )
+        body = Data(
+            data=m,
+            total=page.paginator.count,
+            totalPages=page.paginator.total_pages,
+            nextPage=(page.next_page_number if page.has_next() else None),
+            previousPage=(page.previous_page_number if page.has_previous() else None),
+        ).json(by_alias=True)
 
-        response = LambdaSuccessResponse(
-            statusCode=201,
-            body=Data(
-                data=orgs,
-                total=page.paginator.count,
-                totalPages=page.paginator.total_pages,
-            ),
-        )
-
-        if page.has_next():
-            response.body.nextPage = page.next_page_number
-        if page.has_previous():
-            response.body.previousPage = page.previous_page_number
-
-        return response
+        return LambdaResponse(statusCode=200, body=body).dict()
 
     except (SQLAlchemyError, exceptions.PageNotAnInteger) as err:
         logger.error(err)
         return LambdaErrorResponse(
-            body=(Message(message="Internal Server Error")), statusCode=500
-        )
+            body=(Message(message="Internal Server Error")).json(), statusCode=500
+        ).dict()
 
     except exceptions.EmptyPage as err:
         logger.error(err)
-        return LambdaSuccessResponse(
-            statusCode=201, body=Data(data=[])
-        )
+        return LambdaSuccessResponse(statusCode=201, body=Data(data=[])).dict()
 
     except exceptions.InvalidPage as err:
         logger.error(err)
         return LambdaErrorResponse(
-            body=(Message(message="Bad Request")), statusCode=400
-        )
+            body=(Message(message="Bad Request")).json(), statusCode=400
+        ).dict

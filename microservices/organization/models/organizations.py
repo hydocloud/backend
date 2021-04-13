@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 Base = declarative_base()
 
@@ -42,8 +42,13 @@ class OrganizationComplete(OrganizationBase):
 class ResponseModel(BaseModel):
     id: int
     name: str
-    licenseId: int
-    ownerId: uuid.UUID
+    license_id: int = Field(..., alias="licenseId")
+    owner_id: uuid.UUID = Field(..., alias="ownerId")
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+
 
 class OrganizationsUpdate(BaseModel):
     name: Optional[str] = None
