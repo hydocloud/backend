@@ -2,34 +2,80 @@ import pytest
 import uuid
 import datetime
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from models.organizations import Base, Organization
 
 
-@pytest.fixture(scope="function")
-def setup_database():
+@pytest.fixture(scope="session")
+def engine():
+    return create_engine("postgresql://postgres:ciaociao@localhost:5432/test_database")
 
-    engine = create_engine(
-        "postgresql://postgres:ciaociao@localhost:5432/test_database"
-    )
+
+@pytest.fixture(scope="session")
+def tables(engine):
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    yield
+    Base.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def session(engine, tables):
+    """Returns an sqlalchemy session, and after the test tears down everything properly."""
+    connection = engine.connect()
+    # begin the nested transaction
+    transaction = connection.begin()
+    # use the connection with the already started transaction
+    session = Session(bind=connection)
+
     yield session
+
     session.close()
+    # roll back the broader transaction
+    transaction.rollback()
+    # put back the connection to the connection pool
+    connection.close()
 
 
 @pytest.fixture(scope="function")
-def setup_org_id(setup_database):
+def setup_org_id(session):
 
-    org = Organization( 
-        name = "asd",
-        license_id = 1,
+    org = Organization(
+        name="asd",
+        license_id=1,
         owner_id=uuid.uuid4().__str__(),
         created_at=datetime.datetime.utcnow(),
         updated_at=datetime.datetime.utcnow(),
     )
-    setup_database.add(org)
-    setup_database.commit()
-    setup_database.refresh(org)
+    session.add(org)
+    session.commit()
+    session.refresh(org)
     return org
+
+
+@pytest.fixture(scope="function")
+def setup_organizations(session):
+    owner_id = uuid.uuid4().__str__()
+    org = Organization(
+        name="asd",
+        license_id=1,
+        owner_id=owner_id,
+        created_at=datetime.datetime.utcnow(),
+        updated_at=datetime.datetime.utcnow(),
+    )
+    org2 = Organization(
+        name="asd2",
+        license_id=1,
+        owner_id=owner_id,
+        created_at=datetime.datetime.utcnow(),
+        updated_at=datetime.datetime.utcnow(),
+    )
+    org3 = Organization(
+        name="asd3",
+        license_id=1,
+        owner_id=owner_id,
+        created_at=datetime.datetime.utcnow(),
+        updated_at=datetime.datetime.utcnow(),
+    )
+    organizations = [org, org2, org3]
+    session.bulk_save_objects(organizations, return_defaults=True)
+    return organizations[0], organizations[1], organizations[2]

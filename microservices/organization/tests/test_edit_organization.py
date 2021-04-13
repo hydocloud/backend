@@ -3,12 +3,12 @@ import json
 from edit_organization.edit import edit_organization
 
 
-def test_edit_ok(setup_database, setup_org_id):
+def test_edit_ok(session, setup_org_id):
     res = edit_organization(
         owner_id=setup_org_id.owner_id,
         organization_id=setup_org_id.id,
         payload={"name": "edit", "licenseId": 2},
-        connection=setup_database,
+        connection=session,
     )
     body = json.loads(res.body)
     assert res.statusCode == 201
@@ -16,11 +16,11 @@ def test_edit_ok(setup_database, setup_org_id):
     assert body["data"]["name"] == "edit"
 
 
-def test_edit_no_org(setup_database, setup_org_id):
+def test_edit_no_org(session, setup_org_id):
     res = edit_organization(
         owner_id=setup_org_id.owner_id,
         organization_id=100000,
         payload={"name": "edit", "licenseId": 2},
-        connection=setup_database,
+        connection=session,
     )
     assert res["statusCode"] == 403

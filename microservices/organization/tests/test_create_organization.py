@@ -13,9 +13,9 @@ def device() -> dict:
     }
 
 
-def test_create_ok(device, setup_database):
+def test_create_ok(device, session):
     res = create_organization(
-        owner_id=OWNER_ID, payload=device, connection=setup_database
+        owner_id=OWNER_ID, payload=device, connection=session
     )
     print(res)
     body = json.loads(res.body)
@@ -25,9 +25,9 @@ def test_create_ok(device, setup_database):
     assert body["data"]["name"] == device["name"]
 
 
-def test_create_ok(device, setup_database):
+def test_create_ok(device, session):
     del device["licenseId"]
     res = create_organization(
-        owner_id=OWNER_ID, payload=device, connection=setup_database
+        owner_id=OWNER_ID, payload=device, connection=session
     )
     assert res["statusCode"] == 400
