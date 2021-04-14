@@ -659,9 +659,7 @@
                   type: object
                   properties:
                     data:
-                      type: array
-                      items:
-                        $ref: "#/components/schemas/Devices"
+                      $ref: "#/components/schemas/Devices"
           "400":
             description: "invalid input, object invalid"
             content:
@@ -844,9 +842,7 @@
                   type: object
                   properties:
                     data:
-                      type: array
-                      items:
-                        $ref: "#/components/schemas/Devices"
+                      $ref: "#/components/schemas/Devices"
           "400":
             description: "invalid input, object invalid"
             content:
@@ -925,9 +921,7 @@
                   type: object
                   properties:
                     data:
-                      type: array
-                      items:
-                        $ref: "#/components/schemas/DeviceGroups"
+                      $ref: "#/components/schemas/DeviceGroups"
           "400":
             description: "invalid input, object invalid"
             content:
@@ -1095,9 +1089,7 @@
                   type: object
                   properties:
                     data:
-                      type: array
-                      items:
-                        $ref: "#/components/schemas/DeviceGroups"
+                      $ref: "#/components/schemas/DeviceGroups"
           "400":
             description: "invalid input, object invalid"
             content:
