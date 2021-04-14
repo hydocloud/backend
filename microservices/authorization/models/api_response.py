@@ -20,6 +20,10 @@ class DataModel(BaseModel):
     totalPages: Optional[int]
 
 
+class DataModelNoList(BaseModel):
+    data: AuthorizationModelShort
+
+
 class UnlockModel(BaseModel):
     success: bool
     message: Optional[str]

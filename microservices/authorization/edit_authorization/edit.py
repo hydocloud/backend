@@ -7,7 +7,7 @@ from models.authorization import Authorization, AuthorizationModelApiInput
 from models.api_response import (
     LambdaResponse,
     Message,
-    DataModel,
+    DataModelNoList,
     AuthorizationModelShort,
 )
 from sqlalchemy.exc import SQLAlchemyError
@@ -50,10 +50,8 @@ def edit_authorization(
         authorization.start_time = payload.startTime
         authorization.end_time = payload.endTime
         connection.commit()
-        m = parse_obj_as(List[AuthorizationModelShort], [authorization])
+        m = parse_obj_as(AuthorizationModelShort, authorization)
 
-        body = DataModel(
-            data=m, total=None, totalPages=None, nextPage=None, previousPage=None
-        ).json(exclude_none=True, by_alias=True)
+        body = DataModelNoList(data=m).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

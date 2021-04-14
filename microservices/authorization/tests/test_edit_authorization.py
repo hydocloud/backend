@@ -109,22 +109,22 @@ def test_edit_authorization_ok(authorizations_session, populate_db, authorizatio
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 201
-    assert body["data"][0]["id"] == 1
+    assert body["data"]["id"] == 1
     assert (
-        body["data"][0]["userId"]
+        body["data"]["userId"]
         == authorization_input.userId.__str__()
     )
-    assert body["data"][0]["deviceId"] == authorization_input.deviceId
+    assert body["data"]["deviceId"] == authorization_input.deviceId
     assert (
-        body["data"][0]["accessLimit"]
+        body["data"]["accessLimit"]
         == authorization_input.accessLimit
     )
     assert (
-        body["data"][0]["startTime"]
+        body["data"]["startTime"]
         == authorization_input.startTime.isoformat()
     )
     assert (
-        body["data"][0]["endTime"]
+        body["data"]["endTime"]
         == authorization_input.endTime.isoformat()
     )
 
@@ -153,22 +153,22 @@ def test_lambda_handler_ok(authorizations_session, populate_db, apigw_event, aut
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 201
-    assert body["data"][0]["id"] == 1
+    assert body["data"]["id"] == 1
     assert (
-        body["data"][0]["userId"]
+        body["data"]["userId"]
         == authorization_input.userId.__str__()
     )
-    assert body["data"][0]["deviceId"] == authorization_input.deviceId
+    assert body["data"]["deviceId"] == authorization_input.deviceId
     assert (
-        body["data"][0]["accessLimit"]
+        body["data"]["accessLimit"]
         == authorization_input.accessLimit
     )
     assert (
-        body["data"][0]["startTime"]
+        body["data"]["startTime"]
         == authorization_input.startTime.isoformat()
     )
     assert (
-        body["data"][0]["endTime"]
+        body["data"]["endTime"]
         == authorization_input.endTime.isoformat()
     )
 

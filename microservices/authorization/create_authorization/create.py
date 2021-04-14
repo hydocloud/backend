@@ -2,7 +2,6 @@
 
 import logging
 import datetime
-from typing import List
 from models.authorization import (
     Authorization,
     AuthorizationModelApiInput,
@@ -10,7 +9,7 @@ from models.authorization import (
 )
 from models.api_response import (
     LambdaResponse,
-    DataModel,
+    DataModelNoList,
     Message,
 )
 from pydantic import ValidationError, parse_obj_as
@@ -45,8 +44,8 @@ def create_authorization(
         connection.commit()
         connection.refresh(authorization)
 
-        body = DataModel(
-            data=parse_obj_as(List[AuthorizationModelShort], [authorization])
+        body = DataModelNoList(
+            data=parse_obj_as(AuthorizationModelShort, authorization)
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()
