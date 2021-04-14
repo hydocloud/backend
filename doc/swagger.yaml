@@ -200,7 +200,7 @@
                             type: integer
                           name:
                             type: string
-                          licenseid:
+                          licenseId:
                             type: integer
                           ownerId:
                             type: string
