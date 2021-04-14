@@ -9,6 +9,7 @@ from models.api_response import LambdaResponse, Message, DataNoList
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer  # type: ignore
+from pydantic import parse_obj_as
 
 tracer = Tracer(service="create_organization")
 
@@ -64,14 +65,7 @@ def create_organization(owner_id, payload, connection: Session):
 
         return LambdaResponse(
             statusCode=201,
-            body=DataNoList(
-                data=ResponseModel(
-                    id=org.id,
-                    ownerId=org.owner_id,
-                    name=org.name,
-                    licenseId=org.license_id,
-                )
-            ).json(),
+            body=DataNoList(data=parse_obj_as(ResponseModel, org)).json(by_alias=True),
         )
     except SQLAlchemyError as e:
         logger.error(e)

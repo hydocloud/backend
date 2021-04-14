@@ -8,6 +8,7 @@ from models.api_response import (
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer  # type: ignore
+from pydantic import parse_obj_as
 
 tracer = Tracer(service="edit_organization")
 
@@ -41,15 +42,11 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
         if "licenseId" in payload:
             org.license_id = payload["licenseId"]
             connection.commit()
+            obj = parse_obj_as(ResponseModel, org)
             # Call user group
             return LambdaResponse(
                 statusCode=201,
                 body=DataNoList(
-                    data=ResponseModel(
-                        id=org.id,
-                        ownerId=org.owner_id,
-                        name=org.name,
-                        licenseId=org.license_id,
-                    )
-                ).json(),
+                    data=obj
+                ).json(by_alias=True),
             )
