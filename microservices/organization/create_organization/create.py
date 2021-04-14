@@ -66,7 +66,7 @@ def create_organization(owner_id, payload, connection: Session):
         return LambdaResponse(
             statusCode=201,
             body=DataNoList(data=parse_obj_as(ResponseModel, org)).json(by_alias=True),
-        )
+        ).dict()
     except SQLAlchemyError as e:
         logger.error(e)
         connection.rollback()

@@ -49,4 +49,4 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
                 body=DataNoList(
                     data=obj
                 ).json(by_alias=True),
-            )
+            ).dict()
