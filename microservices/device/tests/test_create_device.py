@@ -191,8 +191,7 @@ def test_create_device_ok(device, session, secret, monkeypatch):
     monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
-    print(res)
-    body = (json.loads(res["body"]))["data"][0]
+    body = (json.loads(res["body"]))["data"]
 
     assert res["statusCode"] == 201
     assert body["serial"] == device.serial
@@ -225,7 +224,7 @@ def test_handler(apigw_event, session, monkeypatch):
     authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
     monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     res = app.lambda_handler(apigw_event, None)
-    body = (json.loads(res["body"]))["data"]["devices"][0]
+    body = (json.loads(res["body"]))["data"]
     apigw_event_body = json.loads(apigw_event["body"])
 
     assert res["statusCode"] == 201

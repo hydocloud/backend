@@ -2,13 +2,12 @@
 
 import logging
 import datetime
-from typing import List
 from models.devices import (
     DeviceGroups,
     DeviceGroupsApiInput,
     DeviceGroupsModelShort,
 )
-from models.api_response import LambdaResponse, DataModel, Message
+from models.api_response import LambdaResponse, DataModelNoList, Message
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -37,8 +36,8 @@ def create_device_groups(
         connection.commit()
         connection.refresh(device_groups)
 
-        body = DataModel(
-            data=parse_obj_as(List[DeviceGroupsModelShort], [device_groups])
+        body = DataModelNoList(
+            data=parse_obj_as(DeviceGroupsModelShort, device_groups)
         ).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

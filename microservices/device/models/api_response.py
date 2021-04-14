@@ -20,9 +20,17 @@ class DataModel(BaseModel):
     totalPages: Optional[int]
 
 
+class DataModelNoList(BaseModel):
+    data: DeviceGroupsModelShort
+
+
 class DevicesDataModel(BaseModel):
     data: List[DevicesModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
     totalPages: Optional[int]
+
+
+class DevicesDataNoList(BaseModel):
+    data: DevicesModelShort

@@ -1,10 +1,9 @@
 """ Edit device """
 
 import logging
-from typing import List
 from pydantic import parse_obj_as
 from models.devices import DeviceGroups, DeviceGroupsModelShort
-from models.api_response import LambdaResponse, Message, DataModel
+from models.api_response import LambdaResponse, Message, DataModelNoList
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -42,10 +41,8 @@ def edit_device_group(
     else:
         device_group.name = payload.name
         connection.commit()
-        m = parse_obj_as(List[DeviceGroupsModelShort], [device_group])
+        m = parse_obj_as(DeviceGroupsModelShort, device_group)
 
-        body = DataModel(
-            data=m, total=None, totalPages=None, nextPage=None, previousPage=None
-        ).json(exclude_none=True, by_alias=True)
+        body = DataModelNoList(data=m).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()
