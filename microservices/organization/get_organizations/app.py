@@ -2,7 +2,7 @@
 
 import logging
 from aws_lambda_powertools import Tracer  # type: ignore
-from .get import get_organizations
+from get import get_organizations
 from database import init_db
 
 tracer = Tracer(service="get_organization")
