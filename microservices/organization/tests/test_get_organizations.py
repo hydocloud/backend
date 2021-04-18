@@ -1,7 +1,6 @@
 import pytest
 import json
 from get_organizations.get import get_organizations
-from get_organizations import app
 from unittest import mock
 from models.api_response import LambdaResponse, ResponseModel, Data
 from pydantic import parse_obj_as
@@ -99,16 +98,12 @@ def test_get_ok(session, setup_org_id):
     assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
 
 
-def test_handler(session, setup_org_id, apigw_event):
-    with mock.patch(
-        "get_organizations.get.get_organizations",
-        return_value=LambdaResponse(
-            statusCode=200,
-            body=Data(data=parse_obj_as(List[ResponseModel], [setup_org_id])).json(
-                by_alias=True
-            ),
-        ).dict(),
-    ):
+class TestHandler:
+    import sys, os
+    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/get_organizations")
+
+    def test_handler(self, session, setup_org_id, apigw_event):
+        from get_organizations import app
 
         app.CONNECTION = session
         res = app.lambda_handler(apigw_event, None)
@@ -119,17 +114,8 @@ def test_handler(session, setup_org_id, apigw_event):
         assert body["data"][0]["name"] == setup_org_id.name
         assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
 
-
-def test_handler_multiple_org(session, setup_organizations, apigw_event):
-    with mock.patch(
-        "get_organizations.get.get_organizations",
-        return_value=LambdaResponse(
-            statusCode=200,
-            body=Data(data=parse_obj_as(List[ResponseModel], setup_organizations)).json(
-                by_alias=True
-            ),
-        ).dict(),
-    ):
+    def test_handler_multiple_org(self, session, setup_organizations, apigw_event):
+        from get_organizations import app
         app.CONNECTION = session
         apigw_event["requestContext"]["authorizer"]["lambda"][
             "sub"
@@ -143,21 +129,12 @@ def test_handler_multiple_org(session, setup_organizations, apigw_event):
         assert body["data"][0]["name"] == setup_organizations[0].name
         assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
 
-
-def test_handler_multiple_page(session, setup_organizations, apigw_event):
-    with mock.patch(
-        "get_organizations.get.get_organizations",
-        return_value=LambdaResponse(
-            statusCode=200,
-            body=Data(data=parse_obj_as(List[ResponseModel], setup_organizations)).json(
-                by_alias=True
-            ),
-        ).dict(),
-    ):
+    def test_handler_multiple_page(self, session, setup_organizations, apigw_event):
+        from get_organizations import app
         app.CONNECTION = session
-        apigw_event["requestContext"]["authorizer"]["lambda"]["sub"] = setup_organizations[
-            0
-        ].owner_id
+        apigw_event["requestContext"]["authorizer"]["lambda"][
+            "sub"
+        ] = setup_organizations[0].owner_id
         apigw_event["queryStringParameters"] = {"pageSize": 2}
         res = app.lambda_handler(apigw_event, None)
         body = json.loads(res["body"])
