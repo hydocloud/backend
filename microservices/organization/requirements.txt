@@ -12,3 +12,4 @@ aws-lambda-powertools
 sqlalchemy_paginator
 moto
 black
+pytest-cov
