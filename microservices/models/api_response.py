@@ -1,4 +1,4 @@
-from typing import Any, Optional, List
+from typing import Optional, List
 from pydantic import BaseModel
 from models.organizations import ResponseModel
 
@@ -18,6 +18,7 @@ class Data(BaseModel):
     nextPage: Optional[int]
     previousPage: Optional[int]
     totalPages: Optional[int]
+
 
 class DataNoList(BaseModel):
     data: ResponseModel
