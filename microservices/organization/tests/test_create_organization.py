@@ -97,14 +97,14 @@ def apigw_event(device):
 
 def test_create_ok(device, session):
     res = create_organization(owner_id=OWNER_ID, payload=device, connection=session)
-    body = json.loads(res.body)
-    assert res.statusCode == 201
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 201
     assert body["data"]["licenseId"] == device["licenseId"]
     assert body["data"]["ownerId"] == OWNER_ID
     assert body["data"]["name"] == device["name"]
 
 
-def test_create_ok(device, session):
+def test_create_ko(device, session):
     del device["licenseId"]
     res = create_organization(owner_id=OWNER_ID, payload=device, connection=session)
     assert res["statusCode"] == 400
@@ -112,7 +112,9 @@ def test_create_ok(device, session):
 
 def test_handler(session, setup_org_id, apigw_event):
 
-    import sys, os
+    import sys
+    import os
+
     sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/create_organization")
     from create_organization import app
 

@@ -1,10 +1,6 @@
 import pytest
 import json
 from get_organizations.get import get_organizations
-from unittest import mock
-from models.api_response import LambdaResponse, ResponseModel, Data
-from pydantic import parse_obj_as
-from typing import List
 
 
 @pytest.fixture
@@ -99,7 +95,9 @@ def test_get_ok(session, setup_org_id):
 
 
 class TestHandler:
-    import sys, os
+    import sys
+    import os
+
     sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/get_organizations")
 
     def test_handler(self, session, setup_org_id, apigw_event):
@@ -116,6 +114,7 @@ class TestHandler:
 
     def test_handler_multiple_org(self, session, setup_organizations, apigw_event):
         from get_organizations import app
+
         app.CONNECTION = session
         apigw_event["requestContext"]["authorizer"]["lambda"][
             "sub"
@@ -131,6 +130,7 @@ class TestHandler:
 
     def test_handler_multiple_page(self, session, setup_organizations, apigw_event):
         from get_organizations import app
+
         app.CONNECTION = session
         apigw_event["requestContext"]["authorizer"]["lambda"][
             "sub"
@@ -143,7 +143,7 @@ class TestHandler:
         assert len(body["data"]) == 2
         assert body["total"] == len(setup_organizations)
         assert body["nextPage"] == 2
-        assert body["previousPage"] == None
+        assert body["previousPage"] is None
         assert body["totalPages"] == 2
         assert body["data"][0]["licenseId"] == setup_organizations[0].license_id
         assert body["data"][0]["name"] == setup_organizations[0].name

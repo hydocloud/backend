@@ -1,5 +1,4 @@
 import pytest
-import json
 from delete_organization.delete import delete_organization
 
 
@@ -106,7 +105,8 @@ def test_delete_not_found(session, setup_org_id):
 
 def test_handler(session, apigw_event):
 
-    import sys, os
+    import sys
+    import os
 
     sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/delete_organization")
     from delete_organization import app

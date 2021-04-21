@@ -111,7 +111,8 @@ def test_edit_no_org(session, setup_org_id):
 
 def test_handler(session, setup_org_id, apigw_event):
 
-    import sys, os
+    import sys
+    import os
 
     sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/edit_organization")
     from edit_organization import app
