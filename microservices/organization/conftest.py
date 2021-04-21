@@ -1,9 +1,12 @@
 import pytest
 import uuid
 import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from models.organizations import Base, Organization
+import sys
+sys.path.append("..")  # Add layer to path
+sys.path.append("./models/")  # Add layer to path
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import Session  # noqa: E402
+from models.organizations import Base, Organization  # noqa: E402
 
 
 @pytest.fixture(scope="session")
