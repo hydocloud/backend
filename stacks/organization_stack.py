@@ -6,9 +6,11 @@ from aws_cdk import (
     aws_certificatemanager as certificate_manager,
     aws_iam as iam,
     aws_sqs as sqs,
+    aws_lambda_python as _lambda_python,
 )
 from aws_cdk.core import Duration
 from aws_cdk.aws_apigatewayv2 import HttpMethod
+from aws_cdk.aws_lambda import Runtime
 from utils.prefix import domain_specific, env_specific
 from models.apigateway import Apigateway
 from models._lambda import LambdaPython
@@ -29,6 +31,7 @@ class OrganizationeStack(core.Stack):
 
         self.current_path = str(pathlib.Path().absolute()) + "/microservices"
         self.rds = rds
+        self.model_layer = self.__model_layer()
 
         self.create_user_group_queue = sqs.Queue(
             self,
@@ -56,11 +59,11 @@ class OrganizationeStack(core.Stack):
         # The code that defines your stack goes here
         create_organization_lambda = LambdaPython(
             current_stack=self,
-            code_path=f"{self.current_path}/organization/create_organization",
+            code_path=f"{self.current_path}/organization/src/create_organization",
             name="CreateOrganization",
         )
         create_organization_lambda.set_function()
-        create_organization_lambda.add_layer(models=True)
+        create_organization_lambda.add_layer(layer_version=self.model_layer)
         create_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -82,11 +85,11 @@ class OrganizationeStack(core.Stack):
 
         edit_organization_lambda = LambdaPython(
             current_stack=self,
-            code_path=f"{self.current_path}/organization/edit_organization",
+            code_path=f"{self.current_path}/organization/src/edit_organization",
             name="EditOrganization",
         )
         edit_organization_lambda.set_function()
-        edit_organization_lambda.add_layer(models=True)
+        edit_organization_lambda.add_layer(layer_version=self.model_layer)
         edit_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -96,11 +99,11 @@ class OrganizationeStack(core.Stack):
 
         delete_organization_lambda = LambdaPython(
             current_stack=self,
-            code_path=f"{self.current_path}/organization/delete_organization",
+            code_path=f"{self.current_path}/organization/src/delete_organization",
             name="DeleteOrganization",
         )
         delete_organization_lambda.set_function()
-        delete_organization_lambda.add_layer(models=True)
+        delete_organization_lambda.add_layer(layer_version=self.model_layer)
         delete_organization_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -110,11 +113,11 @@ class OrganizationeStack(core.Stack):
 
         get_organizations_lambda = LambdaPython(
             current_stack=self,
-            code_path=f"{self.current_path}/organization/get_organizations",
+            code_path=f"{self.current_path}/organization/src/get_organizations",
             name="GetOrganizations",
         )
         get_organizations_lambda.set_function()
-        get_organizations_lambda.add_layer(models=True)
+        get_organizations_lambda.add_layer(layer_version=self.model_layer)
         get_organizations_lambda.add_db_environment(
             db_user=organzations_db_user,
             db_password=organzations_db_password,
@@ -201,3 +204,12 @@ class OrganizationeStack(core.Stack):
         device_secret_key = secrets.device_symmetric_key(self)
         devices.lambdas(self, device_secret_key)
         authorizations.lambdas(self, device_secret_key)
+
+    def __model_layer(self):
+        return _lambda_python.PythonLayerVersion(
+            self,
+            f'{env_specific("models")}',
+            layer_version_name=f'{env_specific("models")}',
+            entry=f"{str(pathlib.Path().absolute())}/microservices/shared/",
+            compatible_runtimes=[Runtime.PYTHON_3_8],
+        )
