@@ -1,6 +1,7 @@
 import pytest
 import json
 from src.get_organizations.get import get_organizations
+from src.get_organizations import app
 
 
 @pytest.fixture
@@ -94,57 +95,50 @@ def test_get_ok(session, setup_org_id):
     assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
 
 
-class TestHandler:
-    import sys
-    import os
+def test_handler(session, setup_org_id, apigw_event):
 
-    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/src/get_organizations")
+    app.CONNECTION = session
+    res = app.lambda_handler(apigw_event, None)
+    body = json.loads(res["body"])
 
-    def test_handler(self, session, setup_org_id, apigw_event):
-        from src.get_organizations import app
+    assert res["statusCode"] == 200
+    assert body["data"][0]["licenseId"] == setup_org_id.license_id
+    assert body["data"][0]["name"] == setup_org_id.name
+    assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
 
-        app.CONNECTION = session
-        res = app.lambda_handler(apigw_event, None)
-        body = json.loads(res["body"])
 
-        assert res["statusCode"] == 200
-        assert body["data"][0]["licenseId"] == setup_org_id.license_id
-        assert body["data"][0]["name"] == setup_org_id.name
-        assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
+def test_handler_multiple_org(session, setup_organizations, apigw_event):
 
-    def test_handler_multiple_org(self, session, setup_organizations, apigw_event):
-        from src.get_organizations import app
+    app.CONNECTION = session
+    apigw_event["requestContext"]["authorizer"]["lambda"]["sub"] = setup_organizations[
+        0
+    ].owner_id
+    res = app.lambda_handler(apigw_event, None)
+    body = json.loads(res["body"])
 
-        app.CONNECTION = session
-        apigw_event["requestContext"]["authorizer"]["lambda"][
-            "sub"
-        ] = setup_organizations[0].owner_id
-        res = app.lambda_handler(apigw_event, None)
-        body = json.loads(res["body"])
+    assert res["statusCode"] == 200
+    assert len(body["data"]) == len(setup_organizations)
+    assert body["data"][0]["licenseId"] == setup_organizations[0].license_id
+    assert body["data"][0]["name"] == setup_organizations[0].name
+    assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
 
-        assert res["statusCode"] == 200
-        assert len(body["data"]) == len(setup_organizations)
-        assert body["data"][0]["licenseId"] == setup_organizations[0].license_id
-        assert body["data"][0]["name"] == setup_organizations[0].name
-        assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
 
-    def test_handler_multiple_page(self, session, setup_organizations, apigw_event):
-        from src.get_organizations import app
+def test_handler_multiple_page(session, setup_organizations, apigw_event):
 
-        app.CONNECTION = session
-        apigw_event["requestContext"]["authorizer"]["lambda"][
-            "sub"
-        ] = setup_organizations[0].owner_id
-        apigw_event["queryStringParameters"] = {"pageSize": 2}
-        res = app.lambda_handler(apigw_event, None)
-        body = json.loads(res["body"])
+    app.CONNECTION = session
+    apigw_event["requestContext"]["authorizer"]["lambda"]["sub"] = setup_organizations[
+        0
+    ].owner_id
+    apigw_event["queryStringParameters"] = {"pageSize": 2}
+    res = app.lambda_handler(apigw_event, None)
+    body = json.loads(res["body"])
 
-        assert res["statusCode"] == 200
-        assert len(body["data"]) == 2
-        assert body["total"] == len(setup_organizations)
-        assert body["nextPage"] == 2
-        assert body["previousPage"] is None
-        assert body["totalPages"] == 2
-        assert body["data"][0]["licenseId"] == setup_organizations[0].license_id
-        assert body["data"][0]["name"] == setup_organizations[0].name
-        assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
+    assert res["statusCode"] == 200
+    assert len(body["data"]) == 2
+    assert body["total"] == len(setup_organizations)
+    assert body["nextPage"] == 2
+    assert body["previousPage"] is None
+    assert body["totalPages"] == 2
+    assert body["data"][0]["licenseId"] == setup_organizations[0].license_id
+    assert body["data"][0]["name"] == setup_organizations[0].name
+    assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
