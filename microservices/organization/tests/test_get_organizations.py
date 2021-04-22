@@ -1,6 +1,6 @@
 import pytest
 import json
-from get_organizations.get import get_organizations
+from src.get_organizations.get import get_organizations
 
 
 @pytest.fixture
@@ -98,10 +98,10 @@ class TestHandler:
     import sys
     import os
 
-    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/get_organizations")
+    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/src/get_organizations")
 
     def test_handler(self, session, setup_org_id, apigw_event):
-        from get_organizations import app
+        from src.get_organizations import app
 
         app.CONNECTION = session
         res = app.lambda_handler(apigw_event, None)
@@ -113,7 +113,7 @@ class TestHandler:
         assert body["data"][0]["ownerId"] == setup_org_id.owner_id.__str__()
 
     def test_handler_multiple_org(self, session, setup_organizations, apigw_event):
-        from get_organizations import app
+        from src.get_organizations import app
 
         app.CONNECTION = session
         apigw_event["requestContext"]["authorizer"]["lambda"][
@@ -129,7 +129,7 @@ class TestHandler:
         assert body["data"][0]["ownerId"] == setup_organizations[0].owner_id.__str__()
 
     def test_handler_multiple_page(self, session, setup_organizations, apigw_event):
-        from get_organizations import app
+        from src.get_organizations import app
 
         app.CONNECTION = session
         apigw_event["requestContext"]["authorizer"]["lambda"][

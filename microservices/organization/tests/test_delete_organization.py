@@ -1,5 +1,5 @@
 import pytest
-from delete_organization.delete import delete_organization
+from src.delete_organization.delete import delete_organization
 
 
 @pytest.fixture
@@ -108,8 +108,8 @@ def test_handler(session, apigw_event):
     import sys
     import os
 
-    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/delete_organization")
-    from delete_organization import app
+    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/src/delete_organization")
+    from src.delete_organization import app
 
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)

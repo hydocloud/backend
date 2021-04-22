@@ -1,6 +1,6 @@
 import pytest
 import json
-from edit_organization.edit import edit_organization
+from src.edit_organization.edit import edit_organization
 
 
 @pytest.fixture
@@ -114,8 +114,8 @@ def test_handler(session, setup_org_id, apigw_event):
     import sys
     import os
 
-    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/edit_organization")
-    from edit_organization import app
+    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/src/edit_organization")
+    from src.edit_organization import app
 
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)

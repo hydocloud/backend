@@ -1,6 +1,6 @@
 import pytest
 import json
-from create_organization.create import create_organization
+from src.create_organization.create import create_organization
 
 OWNER_ID = "ff1af476-cf84-47e9-a25a-e109060d4006"
 
@@ -115,8 +115,8 @@ def test_handler(session, setup_org_id, apigw_event):
     import sys
     import os
 
-    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/create_organization")
-    from create_organization import app
+    sys.path.insert(0, f"{os.path.abspath(os.getcwd())}/src/create_organization")
+    from src.create_organization import app
 
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)

@@ -2,8 +2,8 @@ import pytest
 import uuid
 import datetime
 import sys
-sys.path.append("..")  # Add layer to path
-sys.path.append("./models/")  # Add layer to path
+sys.path.append("../shared/")  # Add layer to path
+sys.path.append("./models/")
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 from models.organizations import Base, Organization  # noqa: E402
