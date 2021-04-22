@@ -6,7 +6,7 @@ You can select on single devices or multiple devices
 import logging
 from typing import List
 from models.devices import Devices, DevicesModelShort,DeviceGroups
-from models.api_response import LambdaResponse, DevicesDataModel, Message
+from models.api_response import LambdaResponse, DataNoList, Message
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
@@ -56,7 +56,7 @@ def get_devices(
         m = parse_obj_as(List[DevicesModelShort], page.object_list)
 
         status_code = 200
-        body = DevicesDataModel(
+        body = DataNoList(
             data=m,
             total=page.paginator.count,
             totalPages=page.paginator.total_pages,

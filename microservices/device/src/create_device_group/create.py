@@ -7,7 +7,7 @@ from models.devices import (
     DeviceGroupsApiInput,
     DeviceGroupsModelShort,
 )
-from models.api_response import LambdaResponse, DataModelNoList, Message
+from models.api_response import LambdaResponse, DataNoList, Message
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -36,7 +36,7 @@ def create_device_groups(
         connection.commit()
         connection.refresh(device_groups)
 
-        body = DataModelNoList(
+        body = DataNoList(
             data=parse_obj_as(DeviceGroupsModelShort, device_groups)
         ).json(exclude_none=True, by_alias=True)
 

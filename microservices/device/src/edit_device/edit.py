@@ -3,7 +3,7 @@
 import logging
 from pydantic import parse_obj_as
 from models.devices import Devices, DevicesEditInput, DevicesModelShort
-from models.api_response import LambdaResponse, Message, DevicesDataNoList
+from models.api_response import LambdaResponse, Message, DataNoList
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -38,6 +38,6 @@ def edit_device(device_id: str, payload: DevicesEditInput, connection: Session) 
         connection.commit()
         m = parse_obj_as(DevicesModelShort, device)
 
-        body = DevicesDataNoList(data=m).json(exclude_none=True, by_alias=True)
+        body = DataNoList(data=m).json(exclude_none=True, by_alias=True)
 
         return LambdaResponse(statusCode=201, body=body).dict()

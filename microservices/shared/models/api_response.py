@@ -1,6 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from models.organizations import ResponseModel
+from models.devices import DeviceGroupsModelShort, DevicesModelShort
 
 
 class LambdaResponse(BaseModel):
@@ -13,7 +14,7 @@ class Message(BaseModel):
 
 
 class Data(BaseModel):
-    data: List[ResponseModel]
+    data: List[ResponseModel or DeviceGroupsModelShort or DevicesModelShort]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
@@ -21,7 +22,7 @@ class Data(BaseModel):
 
 
 class DataNoList(BaseModel):
-    data: ResponseModel
+    data: ResponseModel or DeviceGroupsModelShort or DevicesModelShort
 
 
 class LambdaSuccessResponse(BaseModel):

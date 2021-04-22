@@ -1,9 +1,13 @@
 import pytest
 import uuid
 import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from models.devices import Base, DeviceGroups
+import sys
+
+sys.path.append("../shared/")  # Add layer to path
+sys.path.append("./models/")
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import Session  # noqa: E402
+from models.devices import Base, DeviceGroups  # noqa: E402
 
 
 @pytest.fixture(scope="session")

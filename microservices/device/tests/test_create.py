@@ -1,6 +1,9 @@
 import pytest
 import json
-from create_device_group.app import parse_input
+import sys
+print(sys.path)
+sys.path.append("./src/create_device_group")
+from src.create_device_group.app import parse_input  # noqa: E402
 
 
 @pytest.fixture

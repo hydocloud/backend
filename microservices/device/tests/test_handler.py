@@ -3,10 +3,10 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.devices import Base, DeviceGroupsApiInput, DeviceGroupsApiEditInput
-from create_device_group.create import create_device_groups
-from delete_device_group.delete import delete_device_groups
-from get_device_groups.get import get_device_groups
-from edit_device_group.edit import edit_device_group
+from src.create_device_group.create import create_device_groups
+from src.delete_device_group.delete import delete_device_groups
+from src.get_device_groups.get import get_device_groups
+from src.edit_device_group.edit import edit_device_group
 
 
 @pytest.fixture(scope="function")

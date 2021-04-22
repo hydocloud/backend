@@ -4,13 +4,16 @@ import boto3
 import uuid
 import datetime
 import copy
+import sys
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from moto import mock_sqs, mock_secretsmanager
-from create_device import app, crypt
-from create_device.create import create_authorization, create_device
 from models.devices import DevicesApiInput, DeviceGroups
 from base64 import b64decode
+
+sys.path.append("./src/create_device")
+from src.create_device import app, crypt  # noqa: E402
+from src.create_device.create import create_authorization, create_device  # noqa: E402
 
 
 def encrypt():

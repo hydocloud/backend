@@ -7,7 +7,7 @@ import crypt
 from pydantic import parse_obj_as, ValidationError
 from botocore.exceptions import ClientError, ParamValidationError
 from models.devices import Devices, DevicesModelShort, DevicesApiInput
-from models.api_response import LambdaResponse, Message, DevicesDataNoList
+from models.api_response import LambdaResponse, Message, DataNoList
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.session import Session
 from aws_lambda_powertools import Tracer
@@ -46,7 +46,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
         # Create authorization
         create_authorization(device_id=device.id, user_id=user_id)
 
-        body = DevicesDataNoList(data=parse_obj_as(DevicesModelShort, device)).json(
+        body = DataNoList(data=parse_obj_as(DevicesModelShort, device)).json(
             exclude_none=True, by_alias=True
         )
 

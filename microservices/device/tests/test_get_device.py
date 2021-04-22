@@ -2,9 +2,12 @@ import pytest
 import datetime
 import json
 import uuid
-from get_devices.get import get_devices
-from get_devices import app
+import sys
 from models.devices import Devices
+
+sys.path.append("./src/get_devices")
+from src.get_devices.get import get_devices  # noqa: E402
+from src.get_devices import app  # noqa: E402
 
 
 @pytest.fixture
@@ -120,7 +123,11 @@ def devices(setup_device_group_id, session):
 
 def test_get_device_ok(devices, session):
     device1, _, _ = devices
-    res = get_devices(device_id=device1.id, device_group_id=device1.device_group_id, connection=session)
+    res = get_devices(
+        device_id=device1.id,
+        device_group_id=device1.device_group_id,
+        connection=session,
+    )
     assert res["statusCode"] == 200
 
 
@@ -134,8 +141,10 @@ def test_get_devices_ok(devices, session):
 
 def test_get_devices_ok_page_size(devices, session):
     device1, device2, device3 = devices
-    res = get_devices(device_group_id=device1.device_group_id, page_size=1, connection=session)
-    body = (json.loads(res["body"]))
+    res = get_devices(
+        device_group_id=device1.device_group_id, page_size=1, connection=session
+    )
+    body = json.loads(res["body"])
     devices_res = body["data"]
     assert res["statusCode"] == 200
     assert len(devices_res) == 1
@@ -145,8 +154,13 @@ def test_get_devices_ok_page_size(devices, session):
 
 def test_get_devices_ok_page_size_next(devices, session):
     device1, device2, device3 = devices
-    res = get_devices(device_group_id=device1.device_group_id, page_size=1, page_number=2, connection=session)
-    body = (json.loads(res["body"]))
+    res = get_devices(
+        device_group_id=device1.device_group_id,
+        page_size=1,
+        page_number=2,
+        connection=session,
+    )
+    body = json.loads(res["body"])
     devices_res = body["data"]
     assert res["statusCode"] == 200
     assert len(devices_res) == 1

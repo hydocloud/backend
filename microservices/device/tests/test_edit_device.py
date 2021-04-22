@@ -2,9 +2,12 @@ import pytest
 import datetime
 import json
 import uuid
-from edit_device.edit import edit_device
-from edit_device import app
+import sys
 from models.devices import Devices, DevicesEditInput, DeviceGroups
+
+sys.path.append("./src/edit_device")
+from src.edit_device.edit import edit_device  # noqa: E402
+from src.edit_device import app  # noqa: E402
 
 
 @pytest.fixture(scope="function")
