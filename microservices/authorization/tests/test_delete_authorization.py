@@ -1,11 +1,15 @@
+import sys
+
 import pytest
-from delete_authorization.delete import delete_authorization
-from delete_authorization import app
-from delete_authorization.app import lambda_handler
+
+sys.path.append("./src/delete_authorization")
+from src.delete_authorization import app
+from src.delete_authorization.app import lambda_handler
+from src.delete_authorization.delete import delete_authorization
 
 
 @pytest.fixture
-def apigw_event():
+def apigw_event(populate_db):
     """ Generate SQS event """
     return {
         "body": None,
@@ -15,7 +19,7 @@ def apigw_event():
         "isBase64Encoded": True,
         "queryStringParameters": {"foo": "bar"},
         "multiValueQueryStringParameters": {"foo": ["bar"]},
-        "pathParameters": {"id": 1},
+        "pathParameters": {"id": populate_db[0].id},
         "stageVariables": {"baz": "qux"},
         "headers": {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -88,8 +92,10 @@ def apigw_event():
     }
 
 
-def test_delete_authorization_ok(authorizations_session):
-    res = delete_authorization(authorization_id=3, connection=authorizations_session)
+def test_delete_authorization_ok(populate_db, authorizations_session):
+    res = delete_authorization(
+        authorization_id=populate_db[0].id, connection=authorizations_session
+    )
     assert res["statusCode"] == 201
 
 

@@ -2,6 +2,7 @@ from typing import Optional, List, Union
 from pydantic import BaseModel
 from models.organizations import ResponseModel
 from models.devices import DeviceGroupsModelShort, DevicesModelShort
+from models.authorization import AuthorizationModelShort
 
 
 class LambdaResponse(BaseModel):
@@ -14,7 +15,14 @@ class Message(BaseModel):
 
 
 class Data(BaseModel):
-    data: List[Union[ResponseModel, DevicesModelShort, DeviceGroupsModelShort]]
+    data: List[
+        Union[
+            ResponseModel,
+            DevicesModelShort,
+            DeviceGroupsModelShort,
+            AuthorizationModelShort,
+        ]
+    ]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
@@ -22,7 +30,12 @@ class Data(BaseModel):
 
 
 class DataNoList(BaseModel):
-    data: Union[ResponseModel, DevicesModelShort, DeviceGroupsModelShort]
+    data: Union[
+        ResponseModel,
+        DevicesModelShort,
+        DeviceGroupsModelShort,
+        AuthorizationModelShort,
+    ]
 
 
 class LambdaSuccessResponse(BaseModel):
@@ -38,3 +51,9 @@ class LambdaSuccessResponseWithoutData(BaseModel):
 class LambdaErrorResponse(BaseModel):
     statusCode: int
     body: Message
+
+
+class UnlockModel(BaseModel):
+    success: bool
+    message: Optional[str]
+    digest: Optional[str]

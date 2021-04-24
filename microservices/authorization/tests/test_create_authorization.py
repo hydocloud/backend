@@ -1,11 +1,16 @@
-import pytest
-import uuid
 import json
+import sys
+import uuid
 from datetime import datetime
-from create_authorization.create import create_authorization
-from create_authorization.app import parse_input
-from create_authorization import app
-from models.authorization import AuthorizationModelApiInput
+
+import pytest
+
+sys.path.append("./src/create_authorization")
+from models.authorization import AuthorizationModelApiInput  # noqa: E402
+
+from src.create_authorization import app  # noqa: E402
+from src.create_authorization.app import parse_input  # noqa: E402
+from src.create_authorization.create import create_authorization  # noqa: E402
 
 
 @pytest.fixture()

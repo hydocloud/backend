@@ -1,10 +1,16 @@
-import pytest
+import sys
+
 import boto3
+import pytest
 from faker import Faker
 from moto import mock_dynamodb2
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from models.authorization import Base, Authorization
+
+sys.path.append("../shared/")  # Add layer to path
+sys.path.append("./models/")
+from models.authorization import Authorization, Base
+from models.devices import Base as Base_device
 
 faker = Faker()
 
@@ -20,10 +26,10 @@ def engine():
 @pytest.fixture(scope="session")
 def tables(engine):
     Base.metadata.create_all(engine[0])
-    Base.metadata.create_all(engine[1])
+    Base_device.metadata.create_all(engine[1])
     yield
     Base.metadata.drop_all(engine[0])
-    Base.metadata.drop_all(engine[1])
+    Base_device.metadata.drop_all(engine[1])
 
 
 @pytest.fixture
@@ -95,7 +101,7 @@ def populate_db(authorizations_session):
             updated_at=faker.iso8601(),
         ),
     ]
-    authorizations_session.bulk_save_objects(authorizations)
+    authorizations_session.bulk_save_objects(authorizations, return_defaults=True)
     authorizations_session.commit()
 
     return authorizations

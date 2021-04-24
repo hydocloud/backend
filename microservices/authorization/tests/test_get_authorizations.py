@@ -1,14 +1,17 @@
-from inspect import BoundArguments
-import pytest
 import json
+import sys
+
+import pytest
+
+sys.path.append("./src/get_authorizations")
 from faker import Faker
-from get_authorizations.authorization_filter import AuthorizationFilter
-from get_authorizations.get import get_authorizations
-from get_authorizations import app
-from get_authorizations.app import lambda_handler
 from models.authorization import Authorization
 from sqlalchemy.orm.query import Query
 
+from src.get_authorizations import app
+from src.get_authorizations.app import lambda_handler
+from src.get_authorizations.authorization_filter import AuthorizationFilter
+from src.get_authorizations.get import get_authorizations
 
 faker = Faker()
 
@@ -144,12 +147,12 @@ def test_class_authorization_filter_no_device_id(authorizations_session):
 
 
 def test_get_authorizations_single_id(authorizations_session, populate_db):
-    res = get_authorizations(connection=authorizations_session, authorization_id=1)
+    res = get_authorizations(connection=authorizations_session, authorization_id=populate_db[0].id)
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 200
     assert len(body["data"]) == 1
-    assert body["data"][0]["id"] == 1
+    assert body["data"][0]["id"] == populate_db[0].id
 
 
 def test_get_authorizations_single_id_not_found(authorizations_session, populate_db):

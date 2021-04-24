@@ -1,4 +1,8 @@
-from authorization_service.store_nonce import store
+import sys
+
+sys.path.append("./src/authorization_service")
+
+from src.authorization_service.store_nonce import store
 
 
 def test_store_nonce_ok(dynamodb, monkeypatch):

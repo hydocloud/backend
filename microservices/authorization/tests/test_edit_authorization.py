@@ -1,11 +1,17 @@
-import pytest
-import uuid
 import json
+import sys
+import uuid
+
+import pytest
+
+sys.path.append("./src/edit_authorization")
 from datetime import datetime
-from edit_authorization.edit import edit_authorization
-from edit_authorization import app
-from edit_authorization.app import lambda_handler
+
 from models.authorization import AuthorizationModelApiInput
+
+from src.edit_authorization import app
+from src.edit_authorization.app import lambda_handler
+from src.edit_authorization.edit import edit_authorization
 
 
 @pytest.fixture()
@@ -102,75 +108,67 @@ def apigw_event(authorization_input):
     }
 
 
-def test_edit_authorization_ok(authorizations_session, populate_db, authorization_input):
+def test_edit_authorization_ok(
+    authorizations_session, populate_db, authorization_input
+):
     res = edit_authorization(
-        authorization_id=1, payload=authorization_input, connection=authorizations_session
+        authorization_id=populate_db[0].id,
+        payload=authorization_input,
+        connection=authorizations_session,
     )
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 201
-    assert body["data"]["id"] == 1
-    assert (
-        body["data"]["userId"]
-        == authorization_input.userId.__str__()
-    )
+    assert body["data"]["id"] == populate_db[0].id
+    assert body["data"]["userId"] == authorization_input.userId.__str__()
     assert body["data"]["deviceId"] == authorization_input.deviceId
-    assert (
-        body["data"]["accessLimit"]
-        == authorization_input.accessLimit
-    )
-    assert (
-        body["data"]["startTime"]
-        == authorization_input.startTime.isoformat()
-    )
-    assert (
-        body["data"]["endTime"]
-        == authorization_input.endTime.isoformat()
-    )
+    assert body["data"]["accessLimit"] == authorization_input.accessLimit
+    assert body["data"]["startTime"] == authorization_input.startTime.isoformat()
+    assert body["data"]["endTime"] == authorization_input.endTime.isoformat()
 
 
-def test_edit_authorization_not_found(authorizations_session, populate_db, authorization_input):
+def test_edit_authorization_not_found(
+    authorizations_session, populate_db, authorization_input
+):
     authorization_input.__delattr__("deviceId")
     res = edit_authorization(
-        authorization_id=100, payload=authorization_input, connection=authorizations_session
+        authorization_id=100,
+        payload=authorization_input,
+        connection=authorizations_session,
     )
 
     assert res["statusCode"] == 404
 
 
-def test_edit_authorization_error(authorizations_session, populate_db, authorization_input):
+def test_edit_authorization_error(
+    authorizations_session, populate_db, authorization_input
+):
     res = edit_authorization(
-        authorization_id=100, payload=authorization_input, connection=authorizations_session.close()
+        authorization_id=100,
+        payload=authorization_input,
+        connection=authorizations_session.close(),
     )
 
     assert res["statusCode"] == 500
 
 
-def test_lambda_handler_ok(authorizations_session, populate_db, apigw_event, authorization_input):
+def test_lambda_handler_ok(
+    authorizations_session, populate_db, apigw_event, authorization_input
+):
     app.CONNECTION = authorizations_session
 
+    apigw_event["body"] = authorization_input.json()
+    apigw_event["pathParameters"] = {"id": populate_db[0].id}
     res = lambda_handler(apigw_event, None)
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 201
-    assert body["data"]["id"] == 1
-    assert (
-        body["data"]["userId"]
-        == authorization_input.userId.__str__()
-    )
+    assert body["data"]["id"] == populate_db[0].id
+    assert body["data"]["userId"] == authorization_input.userId.__str__()
     assert body["data"]["deviceId"] == authorization_input.deviceId
-    assert (
-        body["data"]["accessLimit"]
-        == authorization_input.accessLimit
-    )
-    assert (
-        body["data"]["startTime"]
-        == authorization_input.startTime.isoformat()
-    )
-    assert (
-        body["data"]["endTime"]
-        == authorization_input.endTime.isoformat()
-    )
+    assert body["data"]["accessLimit"] == authorization_input.accessLimit
+    assert body["data"]["startTime"] == authorization_input.startTime.isoformat()
+    assert body["data"]["endTime"] == authorization_input.endTime.isoformat()
 
 
 def test_lambda_handler_bad_request(
