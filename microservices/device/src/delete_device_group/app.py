@@ -2,7 +2,7 @@ import logging
 
 from aws_lambda_powertools import Tracer
 from database import init_db
-from delete import delete_device_groups
+from delete_group import delete_device_groups
 from models.api_response import LambdaResponse, Message
 from pydantic import ValidationError
 

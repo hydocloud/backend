@@ -3,7 +3,7 @@ import logging
 from typing import Optional, Tuple
 
 from aws_lambda_powertools import Tracer
-from create import create_device_groups
+from create_group import create_device_groups
 from database import init_db
 from models.api_response import LambdaResponse, Message
 from models.devices import DeviceGroupsApiInput

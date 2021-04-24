@@ -3,7 +3,7 @@ import logging
 
 from aws_lambda_powertools import Tracer
 from database import init_db
-from edit import edit_device_group
+from edit_group import edit_device_group
 from models.api_response import LambdaResponse, Message
 from models.devices import DeviceGroupsApiEditInput
 from pydantic import ValidationError

@@ -4,7 +4,7 @@ import logging
 
 from aws_lambda_powertools import Tracer
 from database import init_db
-from get import get_device_groups
+from get_groups import get_device_groups
 
 tracer = Tracer(service="get_device_groups")
 
