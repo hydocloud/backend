@@ -1,9 +1,10 @@
 """ Entry point lambda"""
 
 import logging
+
 from aws_lambda_powertools import Tracer  # type: ignore
-from get import get_organizations
 from database import init_db
+from get import get_organizations
 
 tracer = Tracer(service="get_organization")
 

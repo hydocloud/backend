@@ -1,7 +1,8 @@
 import logging
-from delete import delete_organization
-from database import init_db
+
 from aws_lambda_powertools import Tracer  # type: ignore
+from database import init_db
+from delete import delete_organization
 
 tracer = Tracer(service="delete_organization")
 

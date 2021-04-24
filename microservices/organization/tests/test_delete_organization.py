@@ -1,6 +1,7 @@
 import pytest
-from src.delete_organization.delete import delete_organization
+
 from src.delete_organization import app
+from src.delete_organization.delete import delete_organization
 
 
 @pytest.fixture

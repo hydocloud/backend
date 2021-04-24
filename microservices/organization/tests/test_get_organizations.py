@@ -1,7 +1,9 @@
-import pytest
 import json
-from src.get_organizations.get import get_organizations
+
+import pytest
+
 from src.get_organizations import app
+from src.get_organizations.get import get_organizations
 
 
 @pytest.fixture

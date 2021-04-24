@@ -1,7 +1,8 @@
-import pytest
-import uuid
 import datetime
 import sys
+import uuid
+
+import pytest
 
 sys.path.append("../shared/")  # Add layer to path
 sys.path.append("./models/")
@@ -9,9 +10,9 @@ sys.path.append("./src/create_organization")
 sys.path.append("./src/delete_organization")
 sys.path.append("./src/edit_organization")
 sys.path.append("./src/get_organizations")
+from models.organizations import Base, Organization  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
-from models.organizations import Base, Organization  # noqa: E402
 
 
 @pytest.fixture(scope="session")

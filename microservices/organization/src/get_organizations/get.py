@@ -4,20 +4,15 @@ You can select on single organization or multiple organization
 """
 
 import logging
-from models.organizations import Organization, ResponseModel
-from models.api_response import (
-    LambdaResponse,
-    Message,
-    Data,
-)
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.session import Session
-
-from aws_lambda_powertools import Tracer  # type: ignore
-from sqlalchemy_paginator import Paginator, exceptions  # type: ignore
-from pydantic import parse_obj_as
 from typing import List
 
+from aws_lambda_powertools import Tracer  # type: ignore
+from models.api_response import Data, LambdaResponse, Message
+from models.organizations import Organization, ResponseModel
+from pydantic import parse_obj_as
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.session import Session
+from sqlalchemy_paginator import Paginator, exceptions  # type: ignore
 
 tracer = Tracer(service="get_organization")
 
@@ -30,7 +25,7 @@ def get_organizations(
     owner_id: str,
     page_number: int = 1,
     page_size: int = 5,
-    organization_id: int = None
+    organization_id: int = None,
 ):
     """ Return all organizations that belong to user"""
 

@@ -1,7 +1,9 @@
-import pytest
 import json
-from src.edit_organization.edit import edit_organization
+
+import pytest
+
 from src.edit_organization import app
+from src.edit_organization.edit import edit_organization
 
 
 @pytest.fixture

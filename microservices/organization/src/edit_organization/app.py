@@ -1,9 +1,10 @@
-import logging
 import json
+import logging
+
+from aws_lambda_powertools import Tracer  # type: ignore
+from database import init_db
 from edit import edit_organization
 from models.organizations import OrganizationsUpdate
-from database import init_db
-from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="edit_organization")
 

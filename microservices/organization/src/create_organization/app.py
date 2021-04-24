@@ -1,10 +1,10 @@
-import logging
 import json
-from create import create_organization
-from models.organizations import OrganizationBase
-from database import init_db
-from aws_lambda_powertools import Tracer  # type: ignore
+import logging
 
+from aws_lambda_powertools import Tracer  # type: ignore
+from create import create_organization
+from database import init_db
+from models.organizations import OrganizationBase
 
 tracer = Tracer(service="create_organization")
 

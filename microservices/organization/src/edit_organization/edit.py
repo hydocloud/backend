@@ -1,14 +1,11 @@
 import logging
+
+from aws_lambda_powertools import Tracer  # type: ignore
+from models.api_response import DataNoList, LambdaResponse, Message
 from models.organizations import Organization, ResponseModel
-from models.api_response import (
-    LambdaResponse,
-    Message,
-    DataNoList,
-)
+from pydantic import parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer  # type: ignore
-from pydantic import parse_obj_as
 
 tracer = Tracer(service="edit_organization")
 
@@ -46,7 +43,5 @@ def edit_organization(owner_id, organization_id, payload, connection: Session):
             # Call user group
             return LambdaResponse(
                 statusCode=201,
-                body=DataNoList(
-                    data=obj
-                ).json(by_alias=True),
+                body=DataNoList(data=obj).json(by_alias=True),
             ).dict()
