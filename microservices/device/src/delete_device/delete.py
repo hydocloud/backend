@@ -1,11 +1,12 @@
 """ Delete device group """
 
 import logging
-from models.devices import Devices
+
+from aws_lambda_powertools import Tracer
 from models.api_response import LambdaResponse, Message
+from models.devices import Devices
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="delete_device")
 
@@ -17,11 +18,7 @@ def delete_device(device_id: int, connection: Session) -> dict:
     """ Function that delete device group on db """
 
     try:
-        device = (
-            connection.query(Devices)
-            .filter_by(id=device_id)
-            .delete()
-        )
+        device = connection.query(Devices).filter_by(id=device_id).delete()
 
         connection.commit()
 

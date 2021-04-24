@@ -1,17 +1,17 @@
-import logging
 import json
-from create import create_device
-from models.devices import DevicesApiInput
-from database import init_db
-from aws_lambda_powertools import Tracer
-from pydantic import ValidationError
-from models.api_response import LambdaResponse, Message
+import logging
 
+from aws_lambda_powertools import Tracer
+from create import create_device
+from database import init_db
+from models.api_response import LambdaResponse, Message
+from models.devices import DevicesApiInput
+from pydantic import ValidationError
 
 tracer = Tracer(service="create_device")
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,43 @@
+{
+    "CreateDeviceGroupsFunction": {
+        "DB_PORT": 5432,
+        "DB_HOST": "MacBook-Pro-di-Riccardo.local",
+        "DB_NAME": "devices",
+        "DB_ENGINE": "postgresql",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "ciaociao"
+    },
+    "CreateDeviceFunction": {
+        "DB_PORT": 5432,
+        "DB_HOST": "MacBook-Pro-di-Riccardo.local",
+        "DB_NAME": "devices",
+        "DB_ENGINE": "postgresql",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "ciaociao",
+        "SECRET_NAME": "DeviceSecret"
+    },
+    "DeleteDeviceGroupFunction": {
+        "DB_PORT": 5432,
+        "DB_HOST": "MacBook-Pro-di-Riccardo.local",
+        "DB_NAME": "devices",
+        "DB_ENGINE": "postgresql",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "ciaociao"
+    },
+    "GetDeviceGroupsFunction": {
+        "DB_PORT": 5432,
+        "DB_HOST": "MacBook-Pro-di-Riccardo.local",
+        "DB_NAME": "devices",
+        "DB_ENGINE": "postgresql",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "ciaociao"
+    },
+    "EditDeviceGroupFunction": {
+        "DB_PORT": 5432,
+        "DB_HOST": "MacBook-Pro-di-Riccardo.local",
+        "DB_NAME": "devices",
+        "DB_ENGINE": "postgresql",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "ciaociao"
+    }
+}

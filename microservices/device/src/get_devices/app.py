@@ -1,12 +1,13 @@
 """ Entry point lambda"""
 
-import logging
 import json
+import logging
+
 from aws_lambda_powertools import Tracer
-from get import get_devices
 from database import init_db
-from models.devices import DevicesModelParameters
+from get import get_devices
 from models.api_response import LambdaResponse, Message
+from models.devices import DevicesModelParameters
 
 tracer = Tracer(service="get_devices")
 

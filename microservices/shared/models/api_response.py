@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import BaseModel
 from models.organizations import ResponseModel
 from models.devices import DeviceGroupsModelShort, DevicesModelShort
@@ -14,7 +14,7 @@ class Message(BaseModel):
 
 
 class Data(BaseModel):
-    data: List[ResponseModel or DeviceGroupsModelShort or DevicesModelShort]
+    data: List[Union[ResponseModel, DevicesModelShort, DeviceGroupsModelShort]]
     total: Optional[int]
     nextPage: Optional[int]
     previousPage: Optional[int]
@@ -22,7 +22,7 @@ class Data(BaseModel):
 
 
 class DataNoList(BaseModel):
-    data: ResponseModel or DeviceGroupsModelShort or DevicesModelShort
+    data: Union[ResponseModel, DevicesModelShort, DeviceGroupsModelShort]
 
 
 class LambdaSuccessResponse(BaseModel):

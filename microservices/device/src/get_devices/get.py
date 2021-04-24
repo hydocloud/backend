@@ -5,15 +5,15 @@ You can select on single devices or multiple devices
 
 import logging
 from typing import List
-from models.devices import Devices, DevicesModelShort,DeviceGroups
-from models.api_response import LambdaResponse, DataNoList, Message
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.session import Session
 
 from aws_lambda_powertools import Tracer
+from models.api_response import Data, LambdaResponse, Message
+from models.devices import DeviceGroups, Devices, DevicesModelShort
+from pydantic import ValidationError, parse_obj_as
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.session import Session
 from sqlalchemy_paginator import Paginator
 from sqlalchemy_paginator.exceptions import EmptyPage
-from pydantic import ValidationError, parse_obj_as
 
 tracer = Tracer(service="get_devices")
 
@@ -54,16 +54,13 @@ def get_devices(
         page = paginator.page(page_number)
 
         m = parse_obj_as(List[DevicesModelShort], page.object_list)
-
         status_code = 200
-        body = DataNoList(
+        body = Data(
             data=m,
             total=page.paginator.count,
             totalPages=page.paginator.total_pages,
             nextPage=(page.next_page_number if page.has_next() else None),
-            previousPage=(
-                page.previous_page_number if page.has_previous() else None
-            ),
+            previousPage=(page.previous_page_number if page.has_previous() else None),
         ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body).dict()

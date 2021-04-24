@@ -1,12 +1,13 @@
 """ Edit device """
 
 import logging
-from pydantic import parse_obj_as
+
+from aws_lambda_powertools import Tracer
+from models.api_response import DataNoList, LambdaResponse, Message
 from models.devices import DeviceGroups, DeviceGroupsModelShort
-from models.api_response import LambdaResponse, Message, DataNoList
+from pydantic import parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="edit_device_group")
 

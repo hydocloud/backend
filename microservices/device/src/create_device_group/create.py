@@ -1,17 +1,14 @@
 """ Create device groups """
 
-import logging
 import datetime
-from models.devices import (
-    DeviceGroups,
-    DeviceGroupsApiInput,
-    DeviceGroupsModelShort,
-)
-from models.api_response import LambdaResponse, DataNoList, Message
+import logging
+
+from aws_lambda_powertools import Tracer
+from models.api_response import DataNoList, LambdaResponse, Message
+from models.devices import DeviceGroups, DeviceGroupsApiInput, DeviceGroupsModelShort
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="create_device_group")
 

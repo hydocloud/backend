@@ -1,12 +1,13 @@
-import pytest
 import datetime
-import uuid
 import sys
+import uuid
+
+import pytest
 from models.devices import Devices
 
 sys.path.append("./src/delete_device")
-from src.delete_device.delete import delete_device  # noqa: E402
 from src.delete_device import app  # noqa: E402
+from src.delete_device.delete import delete_device  # noqa: E402
 
 
 @pytest.fixture

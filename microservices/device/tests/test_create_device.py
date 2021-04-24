@@ -1,35 +1,17 @@
-import pytest
-import json
-import boto3
-import uuid
-import datetime
 import copy
+import datetime
+import json
 import sys
+import uuid
+
+import pytest
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
-from moto import mock_sqs, mock_secretsmanager
-from models.devices import DevicesApiInput, DeviceGroups
-from base64 import b64decode
+from models.devices import DeviceGroups, DevicesApiInput
 
 sys.path.append("./src/create_device")
-from src.create_device import app, crypt  # noqa: E402
+from src.create_device import app, create  # noqa: E402
 from src.create_device.create import create_authorization, create_device  # noqa: E402
-
-
-def encrypt():
-    return b"asdsada"  # data.encode()
-
-
-@mock_secretsmanager
-@pytest.fixture(scope="function")
-def secret():
-    with mock_secretsmanager():
-        conn = boto3.client("secretsmanager", region_name="eu-west-1")
-        conn.create_secret(
-            Name="java-util-test-password",
-            SecretString="ciaociaociaociaociaociaociaociao",
-        )
-        yield conn
 
 
 @pytest.fixture
@@ -167,31 +149,10 @@ def device(setup_device_group_id):
     )
 
 
-@mock_sqs
-def test_create_authorization(monkeypatch):
-    sqs = boto3.client("sqs", region_name="eu-west-1")
-    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
-    expected_message = json.dumps({"deviceId": 1000, "userId": "asdasd"})
-
-    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
-    create_authorization(device_id=1000, user_id="asdasd")
-    sqs_authorization_messages = sqs.receive_message(
-        QueueUrl=authorization_queue["QueueUrl"]
-    )
-    assert sqs_authorization_messages["Messages"][0]["Body"] == expected_message
-    assert len(sqs_authorization_messages["Messages"]) == 1
-
-
-@mock_sqs
-def test_create_device_ok(device, session, secret, monkeypatch):
-
-    sqs = boto3.client("sqs", region_name="eu-west-1")
-    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
-
-    monkeypatch.setattr(crypt, "encrypt", encrypt)
+def test_create_device_ok(device, session, secret, sqs_queue, monkeypatch):
 
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
-    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
+
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
     body = (json.loads(res["body"]))["data"]
@@ -202,30 +163,20 @@ def test_create_device_ok(device, session, secret, monkeypatch):
     assert body["name"] == device.name
 
 
-@mock_sqs
-def test_create_device_double(device, session, secret, monkeypatch):
-
-    sqs = boto3.client("sqs", region_name="eu-west-1")
-    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
-
-    monkeypatch.setattr(crypt, "encrypt", encrypt)
+def test_create_device_double(device, session, secret, sqs_queue, monkeypatch):
 
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
-    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     user_id = "asddss"
+
     res = create_device(user_id=user_id, payload=device, connection=session)
     res2 = create_device(user_id=user_id, payload=device, connection=session)
     assert res["statusCode"] == 201
     assert res2["statusCode"] == 409
 
 
-@mock_sqs
-def test_handler(apigw_event, session, monkeypatch):
+def test_handler(apigw_event, session, secret, sqs_queue, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
     app.CONNECTION = session
-    sqs = boto3.client("sqs", region_name="eu-west-1")
-    authorization_queue = sqs.create_queue(QueueName="create-authorization-device")
-    monkeypatch.setenv("QUEUE_URL", authorization_queue["QueueUrl"])
     res = app.lambda_handler(apigw_event, None)
     body = (json.loads(res["body"]))["data"]
     apigw_event_body = json.loads(apigw_event["body"])
@@ -244,7 +195,7 @@ def test_create_device_validation_error(device, session):
     assert res["statusCode"] == 400
 
 
-def test_create_device_sqlalchemy_error(device, session, monkeypatch):
+def test_create_device_sqlalchemy_error(device, session, secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
     session.invalidate()
     user_id = "asddss"
@@ -254,7 +205,7 @@ def test_create_device_sqlalchemy_error(device, session, monkeypatch):
 
 def test_crypt_get_secret_ok(secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
-    res = crypt.get_key(secret)
+    res = create.get_key(secret)
 
     assert type(res) == bytes
     assert res.decode() == "ciaociaociaociaociaociaociaociao"
@@ -262,14 +213,26 @@ def test_crypt_get_secret_ok(secret, monkeypatch):
 
 def test_crypt_encrypt_ok(secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
-    data = "ciao"
-    res = crypt.encrypt(data)
+    data = "ciaociaociao"
+    res = create.encrypt_data(data)
 
-    raw = b64decode(res)
     cipher = AES.new(
-        b"ciaociaociaociaociaociaociaociao", AES.MODE_CBC, raw[: AES.block_size]
+        b"ciaociaociaociaociaociaociaociao", AES.MODE_CBC, res[: AES.block_size]
     )
-    plaintext = unpad(cipher.decrypt(raw[AES.block_size :]), AES.block_size)
-
+    plaintext = unpad(cipher.decrypt(res[AES.block_size :]), AES.block_size)
     assert type(res) == bytes
     assert plaintext.decode() == data
+
+
+def test_handler_error_payload(apigw_event, session, secret, sqs_queue, monkeypatch):
+    app.CONNECTION = session
+    apigw_event["body"] = json.dumps({"name": "test"})
+    res = app.lambda_handler(apigw_event, None)
+
+    assert res["statusCode"] == 400
+
+
+def test_create_device_no_sqs():
+    user_id = "asddss"
+    with pytest.raises(Exception):
+        create_authorization(device_id=1, user_id=user_id)

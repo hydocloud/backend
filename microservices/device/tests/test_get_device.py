@@ -1,13 +1,14 @@
-import pytest
 import datetime
 import json
-import uuid
 import sys
+import uuid
+
+import pytest
 from models.devices import Devices
 
 sys.path.append("./src/get_devices")
-from src.get_devices.get import get_devices  # noqa: E402
 from src.get_devices import app  # noqa: E402
+from src.get_devices.get import get_devices  # noqa: E402
 
 
 @pytest.fixture

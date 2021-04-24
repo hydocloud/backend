@@ -1,9 +1,10 @@
 """ Entry point lambda"""
 
 import logging
+
 from aws_lambda_powertools import Tracer
-from get import get_device_groups
 from database import init_db
+from get import get_device_groups
 
 tracer = Tracer(service="get_device_groups")
 

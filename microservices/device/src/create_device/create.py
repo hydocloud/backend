@@ -1,20 +1,49 @@
-import logging
 import datetime
-import os
-import boto3
 import json
-import crypt
-from pydantic import parse_obj_as, ValidationError
-from botocore.exceptions import ClientError, ParamValidationError
-from models.devices import Devices, DevicesModelShort, DevicesApiInput
-from models.api_response import LambdaResponse, Message, DataNoList
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy.orm.session import Session
+import logging
+import os
+from os import environ
+
+import boto3
 from aws_lambda_powertools import Tracer
+from botocore.exceptions import ClientError, ParamValidationError
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
+from models.api_response import DataNoList, LambdaResponse, Message
+from models.devices import Devices, DevicesApiInput, DevicesModelShort
+from pydantic import ValidationError, parse_obj_as
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm.session import Session
 
 tracer = Tracer(service="create_device")
 
 logger = logging.getLogger(__name__)
+
+
+def get_key(secret_manager=None) -> bytes:
+    secret_name = environ["SECRET_NAME"]
+    if secret_manager is None:
+        session = boto3.session.Session()
+        secret_manager = session.client(service_name="secretsmanager")
+
+    try:
+        get_secret_value_response = secret_manager.get_secret_value(
+            SecretId=secret_name
+        )
+        logger.debug(f'key: {get_secret_value_response["SecretString"]}')
+        return get_secret_value_response["SecretString"].encode()
+    except ClientError as err:
+        logger.error(err)
+        raise err
+
+
+def encrypt_data(data: str) -> bytes:
+    key = get_key()
+    iv = get_random_bytes(16)
+    cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
+    logger.debug(f"hmac_key: {data}")
+    return iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))
 
 
 def create_authorization(device_id: int, user_id: str):
@@ -26,6 +55,7 @@ def create_authorization(device_id: int, user_id: str):
         sqs.send_message(QueueUrl=queue, MessageBody=message)
     except (ClientError, ParamValidationError, ValueError) as err:
         logger.error(err)
+        raise err
 
 
 @tracer.capture_method
@@ -35,7 +65,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
             name=payload.name,
             serial=payload.serial,
             device_group_id=payload.deviceGroupId,
-            hmac_key=crypt.encrypt(payload.hmacKey),
+            hmac_key=encrypt_data(payload.hmacKey),
             created_at=datetime.datetime.utcnow(),
             updated_at=datetime.datetime.utcnow(),
         )
@@ -64,6 +94,7 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
             statusCode=500, body=Message(message="Internal server Error").json()
         ).dict()
     except (ValidationError, AttributeError) as err:
+        print(err)
         logger.error(err)
         connection.rollback()
         return LambdaResponse(

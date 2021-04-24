@@ -5,14 +5,14 @@ You can select on single device_group or multiple device_group
 
 import logging
 from typing import List
-from models.devices import DeviceGroups, DeviceGroupsModelShort
-from models.api_response import LambdaResponse, Data, Message
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.session import Session
 
 from aws_lambda_powertools import Tracer
-from sqlalchemy_paginator import Paginator
+from models.api_response import Data, LambdaResponse, Message
+from models.devices import DeviceGroups, DeviceGroupsModelShort
 from pydantic import ValidationError, parse_obj_as
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.session import Session
+from sqlalchemy_paginator import Paginator
 
 tracer = Tracer(service="get_device_group")
 
@@ -50,9 +50,7 @@ def get_device_groups(
             total=page.paginator.count,
             totalPages=page.paginator.total_pages,
             nextPage=(page.next_page_number if page.has_next() else None),
-            previousPage=(
-                page.previous_page_number if page.has_previous() else None
-            ),
+            previousPage=(page.previous_page_number if page.has_previous() else None),
         ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body).dict()

@@ -1,11 +1,12 @@
 """ Delete device group """
 
 import logging
-from models.devices import DeviceGroups
+
+from aws_lambda_powertools import Tracer
 from models.api_response import LambdaResponse, Message
+from models.devices import DeviceGroups
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer
 
 tracer = Tracer(service="delete_device_group")
 

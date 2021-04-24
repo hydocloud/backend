@@ -1,10 +1,10 @@
 import logging
-from delete import delete_device_groups
-from models.api_response import Message, LambdaResponse
-from database import init_db
-from aws_lambda_powertools import Tracer
-from pydantic import ValidationError
 
+from aws_lambda_powertools import Tracer
+from database import init_db
+from delete import delete_device_groups
+from models.api_response import LambdaResponse, Message
+from pydantic import ValidationError
 
 tracer = Tracer(service="delete_device_group")
 

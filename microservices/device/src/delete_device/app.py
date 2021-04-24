@@ -1,10 +1,10 @@
 import logging
-from delete import delete_device
-from models.api_response import Message, LambdaResponse
-from database import init_db
-from aws_lambda_powertools import Tracer
-from pydantic import ValidationError
 
+from aws_lambda_powertools import Tracer
+from database import init_db
+from delete import delete_device
+from models.api_response import LambdaResponse, Message
+from pydantic import ValidationError
 
 tracer = Tracer(service="delete_device")
 
@@ -26,9 +26,7 @@ def lambda_handler(event, context):
 
     try:
         device_id = event["pathParameters"]["id"]
-        response = delete_device(
-            device_id=device_id, connection=CONNECTION
-        )
+        response = delete_device(device_id=device_id, connection=CONNECTION)
     except ValidationError:
         logger.error("Validation input error")
         return LambdaResponse(

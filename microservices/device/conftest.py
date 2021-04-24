@@ -1,13 +1,16 @@
-import pytest
-import uuid
 import datetime
 import sys
+import uuid
+
+import boto3
+import pytest
+from moto import mock_secretsmanager, mock_sqs
 
 sys.path.append("../shared/")  # Add layer to path
 sys.path.append("./models/")
+from models.devices import Base, DeviceGroups  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
-from models.devices import Base, DeviceGroups  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -54,3 +57,25 @@ def setup_device_group_id(session):
     session.commit()
     session.refresh(device_groups)
     return device_groups.id
+
+
+@mock_sqs
+@pytest.fixture(scope="function")
+def sqs_queue(monkeypatch):
+    with mock_sqs():
+        sqs = boto3.client("sqs", region_name="eu-west-1")
+        queue_url = sqs.create_queue(QueueName="create-authorization-device")
+        monkeypatch.setenv("QUEUE_URL", queue_url["QueueUrl"])
+        yield sqs
+
+
+@mock_secretsmanager
+@pytest.fixture(scope="function")
+def secret():
+    with mock_secretsmanager():
+        conn = boto3.client("secretsmanager", region_name="eu-west-1")
+        conn.create_secret(
+            Name="java-util-test-password",
+            SecretString="ciaociaociaociaociaociaociaociao",
+        )
+        yield conn

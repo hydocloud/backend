@@ -1,13 +1,13 @@
-import logging
 import json
-from create import create_device_groups
-from models.devices import DeviceGroupsApiInput
-from models.api_response import Message, LambdaResponse
-from database import init_db
-from aws_lambda_powertools import Tracer
-from pydantic import ValidationError
-from typing import Tuple, Optional
+import logging
+from typing import Optional, Tuple
 
+from aws_lambda_powertools import Tracer
+from create import create_device_groups
+from database import init_db
+from models.api_response import LambdaResponse, Message
+from models.devices import DeviceGroupsApiInput
+from pydantic import ValidationError
 
 tracer = Tracer(service="create_device_group")
 
