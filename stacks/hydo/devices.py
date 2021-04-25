@@ -6,7 +6,7 @@ from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from models._lambda import LambdaPython
 
 LAMBDA_HANDLER = "app.lambda_handler"
-DEVICE_FOLDER = "/device"
+LAMBDAS_FOLDER = "/device/src"
 
 
 def lambdas(self, device_secret_key: secret_manager.Secret):
@@ -18,11 +18,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     create_device_group_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/create_device_group",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/create_device_group",
         name="CreateDeviceGroup",
     )
     create_device_group_lambda.set_function()
-    create_device_group_lambda.add_layer(models=True)
+    create_device_group_lambda.add_layer(layer_version=self.model_layer)
     create_device_group_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -36,11 +36,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     delete_device_group_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/delete_device_group",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/delete_device_group",
         name="DeleteDeviceGroup",
     )
     delete_device_group_lambda.set_function()
-    delete_device_group_lambda.add_layer(models=True)
+    delete_device_group_lambda.add_layer(layer_version=self.model_layer)
     delete_device_group_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -50,11 +50,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     edit_device_group_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/edit_device_group",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/edit_device_group",
         name="EditDeviceGroup",
     )
     edit_device_group_lambda.set_function()
-    edit_device_group_lambda.add_layer(models=True)
+    edit_device_group_lambda.add_layer(layer_version=self.model_layer)
     edit_device_group_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -64,11 +64,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     get_device_groups_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/get_device_groups",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/get_device_groups",
         name="GetDeviceGroups",
     )
     get_device_groups_lambda.set_function()
-    get_device_groups_lambda.add_layer(models=True)
+    get_device_groups_lambda.add_layer(layer_version=self.model_layer)
     get_device_groups_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -108,11 +108,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     create_device_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/create_device",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/create_device",
         name="CreateDevice",
     )
     create_device_lambda.set_function()
-    create_device_lambda.add_layer(models=True)
+    create_device_lambda.add_layer(layer_version=self.model_layer)
     create_device_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -138,11 +138,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     delete_device_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/delete_device",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/delete_device",
         name="DeleteDevice",
     )
     delete_device_lambda.set_function()
-    delete_device_lambda.add_layer(models=True)
+    delete_device_lambda.add_layer(layer_version=self.model_layer)
     delete_device_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -152,11 +152,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     edit_device_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/edit_device",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/edit_device",
         name="EditDevice",
     )
     edit_device_lambda.set_function()
-    edit_device_lambda.add_layer(models=True)
+    edit_device_lambda.add_layer(layer_version=self.model_layer)
     edit_device_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
@@ -166,11 +166,11 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
 
     get_devices_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{PATH}{DEVICE_FOLDER}/get_devices",
+        code_path=f"{PATH}{LAMBDAS_FOLDER}/get_devices",
         name="GetDevices",
     )
     get_devices_lambda.set_function()
-    get_devices_lambda.add_layer(models=True)
+    get_devices_lambda.add_layer(layer_version=self.model_layer)
     get_devices_lambda.add_db_environment(
         db_host=db_host,
         db_name=db_name,
