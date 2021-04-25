@@ -9,6 +9,9 @@ python = "^3.8"
 SQLAlchemy = "^1.4.11"
 pydantic = "^1.8.1"
 psycopg2-binary = "^2.8.6"
+boto3 = "^1.17.57"
+aws-lambda-powertools = "^1.14.0"
+SQLAlchemy-Paginator = "^0.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
