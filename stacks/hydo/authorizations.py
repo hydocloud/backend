@@ -12,7 +12,7 @@ from models._lambda import LambdaPython
 from utils.prefix import env_specific
 
 LAMBDA_HANDLER = "app.lambda_handler"
-LAMBDAS_FOLDER = "/authorization"
+LAMBDAS_FOLDER = "/authorization/src"
 
 
 def lambdas(self, device_secret_key: secret_manager.Secret):
@@ -43,7 +43,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         db_user="loginService",
         db_password="ciaociao",
     )
-    create_authorization_lambda.add_layer(models=True)
+    create_authorization_lambda.add_layer(layer_version=self.model_layer)
 
     create_authorization_lambda._lambda.add_event_source(
         source=SqsEventSource(self.create_authorization_device_queue, batch_size=1)
@@ -61,7 +61,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         db_user="loginService",
         db_password="ciaociao",
     )
-    delete_authorization_lambda.add_layer(models=True)
+    delete_authorization_lambda.add_layer(layer_version=self.model_layer)
 
     edit_authorization_lambda = LambdaPython(
         self,
@@ -75,7 +75,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         db_user="loginService",
         db_password="ciaociao",
     )
-    edit_authorization_lambda.add_layer(models=True)
+    edit_authorization_lambda.add_layer(layer_version=self.model_layer)
 
     get_authorizations_lambda = LambdaPython(
         self,
@@ -89,7 +89,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         db_user="loginService",
         db_password="ciaociao",
     )
-    get_authorizations_lambda.add_layer(models=True)
+    get_authorizations_lambda.add_layer(layer_version=self.model_layer)
 
     self.apigateway.add_route(
         path="/authorizations",
@@ -127,7 +127,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         name="AuthorizationService",
     )
     authorization_service_lambda.set_function()
-    authorization_service_lambda.add_layer(models=True)
+    authorization_service_lambda.add_layer(layer_version=self.model_layer)
     authorization_service_lambda.add_environment(
         key="NONCE_TABLE_NAME", value=nonce_table.table_name
     )
@@ -146,7 +146,8 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
         timeout_seconds=300,
     )
     onboarding_lambda.set_function()
-    onboarding_lambda.add_layer(models=True, layer_version=indy_layer)
+    onboarding_lambda.add_layer(layer_version=self.model_layer)
+    onboarding_lambda.add_layer(layer_version=indy_layer)
     onboarding_lambda.add_environment(
         key="ONBOARDING_PATH", value="http://test.hydo.cloud:60050/onboarding"
     )
@@ -169,7 +170,7 @@ def lambdas(self, device_secret_key: secret_manager.Secret):
     onboarding_lambda.add_environment(key="DB_INDY_PASSWORD", value="ciaociao")
 
     ecr_image = _lambda.EcrImageCode.from_asset_image(
-        directory=f"{PATH}{LAMBDAS_FOLDER}", file="Docker_validate_authorization"
+        directory=f"{PATH}", file="Docker_validate_authorization"
     )
 
     validate_authorization_lambda = _lambda.Function(
