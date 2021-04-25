@@ -7,7 +7,7 @@ import logging
 from typing import List
 
 from aws_lambda_powertools import Tracer  # type: ignore
-from models.api_response import DataModel, LambdaResponse, Message
+from models.api_response import Data, LambdaResponse, Message
 from models.users import UserBelongUserGroups, UserGroups, UserGroupsModelShort
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
@@ -52,7 +52,7 @@ def get_user_groups(
         m = parse_obj_as(List[UserGroupsModelShort], page.object_list)
 
         status_code = 200
-        body = DataModel(
+        body = Data(
             data=m,
             total=page.paginator.count,
             totalPages=page.paginator.total_pages,

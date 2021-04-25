@@ -4,7 +4,7 @@ import logging
 from typing import List
 
 from aws_lambda_powertools import Tracer  # type: ignore
-from models.api_response import DataModel, LambdaResponse, Message
+from models.api_response import Data, LambdaResponse, Message
 from models.users import UserGroups, UserGroupsModelShort
 from pydantic import parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
@@ -45,7 +45,7 @@ def edit_user_group(
         connection.commit()
         m = parse_obj_as(List[UserGroupsModelShort], [user_group])
 
-        body = DataModel(
+        body = Data(
             data=m, total=None, totalPages=None, nextPage=None, previousPage=None
         ).json(exclude_none=True, by_alias=True)
 

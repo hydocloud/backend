@@ -5,7 +5,7 @@ import logging
 from typing import List
 
 from aws_lambda_powertools import Tracer  # type: ignore
-from models.api_response import DataModel, LambdaResponse, Message
+from models.api_response import Data, LambdaResponse, Message
 from models.users import (
     UserBelongUserGroups,
     UserGroups,
@@ -48,9 +48,9 @@ def create_user_groups(
         )
         connection.add(user_group_belong_users)
         connection.commit()
-        body = DataModel(
-            data=parse_obj_as(List[UserGroupsModelShort], [user_groups])
-        ).json(exclude_none=True, by_alias=True)
+        body = Data(data=parse_obj_as(List[UserGroupsModelShort], [user_groups])).json(
+            exclude_none=True, by_alias=True
+        )
 
         return LambdaResponse(statusCode=201, body=body).dict()
 

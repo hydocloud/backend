@@ -1,8 +1,13 @@
 import json
+import sys
 
 import pytest
 
-from create_user_groups.app import parse_input
+sys.path.append("./src/create_user_groups")
+from models.users import UserGroupsApiInput
+
+from src.create_user_groups.app import parse_input  # noqa: E402
+from src.create_user_groups.create import create_user_groups  # noqa: E402
 
 
 @pytest.fixture
@@ -131,3 +136,16 @@ def test_parse_input_apigw(apigw_event):
     res, owner_id = parse_input(apigw_event)
     assert res == expected_message
     assert owner_id == expected_owner_id
+
+
+def test_create_user_group(setup_user_group, session):
+    res = create_user_groups(
+        owner_id=setup_user_group.owner_id,
+        payload=UserGroupsApiInput.parse_obj({"name": "test1", "organizationId": 1}),
+        connection=session,
+    )
+
+    body = json.loads(res["body"])
+    assert res["statusCode"] == 201
+    assert body["data"][0]["name"] == "test1"
+    assert body["data"][0]["organizationId"] == 1
