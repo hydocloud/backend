@@ -3,6 +3,7 @@ from aws_cdk.aws_lambda_event_sources import SqsEventSource
 from models._lambda import LambdaPython
 
 LAMBDA_HANDLER = "app.lambda_handler"
+LAMBDAS_FOLDER = "/user/src"
 
 
 def lambdas(self):
@@ -14,16 +15,13 @@ def lambdas(self):
 
     create_user_groups_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{path}/user/create_user_groups",
+        code_path=f"{path}{LAMBDAS_FOLDER}/create_user_groups",
         name="CreateUserGroup",
     )
     create_user_groups_lambda.set_function()
-    create_user_groups_lambda.add_layer(models=True)
+    create_user_groups_lambda.add_layer(layer_version=self.model_layer)
     create_user_groups_lambda.add_db_environment(
-        db_user=db_user,
-        db_password=db_password,
-        db_name=db_name,
-        db_host=db_host
+        db_user=db_user, db_password=db_password, db_name=db_name, db_host=db_host
     )
 
     create_user_groups_lambda._lambda.add_event_source(
@@ -32,44 +30,35 @@ def lambdas(self):
 
     delete_user_groups_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{path}/user/delete_user_groups",
+        code_path=f"{path}{LAMBDAS_FOLDER}/delete_user_groups",
         name="DeleteUserGroup",
     )
     delete_user_groups_lambda.set_function()
-    delete_user_groups_lambda.add_layer(models=True)
+    delete_user_groups_lambda.add_layer(layer_version=self.model_layer)
     delete_user_groups_lambda.add_db_environment(
-        db_user=db_user,
-        db_password=db_password,
-        db_name=db_name,
-        db_host=db_host
+        db_user=db_user, db_password=db_password, db_name=db_name, db_host=db_host
     )
 
     edit_user_groups_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{path}/user/edit_user_group",
+        code_path=f"{path}{LAMBDAS_FOLDER}/edit_user_group",
         name="EditUserGroup",
     )
     edit_user_groups_lambda.set_function()
-    edit_user_groups_lambda.add_layer(models=True)
+    edit_user_groups_lambda.add_layer(layer_version=self.model_layer)
     edit_user_groups_lambda.add_db_environment(
-        db_user=db_user,
-        db_password=db_password,
-        db_name=db_name,
-        db_host=db_host
+        db_user=db_user, db_password=db_password, db_name=db_name, db_host=db_host
     )
 
     get_user_groups_lambda = LambdaPython(
         current_stack=self,
-        code_path=f"{path}/user/get_user_groups",
+        code_path=f"{path}{LAMBDAS_FOLDER}/get_user_groups",
         name="GetUserGroups",
     )
     get_user_groups_lambda.set_function()
-    get_user_groups_lambda.add_layer(models=True)
+    get_user_groups_lambda.add_layer(layer_version=self.model_layer)
     get_user_groups_lambda.add_db_environment(
-        db_user=db_user,
-        db_password=db_password,
-        db_name=db_name,
-        db_host=db_host
+        db_user=db_user, db_password=db_password, db_name=db_name, db_host=db_host
     )
 
     self.apigateway.add_route(
