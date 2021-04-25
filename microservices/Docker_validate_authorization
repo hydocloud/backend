@@ -1,0 +1,12 @@
+FROM public.ecr.aws/lambda/python:3.8
+
+COPY ./authorization/src/validate_authorization/requirements.txt ./
+
+RUN pip install -r requirements.txt
+
+COPY ./authorization/src/lib/* /opt/lib/
+COPY ./authorization/src/validate_authorization/* ./
+COPY ./shared/models/* models/
+COPY ./shared/database.py database.py
+
+CMD ["app.lambda_handler"]
