@@ -11,7 +11,7 @@ from pydantic import ValidationError
 tracer = Tracer(service="create_device")
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
