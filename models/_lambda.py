@@ -9,7 +9,9 @@ from typing import Optional
 
 DB_PORT = 5432
 DB_ENGINE = "postgresql"
-LAMBDA_POWER_TOOLS_LAYER_ARN = "arn:aws:lambda:eu-west-1:457469494885:layer:aws-lambda-powertools-python-layer:1"
+LAMBDA_POWER_TOOLS_LAYER_ARN = (
+    "arn:aws:lambda:eu-west-1:457469494885:layer:aws-lambda-powertools-python-layer:1"
+)
 
 
 class Lambda:
@@ -60,13 +62,7 @@ class Lambda:
         models: bool = False,
         indy: bool = False,
     ):
-        layers = [
-            aws_lambda.LayerVersion.from_layer_version_arn(
-                self.current_stack,
-                f"{self.name}-AwsLambdaPowerTools",
-                layer_version_arn=LAMBDA_POWER_TOOLS_LAYER_ARN,
-            )
-        ]
+        layers = []
         if requirements:
             layers.append(self.__create_dependencies_layer())
         if models:
@@ -142,4 +138,11 @@ class LambdaPython(Lambda):
             memory_size=self.memory_size,
             timeout=self.timeout,
             asset_hash_type=AssetHashType.SOURCE,
+        )
+        self._lambda.add_layers(
+            aws_lambda.LayerVersion.from_layer_version_arn(
+                self.current_stack,
+                f"{self.name}-AwsLambdaPowerTools",
+                layer_version_arn=LAMBDA_POWER_TOOLS_LAYER_ARN,
+            )
         )
