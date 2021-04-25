@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from models.organizations import ResponseModel
 from models.devices import DeviceGroupsModelShort, DevicesModelShort
 from models.authorization import AuthorizationModelShort
+from models.users import UserGroupsModelShort
 
 
 class LambdaResponse(BaseModel):
@@ -21,6 +22,7 @@ class Data(BaseModel):
             DevicesModelShort,
             DeviceGroupsModelShort,
             AuthorizationModelShort,
+            UserGroupsModelShort,
         ]
     ]
     total: Optional[int]
@@ -35,6 +37,7 @@ class DataNoList(BaseModel):
         DevicesModelShort,
         DeviceGroupsModelShort,
         AuthorizationModelShort,
+        UserGroupsModelShort,
     ]
 
 
