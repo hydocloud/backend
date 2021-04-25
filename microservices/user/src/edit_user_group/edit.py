@@ -2,12 +2,13 @@
 
 import logging
 from typing import List
-from pydantic import parse_obj_as
+
+from aws_lambda_powertools import Tracer  # type: ignore
+from models.api_response import DataModel, LambdaResponse, Message
 from models.users import UserGroups, UserGroupsModelShort
-from models.api_response import LambdaResponse, Message, DataModel
+from pydantic import parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session  # type: ignore
-from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="edit_user_group")
 

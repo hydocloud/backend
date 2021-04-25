@@ -1,11 +1,13 @@
-import logging
 import json
-from pydantic import ValidationError
-from edit import edit_user_group  # type: ignore
-from models.users import UserGroupsApiEditInput
-from models.api_response import Message, LambdaResponse
-from database import init_db
+import logging
+
 from aws_lambda_powertools import Tracer  # type: ignore
+from edit import edit_user_group  # type: ignore
+from models.api_response import LambdaResponse, Message
+from models.users import UserGroupsApiEditInput
+from pydantic import ValidationError
+
+from database import init_db
 
 tracer = Tracer(service="edit_user_group")
 

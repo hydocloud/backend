@@ -1,11 +1,13 @@
-import pytest
 import json
+
+import pytest
+from models.users import Base, UserGroupsApiEditInput, UserGroupsApiInput
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.users import Base, UserGroupsApiInput, UserGroupsApiEditInput
+
 from create_user_groups.create import create_user_groups
-from edit_user_group.edit import edit_user_group
 from delete_user_groups.delete import delete_user_groups
+from edit_user_group.edit import edit_user_group
 from get_user_groups.get import get_user_groups
 
 

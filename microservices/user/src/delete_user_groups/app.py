@@ -1,10 +1,11 @@
 import logging
-from delete import delete_user_groups  # type: ignore
-from models.api_response import Message, LambdaResponse
-from database import init_db
+
 from aws_lambda_powertools import Tracer  # type: ignore
+from delete import delete_user_groups  # type: ignore
+from models.api_response import LambdaResponse, Message
 from pydantic import ValidationError
 
+from database import init_db
 
 tracer = Tracer(service="delete_user_group")
 

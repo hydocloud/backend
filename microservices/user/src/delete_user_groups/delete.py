@@ -1,11 +1,12 @@
 """ Delete user group """
 
 import logging
-from models.users import UserGroups
+
+from aws_lambda_powertools import Tracer  # type: ignore
 from models.api_response import LambdaResponse, Message
+from models.users import UserGroups
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="delete_user_group")
 

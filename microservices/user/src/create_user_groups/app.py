@@ -1,13 +1,14 @@
-import logging
 import json
-from create import create_user_groups  # type: ignore
-from models.users import UserGroupsApiInput
-from models.api_response import Message, LambdaResponse
-from database import init_db
-from aws_lambda_powertools import Tracer  # type: ignore
-from pydantic import ValidationError
-from typing import Tuple, Optional
+import logging
+from typing import Optional, Tuple
 
+from aws_lambda_powertools import Tracer  # type: ignore
+from create import create_user_groups  # type: ignore
+from models.api_response import LambdaResponse, Message
+from models.users import UserGroupsApiInput
+from pydantic import ValidationError
+
+from database import init_db
 
 tracer = Tracer(service="create_user_group")
 

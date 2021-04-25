@@ -1,19 +1,20 @@
 """ Create user groups """
 
-import logging
 import datetime
+import logging
 from typing import List
+
+from aws_lambda_powertools import Tracer  # type: ignore
+from models.api_response import DataModel, LambdaResponse, Message
 from models.users import (
-    UserGroups,
     UserBelongUserGroups,
+    UserGroups,
     UserGroupsApiInput,
     UserGroupsModelShort,
 )
-from models.api_response import LambdaResponse, DataModel, Message
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from aws_lambda_powertools import Tracer  # type: ignore
 
 tracer = Tracer(service="create_user_group")
 

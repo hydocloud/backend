@@ -5,14 +5,14 @@ You can select on single user_group or multiple user_group
 
 import logging
 from typing import List
-from models.users import UserGroups, UserBelongUserGroups, UserGroupsModelShort
-from models.api_response import LambdaResponse, DataModel, Message
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.session import Session
 
 from aws_lambda_powertools import Tracer  # type: ignore
-from sqlalchemy_paginator import Paginator  # type: ignore
+from models.api_response import DataModel, LambdaResponse, Message
+from models.users import UserBelongUserGroups, UserGroups, UserGroupsModelShort
 from pydantic import ValidationError, parse_obj_as
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.session import Session
+from sqlalchemy_paginator import Paginator  # type: ignore
 
 tracer = Tracer(service="get_user_group")
 
@@ -57,9 +57,7 @@ def get_user_groups(
             total=page.paginator.count,
             totalPages=page.paginator.total_pages,
             nextPage=(page.next_page_number if page.has_next() else None),
-            previousPage=(
-                page.previous_page_number if page.has_previous() else None
-            ),
+            previousPage=(page.previous_page_number if page.has_previous() else None),
         ).json(by_alias=True)
 
         return LambdaResponse(statusCode=status_code, body=body).dict()

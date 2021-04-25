@@ -1,5 +1,7 @@
-import pytest
 import json
+
+import pytest
+
 from create_user_groups.app import parse_input
 
 

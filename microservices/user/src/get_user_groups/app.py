@@ -1,8 +1,10 @@
 """ Entry point lambda"""
 
 import logging
+
 from aws_lambda_powertools import Tracer  # type: ignore
 from get import get_user_groups  # type: ignore
+
 from database import init_db
 
 tracer = Tracer(service="get_user_groups")
