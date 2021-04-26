@@ -33,7 +33,8 @@ jobs:
         run: poetry config virtualenvs.in-project true;
           poetry update;
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      # - name: Run tests
-      #   working-directory: ${{ matrix.services }}
-      #   run: poetry shell;
-      #     make test;
+      - name: Run tests
+        working-directory: ${{ matrix.services }}
+        run: source .venv/bin/activate;
+          export POWERTOOLS_TRACE_DISABLED=True;
+          make test;
