@@ -152,6 +152,7 @@ def device(setup_device_group_id):
 def test_create_device_ok(device, session, secret, sqs_queue, monkeypatch):
 
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
 
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
@@ -166,6 +167,7 @@ def test_create_device_ok(device, session, secret, sqs_queue, monkeypatch):
 def test_create_device_double(device, session, secret, sqs_queue, monkeypatch):
 
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
     user_id = "asddss"
 
     res = create_device(user_id=user_id, payload=device, connection=session)
@@ -176,6 +178,7 @@ def test_create_device_double(device, session, secret, sqs_queue, monkeypatch):
 
 def test_handler(apigw_event, session, secret, sqs_queue, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)
     body = (json.loads(res["body"]))["data"]
@@ -197,6 +200,7 @@ def test_create_device_validation_error(device, session):
 
 def test_create_device_sqlalchemy_error(device, session, secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
     session.invalidate()
     user_id = "asddss"
     res = create_device(user_id=user_id, payload=device, connection=session)
@@ -205,6 +209,7 @@ def test_create_device_sqlalchemy_error(device, session, secret, monkeypatch):
 
 def test_crypt_get_secret_ok(secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
     res = create.get_key(secret)
 
     assert type(res) == bytes
@@ -213,6 +218,7 @@ def test_crypt_get_secret_ok(secret, monkeypatch):
 
 def test_crypt_encrypt_ok(secret, monkeypatch):
     monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("AWS_REGION", "eu-west-1")
     data = "ciaociaociao"
     res = create.encrypt_data(data)
 
