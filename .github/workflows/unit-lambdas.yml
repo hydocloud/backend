@@ -1,18 +1,13 @@
 name: Python package
 
 on: [push]
-jobs: 
+jobs:
   runner-job:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
-        services:
-          [
-            "./microservices/authorization",
-            "./microservices/device",
-            "./microservices/user",
-          ]
+        services: ["./microservices/authorization", "./microservices/device"]
     services:
       postgres:
         image: postgres
