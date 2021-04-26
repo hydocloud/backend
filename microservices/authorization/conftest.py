@@ -142,3 +142,5 @@ def env_setup(monkeypatch):
     monkeypatch.setenv("DB_INDY_ENGINE", "5432")
     monkeypatch.setenv("DB_INDY_USER", "5432")
     monkeypatch.setenv("DB_INDY_PASSWORD", "5432")
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
+
