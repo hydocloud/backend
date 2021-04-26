@@ -26,4 +26,6 @@ jobs:
         working-directory: ${{ matrix.services }}
         run: poetry config virtualenvs.in-project true;
           poetry update;
-          poetry shell;
+      - name: Run tests
+        working-directory: ${{ matrix.services }}
+        run: make test;
