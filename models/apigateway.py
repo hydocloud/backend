@@ -41,11 +41,14 @@ class Apigateway:
             self.__set_mapping()
 
     def get_domain_name(self) -> str:
-        return self.domain_name
+        return self.domain_name.name
 
     def __set_mapping(self):
         aws_apigatewayv2.ApiMapping(
-            self.current_stack, "ApiMapping", api=self.http_api, domain_name=self.domain_name
+            self.current_stack,
+            "ApiMapping",
+            api=self.http_api,
+            domain_name=self.domain_name,
         )
 
     def add_route(
