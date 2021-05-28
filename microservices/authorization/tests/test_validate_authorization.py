@@ -2,6 +2,7 @@ import uuid
 import boto3
 import pytest
 import sys
+import json
 from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -15,6 +16,10 @@ from pydantic import ValidationError
 sys.path.append("./src/validate_authorization")
 
 faker = Faker()
+ASYMMETRIC_KEYS = {
+    "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+    "privateKey": "308187020100301306072a8648ce3d020106082a8648ce3d030107046d306b02010104208188efb1d5413d79242e84f14b263b9162dd52a8bd3f3d29604c5da3de412f18a144034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+}
 
 
 @mock_secretsmanager
@@ -25,6 +30,10 @@ def secret():
         conn.create_secret(
             Name="java-util-test-password",
             SecretString="ciaociaociaociaociaociaociaociao",
+        )
+        conn.create_secret(
+            Name="asymmetric-secret",
+            SecretString=json.dumps(ASYMMETRIC_KEYS),
         )
         yield conn
 
@@ -177,3 +186,18 @@ class TestDeviceClass:
 
         assert type(res) == bytes
         assert res.decode() == "ciaociaociaociaociaociaociaociao"
+
+    def test_get_asymmetric_secret(
+        self, create_device, secret, monkeypatch, devices_session
+    ):
+        from src.validate_authorization.device import DeviceClass
+
+        monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
+
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
+        public, private = x.get_asymmetric_secret_key()
+
+        assert type(public) == str
+        assert type(private) == str
+        assert ASYMMETRIC_KEYS["publicKey"] == public
+        assert ASYMMETRIC_KEYS["privateKey"] == private

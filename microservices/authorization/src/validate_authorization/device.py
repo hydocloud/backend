@@ -1,9 +1,10 @@
 import base64
 import hmac
 import logging
+import json
 from hashlib import sha256
 from os import environ
-from typing import Optional
+from typing import Optional, Tuple
 from aws_lambda_powertools import Tracer
 from aws_lambda_powertools.utilities import parameters
 from Crypto.Cipher import AES
@@ -72,6 +73,19 @@ class DeviceClass:
         try:
             secret = parameters.get_secret(environ["SECRET_NAME"])
             return secret.encode()
+        except (
+            parameters.GetParameterError,
+            parameters.TransformParameterError,
+        ) as err:
+            logger.error(err)
+            raise err
+
+    @tracer.capture_method
+    def get_asymmetric_secret_key(self, secret_manager=None) -> Tuple[str, str]:
+        try:
+            secret = parameters.get_secret(environ["SECRET_NAME"])
+            secret = json.loads(secret)
+            return secret["publicKey"], secret["privateKey"]
         except (
             parameters.GetParameterError,
             parameters.TransformParameterError,
