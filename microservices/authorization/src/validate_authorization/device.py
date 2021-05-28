@@ -4,7 +4,7 @@ import logging
 import json
 from hashlib import sha256
 from os import environ
-from typing import Optional, Tuple
+from typing import Optional
 from aws_lambda_powertools import Tracer
 from aws_lambda_powertools.utilities import parameters
 from Crypto.Cipher import AES
@@ -12,6 +12,9 @@ from Crypto.Util.Padding import unpad
 from models.devices import Devices
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
 
 tracer = Tracer(service="validate-authorization")
 logger = logging.getLogger(__name__)
@@ -69,6 +72,17 @@ class DeviceClass:
         return base64.b64encode(signature).decode()
 
     @tracer.capture_method
+    def signature(self, message: str) -> str:
+        private_key_from_hex = bytes.fromhex(self.private_key)
+        original_private_key = serialization.load_der_private_key(
+            data=private_key_from_hex, password=None
+        )
+        signature = original_private_key.sign(
+            data=message.encode(), signature_algorithm=ec.ECDSA(hashes.SHA256())
+        )
+        return signature.hex()
+
+    @tracer.capture_method
     def get_secret_key(self, secret_manager=None) -> bytes:
         try:
             secret = parameters.get_secret(environ["SECRET_NAME"])
@@ -81,11 +95,12 @@ class DeviceClass:
             raise err
 
     @tracer.capture_method
-    def get_asymmetric_secret_key(self, secret_manager=None) -> Tuple[str, str]:
+    def get_asymmetric_secret_key(self, secret_manager=None) -> str:
         try:
             secret = parameters.get_secret(environ["SECRET_NAME"])
             secret = json.loads(secret)
-            return secret["publicKey"], secret["privateKey"]
+            self.private_key = secret["privateKey"]
+            return self.private_key
         except (
             parameters.GetParameterError,
             parameters.TransformParameterError,

@@ -12,6 +12,9 @@ from models.authorization import Unlock
 from models.devices import Devices, DeviceGroups
 from moto import mock_secretsmanager
 from pydantic import ValidationError
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import serialization
 
 sys.path.append("./src/validate_authorization")
 
@@ -195,9 +198,24 @@ class TestDeviceClass:
         monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
 
         x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
-        public, private = x.get_asymmetric_secret_key()
+        private = x.get_asymmetric_secret_key()
 
-        assert type(public) == str
         assert type(private) == str
-        assert ASYMMETRIC_KEYS["publicKey"] == public
         assert ASYMMETRIC_KEYS["privateKey"] == private
+
+    def test_signature(self, create_device, devices_session):
+        from src.validate_authorization.device import DeviceClass
+
+        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
+        x.private_key = ASYMMETRIC_KEYS["privateKey"]
+        res = x.signature(message="SAG7KstDgi6PkXoE4ByID7PDuGxHuJdq3s80vbJNQZ4=")
+        print(ASYMMETRIC_KEYS["publicKey"])
+        original_public_key = serialization.load_der_public_key(
+            data=bytes.fromhex(ASYMMETRIC_KEYS["publicKey"])
+        )
+        verify = original_public_key.verify(
+            bytes.fromhex(res),
+            b"SAG7KstDgi6PkXoE4ByID7PDuGxHuJdq3s80vbJNQZ4=",
+            ec.ECDSA(hashes.SHA256()),
+        )
+        assert verify is None

@@ -68,8 +68,11 @@ def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, A
     try:
         res, user_id = loop.run_until_complete(authz.decrypt())
         if res:
-            key = device.get_secret_key()
-            digest = authz.validation(user_id=user_id, device=device, key=key)
+            device.get_asymmetric_secret_key()
+            digest = authz.validation(
+                user_id=user_id,
+                device=device
+            )
             if digest is None:
                 return LambdaResponse(
                     statusCode=404, body=Message(message="Not found").json()

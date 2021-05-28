@@ -113,7 +113,7 @@ class AuthorizationClass:
 
     @tracer.capture_method
     def validation(
-        self, user_id: str, device: DeviceClass, key: bytes
+        self, user_id: str, device: DeviceClass
     ) -> Optional[str]:
 
         try:
@@ -138,8 +138,7 @@ class AuthorizationClass:
             )
             logger.debug(f"ITEM: {item}")
             if item:
-                device.get_hmac(key=key)
-                digest = device.digest(self.unlock.deviceNonce)
+                digest = device.signature(self.unlock.deviceNonce)
                 if item.access_limit:
                     item.access_limit = item.access_limit - 1
                     logger.debug(item.access_limit)
