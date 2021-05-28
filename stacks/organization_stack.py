@@ -201,9 +201,10 @@ class OrganizationeStack(core.Stack):
         )
 
         user_group.lambdas(self)
-        device_secret_key = secrets.device_symmetric_key(self)
-        devices.lambdas(self, device_secret_key)
-        authorizations.lambdas(self, device_secret_key)
+        # device_secret_key = secrets.device_symmetric_key(self)
+        device_asymmetric_secret_key = secrets.device_asymmetric_key(self)
+        devices.lambdas(self, device_asymmetric_secret_key)
+        authorizations.lambdas(self, device_asymmetric_secret_key)
 
     def __model_layer(self):
         return _lambda_python.PythonLayerVersion(
