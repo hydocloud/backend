@@ -532,7 +532,7 @@ six = ">=1.5"
 
 [[package]]
 name = "python3-indy"
-version = "1.16.0-post-51"
+version = "1.16.0"
 description = "This is the official SDK for Hyperledger Indy (https://www.hyperledger.org/projects), which provides a distributed-ledger-based foundation for self-sovereign identity (https://sovrin.org). The major artifact of the SDK is a c-callable library."
 category = "main"
 optional = false
@@ -746,7 +746,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b41410a7fd54fdb26bd4cfa007b477c492c5f7f2703ed407923afda8b8241eb6"
+content-hash = "a86e81a65049c78ecd27e5818ee03b75bde52228ba9e447196cef1159fa98783"
 
 [metadata.files]
 appdirs = [
@@ -1203,7 +1203,7 @@ python-dateutil = [
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 python3-indy = [
-    {file = "python3-indy-1.16.0-post-51.tar.gz", hash = "sha256:b5fa70b7b4b87ce18f1a233ceb9b62ac9a014a49ead3762261a857fca227a140"},
+    {file = "python3-indy-1.16.0.tar.gz", hash = "sha256:098f38585b2d854c84fc547119f5f387b4f29d21a6e7b3971c91d9be7bc46361"},
 ]
 pytz = [
     {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
