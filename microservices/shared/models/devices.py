@@ -65,7 +65,6 @@ class DevicesModel(BaseModel):
     name: str
     serial: uuid.UUID
     device_group_id: int = Field(..., alias="deviceGroupId")
-    hmac_key: str = Field(..., alias="hmacKey")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

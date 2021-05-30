@@ -1,20 +1,20 @@
+import json
+import sys
 import uuid
+from datetime import datetime, timedelta
+
 import boto3
 import pytest
-import sys
-import json
-from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from faker import Faker
 from models.authorization import Unlock
-from models.devices import Devices, DeviceGroups
+from models.devices import DeviceGroups, Devices
 from moto import mock_secretsmanager
 from pydantic import ValidationError
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
 
 sys.path.append("./src/validate_authorization")
 
@@ -83,14 +83,10 @@ def setup_device_group_id(devices_session):
 
 @pytest.fixture
 def create_device(setup_device_group_id, devices_session):
-    iv = get_random_bytes(AES.block_size)
-    cipher = AES.new(key=b"ciaociaociaociaociaociaociaociao", mode=AES.MODE_CBC, iv=iv)
-    data = "ciaociao"
     device = Devices(
         name=faker.sentence(nb_words=1),
         serial=uuid.uuid4().__str__(),
         device_group_id=setup_device_group_id,
-        hmac_key=(iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
@@ -159,15 +155,15 @@ class TestDeviceClass:
 
         assert res.id == create_device.id
 
-    def test_get_hmac(self, devices_session, create_device, monkeypatch):
-        from src.validate_authorization.device import DeviceClass
+    # def test_get_hmac(self, devices_session, create_device, monkeypatch):
+    #     from src.validate_authorization.device import DeviceClass
 
-        monkeypatch.setenv("SECRET_NAME", "DeviceSecret")
+    #     monkeypatch.setenv("SECRET_NAME", "DeviceSecret")
 
-        x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
-        x.get_hmac(key=b"ciaociaociaociaociaociaociaociao")
+    #     x = DeviceClass(device_serial=create_device.serial, connection=devices_session)
+    #     x.get_hmac(key=b"ciaociaociaociaociaociaociaociao")
 
-        assert x.hmac_key == "ciaociao".encode("utf-8")
+    #     assert x.hmac_key == "ciaociao".encode("utf-8")
 
     def test_digest(self, create_device, devices_session):
         from src.validate_authorization.device import DeviceClass
