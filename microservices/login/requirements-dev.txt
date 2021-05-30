@@ -8,7 +8,7 @@ pyjwt
 boto3==1.14.23
 botocore==1.17.23
 coverage
-pydantic==1.6.1
+pydantic==1.6.2
 python3-indy==1.15
 black
 vulture
