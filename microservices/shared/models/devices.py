@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator, create_model
 from typing import Optional
 
 Base = declarative_base()
@@ -33,7 +33,6 @@ class Devices(Base):
         Integer,
         ForeignKey("device_groups.id"),
     )
-    hmac_key = Column(LargeBinary)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
 
@@ -86,6 +85,13 @@ class DevicesModelShort(BaseModel):
         allow_population_by_field_name = True
 
 
+DevicesModelShortPublicKey = create_model(
+    'DevicesModelShortPublicKey',
+    publicKey="",
+    __base__=DevicesModelShort,
+)
+
+
 class DeviceGroupsApiInput(BaseModel):
     name: str
     organizationId: int
@@ -99,7 +105,6 @@ class DevicesApiInput(BaseModel):
     name: str
     serial: str
     deviceGroupId: int
-    hmacKey: str
 
 
 class DevicesEditInput(BaseModel):

@@ -1,7 +1,7 @@
 from typing import Optional, List, Union
 from pydantic import BaseModel
 from models.organizations import ResponseModel
-from models.devices import DeviceGroupsModelShort, DevicesModelShort
+from models.devices import DeviceGroupsModelShort, DevicesModelShort, DevicesModelShortPublicKey
 from models.authorization import AuthorizationModelShort
 from models.users import UserGroupsModelShort
 
@@ -35,6 +35,7 @@ class DataNoList(BaseModel):
     data: Union[
         ResponseModel,
         DevicesModelShort,
+        DevicesModelShortPublicKey,
         DeviceGroupsModelShort,
         AuthorizationModelShort,
         UserGroupsModelShort,
@@ -60,3 +61,4 @@ class UnlockModel(BaseModel):
     success: bool
     message: Optional[str]
     digest: Optional[str]
+    signature: Optional[str]
