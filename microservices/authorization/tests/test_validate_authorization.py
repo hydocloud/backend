@@ -5,9 +5,6 @@ from datetime import datetime, timedelta
 
 import boto3
 import pytest
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from faker import Faker
