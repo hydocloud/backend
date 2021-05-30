@@ -1,7 +1,7 @@
 import datetime
 import sys
 import uuid
-
+import json
 import boto3
 import pytest
 from moto import mock_secretsmanager, mock_sqs
@@ -11,6 +11,12 @@ sys.path.append("./models/")
 from models.devices import Base, DeviceGroups  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
+
+
+ASYMMETRIC_KEYS = {
+    "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+    "privateKey": "308187020100301306072a8648ce3d020106082a8648ce3d030107046d306b02010104208188efb1d5413d79242e84f14b263b9162dd52a8bd3f3d29604c5da3de412f18a144034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+}
 
 
 @pytest.fixture(scope="session")
@@ -77,5 +83,9 @@ def secret():
         conn.create_secret(
             Name="java-util-test-password",
             SecretString="ciaociaociaociaociaociaociaociao",
+        )
+        conn.create_secret(
+            Name="asymmetric-secret",
+            SecretString=json.dumps(ASYMMETRIC_KEYS),
         )
         yield conn

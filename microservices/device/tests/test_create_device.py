@@ -5,13 +5,17 @@ import sys
 import uuid
 
 import pytest
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
 from models.devices import DeviceGroups, DevicesApiInput
 
 sys.path.append("./src/create_device")
 from src.create_device import app, create  # noqa: E402
 from src.create_device.create import create_authorization, create_device  # noqa: E402
+
+
+ASYMMETRIC_KEYS = {
+    "publicKey": "3059301306072a8648ce3d020106082a8648ce3d030107034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+    "privateKey": "308187020100301306072a8648ce3d020106082a8648ce3d030107046d306b02010104208188efb1d5413d79242e84f14b263b9162dd52a8bd3f3d29604c5da3de412f18a144034200041e077a3600ebf9492aa024540d4f5301c6c4eb6c7d8463ffe15ce40d04e0a7be15073b42797c7c18ae00a9915fc5c02c6c8a1e5c007e096065d0cb353fd35e62",
+}
 
 
 @pytest.fixture
@@ -145,13 +149,12 @@ def device(setup_device_group_id):
         name="test",
         serial=uuid.uuid4().__str__(),
         deviceGroupId=setup_device_group_id,
-        hmacKey="testest",
     )
 
 
 def test_create_device_ok(device, session, secret, sqs_queue, monkeypatch):
 
-    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
     monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
 
     user_id = "asddss"
@@ -161,12 +164,13 @@ def test_create_device_ok(device, session, secret, sqs_queue, monkeypatch):
     assert res["statusCode"] == 201
     assert body["serial"] == device.serial
     assert body["deviceGroupId"] == device.deviceGroupId
+    assert body["publicKey"] == ASYMMETRIC_KEYS["publicKey"]
     assert body["name"] == device.name
 
 
 def test_create_device_double(device, session, secret, sqs_queue, monkeypatch):
 
-    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
     monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
     user_id = "asddss"
 
@@ -177,7 +181,7 @@ def test_create_device_double(device, session, secret, sqs_queue, monkeypatch):
 
 
 def test_handler(apigw_event, session, secret, sqs_queue, monkeypatch):
-    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
     monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
     app.CONNECTION = session
     res = app.lambda_handler(apigw_event, None)
@@ -188,6 +192,7 @@ def test_handler(apigw_event, session, secret, sqs_queue, monkeypatch):
     assert body["serial"] == apigw_event_body["serial"]
     assert body["deviceGroupId"] == apigw_event_body["deviceGroupId"]
     assert body["name"] == apigw_event_body["name"]
+    assert body["publicKey"] == ASYMMETRIC_KEYS["publicKey"]
 
 
 def test_create_device_validation_error(device, session):
@@ -208,26 +213,12 @@ def test_create_device_sqlalchemy_error(device, session, secret, monkeypatch):
 
 
 def test_crypt_get_secret_ok(secret, monkeypatch):
-    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
+    monkeypatch.setenv("SECRET_NAME", "asymmetric-secret")
     monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
     res = create.get_key(secret)
 
-    assert type(res) == bytes
-    assert res.decode() == "ciaociaociaociaociaociaociaociao"
-
-
-def test_crypt_encrypt_ok(secret, monkeypatch):
-    monkeypatch.setenv("SECRET_NAME", "java-util-test-password")
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "eu-west-1")
-    data = "ciaociaociao"
-    res = create.encrypt_data(data)
-
-    cipher = AES.new(
-        b"ciaociaociaociaociaociaociaociao", AES.MODE_CBC, res[: AES.block_size]
-    )
-    plaintext = unpad(cipher.decrypt(res[AES.block_size :]), AES.block_size)
-    assert type(res) == bytes
-    assert plaintext.decode() == data
+    assert type(res) == str
+    assert res == ASYMMETRIC_KEYS["publicKey"]
 
 
 def test_handler_error_payload(apigw_event, session, secret, sqs_queue, monkeypatch):

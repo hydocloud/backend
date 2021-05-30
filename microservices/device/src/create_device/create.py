@@ -7,11 +7,8 @@ from os import environ
 import boto3
 from aws_lambda_powertools import Tracer
 from botocore.exceptions import ClientError, ParamValidationError
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad
 from models.api_response import DataNoList, LambdaResponse, Message
-from models.devices import Devices, DevicesApiInput, DevicesModelShort
+from models.devices import Devices, DevicesApiInput, DevicesModelShort, DevicesModelShortPublicKey
 from pydantic import ValidationError, parse_obj_as
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm.session import Session
@@ -21,7 +18,7 @@ tracer = Tracer(service="create_device")
 logger = logging.getLogger(__name__)
 
 
-def get_key(secret_manager=None) -> bytes:
+def get_key(secret_manager=None) -> str:
     secret_name = environ["SECRET_NAME"]
     if secret_manager is None:
         session = boto3.session.Session()
@@ -32,18 +29,11 @@ def get_key(secret_manager=None) -> bytes:
             SecretId=secret_name
         )
         logger.debug(f'key: {get_secret_value_response["SecretString"]}')
-        return get_secret_value_response["SecretString"].encode()
+        get_secret_value_response = json.loads(get_secret_value_response["SecretString"])
+        return get_secret_value_response["publicKey"]
     except ClientError as err:
         logger.error(err)
         raise err
-
-
-def encrypt_data(data: str) -> bytes:
-    key = get_key()
-    iv = get_random_bytes(16)
-    cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
-    logger.debug(f"hmac_key: {data}")
-    return iv + cipher.encrypt(pad(data.encode("utf-8"), AES.block_size))
 
 
 def create_authorization(device_id: int, user_id: str):
@@ -65,7 +55,6 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
             name=payload.name,
             serial=payload.serial,
             device_group_id=payload.deviceGroupId,
-            hmac_key=encrypt_data(payload.hmacKey),
             created_at=datetime.datetime.utcnow(),
             updated_at=datetime.datetime.utcnow(),
         )
@@ -75,11 +64,13 @@ def create_device(user_id: str, payload: DevicesApiInput, connection: Session) -
 
         # Create authorization
         create_authorization(device_id=device.id, user_id=user_id)
-
-        body = DataNoList(data=parse_obj_as(DevicesModelShort, device)).json(
-            exclude_none=True, by_alias=True
+        device_short = parse_obj_as(DevicesModelShort, device)
+        device_short = device_short.dict()
+        device_short["publicKey"] = get_key()
+        device_short_public_key = parse_obj_as(DevicesModelShortPublicKey, device_short)
+        body = DataNoList(data=device_short_public_key).json(
+            by_alias=True
         )
-
         return LambdaResponse(statusCode=201, body=body).dict()
     except (IntegrityError) as err:
         logger.error(err)
