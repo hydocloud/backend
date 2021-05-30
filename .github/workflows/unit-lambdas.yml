@@ -30,12 +30,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2.0.0
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.services }}/.venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      # - name: Load cached venv
+      #   id: cached-poetry-dependencies
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ${{ matrix.services }}/.venv
+      #     key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Setup repo
         working-directory: ${{ matrix.services }}
         run: poetry config virtualenvs.in-project true;
