@@ -112,9 +112,7 @@ class AuthorizationClass:
         return False, None
 
     @tracer.capture_method
-    def validation(
-        self, user_id: str, device: DeviceClass
-    ) -> Optional[str]:
+    def validation(self, user_id: str, device: DeviceClass) -> Optional[str]:
 
         try:
             item = (

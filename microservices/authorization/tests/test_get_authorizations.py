@@ -147,7 +147,9 @@ def test_class_authorization_filter_no_device_id(authorizations_session):
 
 
 def test_get_authorizations_single_id(authorizations_session, populate_db):
-    res = get_authorizations(connection=authorizations_session, authorization_id=populate_db[0].id)
+    res = get_authorizations(
+        connection=authorizations_session, authorization_id=populate_db[0].id
+    )
     body = json.loads(res["body"])
 
     assert res["statusCode"] == 200

@@ -1,20 +1,20 @@
 import base64
 import hmac
-import logging
 import json
+import logging
 from hashlib import sha256
 from os import environ
 from typing import Optional
+
 from aws_lambda_powertools import Tracer
 from aws_lambda_powertools.utilities import parameters
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 from models.devices import Devices
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
 
 tracer = Tracer(service="validate-authorization")
 logger = logging.getLogger(__name__)
