@@ -46,16 +46,16 @@ jobs:
         run: source .venv/bin/activate;
           export POWERTOOLS_TRACE_DISABLED=True;
           make test;
-  cdk:
-    needs: ci-job
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2    
-      - name: cdk diff
-        uses: youyo/aws-cdk-github-actions@v2
-        with:
-          cdk_subcommand: 'diff'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+  # cdk:
+  #   needs: ci-job
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2    
+  #     - name: cdk diff
+  #       uses: youyo/aws-cdk-github-actions@v2
+  #       with:
+  #         cdk_subcommand: 'diff'
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
