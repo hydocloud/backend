@@ -1,2 +1,2 @@
 python3-indy==1.15
-pydantic==1.6.1
+pydantic==1.6.2
